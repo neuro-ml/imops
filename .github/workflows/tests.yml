@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.6', '3.7', '3.8', '3.9', '3.10' ]
+        python-version: [ '3.8', '3.9', '3.10' ]
 
     steps:
       - uses: actions/checkout@v2
@@ -41,6 +41,13 @@ jobs:
           cd ..
           echo $MODULE_PARENT
           echo "MODULE_PARENT=$(echo $MODULE_PARENT)" >> $GITHUB_ENV
+
+      - name: Check code style
+        run: |
+          pip install -r requirements-linters.txt
+          flake8 .
+          isort --check .
+          black --check .
 
       - name: Test with pytest
         run: |
