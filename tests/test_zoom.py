@@ -1,5 +1,5 @@
 from itertools import permutations
-from time import time
+# from time import time
 
 import numpy as np
 import pytest
@@ -102,9 +102,9 @@ def test_contiguity_awareness(zooms):
             scale = np.random.uniform(0.5, 2, size=inp.ndim)
             axis = {'axis': np.arange(len(inp.shape))} if test_zoom == zoom else {}
 
-            start = time()
+            # start = time()
             test_zoom(inp, scale, **axis)
-            runtime = time() - start
+            # runtime = time() - start
 
             desired_out = target_zoom(inp, scale, order=1, **axis)
             without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
@@ -113,9 +113,9 @@ def test_contiguity_awareness(zooms):
                 # This changes contiguity
                 permuted = np.transpose(inp, permutation)
 
-                start_permuted = time()
+                # start_permuted = time()
                 out_permuted = test_zoom(permuted, scale[np.array(permutation)], **axis)
-                runtime_permuted = time() - start_permuted
+                # runtime_permuted = time() - start_permuted
 
                 allclose(
                     np.transpose(out_permuted, inverse_permutation(np.array(permutation)))[without_borders],
@@ -126,7 +126,7 @@ def test_contiguity_awareness(zooms):
                 # This might not pass time to time
                 # allclose(runtime_permuted, runtime, rtol=1 if runtime > 0.1 else 10, err_msg=f'{i, j, permutation}')
                 assert (
-                        get_c_contiguous_permutaion(permuted) is not None
+                    get_c_contiguous_permutaion(permuted) is not None
                 ), f"Didn't find permutation for {i, j, permutation}"
 
 
