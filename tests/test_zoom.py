@@ -1,5 +1,4 @@
 from itertools import permutations
-# from time import time
 
 import numpy as np
 import pytest
@@ -9,6 +8,7 @@ from scipy.ndimage import zoom as scipy_zoom
 
 from imops import _zoom, zoom, zoom_to_shape
 from imops.utils import get_c_contiguous_permutaion, inverse_permutation
+
 
 # [:-1, :-1, :-1] below is used because of the strange scipy.ndimage.zoom behaviour at the edge
 # https://github.com/scipy/scipy/issues/4922

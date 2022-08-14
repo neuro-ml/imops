@@ -1,22 +1,20 @@
 import os
-from typing import Callable, Sequence, Union
+from typing import Callable
 from warnings import warn
 
-import numpy as np
 from scipy.ndimage import zoom as scipy_zoom
 
 from .src._fast_zoom import _zoom as src_zoom
-from .utils import get_c_contiguous_permutaion, inverse_permutation, AxesLike, AxesParams, broadcast_axis, \
-    fill_by_indices
+from .utils import *
 
 
 def zoom(
-        x: np.ndarray,
-        scale_factor: AxesParams,
-        axis: AxesLike = None,
-        order: int = 1,
-        fill_value: Union[float, Callable] = 0,
-        num_threads: int = -1,
+    x: np.ndarray,
+    scale_factor: AxesParams,
+    axis: AxesLike = None,
+    order: int = 1,
+    fill_value: Union[float, Callable] = 0,
+    num_threads: int = -1,
 ) -> np.ndarray:
     """
     Faster parallelizable version of `dpipe.im.shape_ops.zoom` for fp32 / fp64 inputs
@@ -37,12 +35,12 @@ def zoom(
 
 
 def zoom_to_shape(
-        x: np.ndarray,
-        shape: AxesLike,
-        axis: AxesLike = None,
-        order: int = 1,
-        fill_value: Union[float, Callable] = 0,
-        num_threads: int = -1,
+    x: np.ndarray,
+    shape: AxesLike,
+    axis: AxesLike = None,
+    order: int = 1,
+    fill_value: Union[float, Callable] = 0,
+    num_threads: int = -1,
 ) -> np.ndarray:
     """
     Faster parallelizable version of `dpipe.im.shape_ops.zoom_to_shape` for fp32 / fp64 inputs
@@ -60,16 +58,16 @@ def zoom_to_shape(
 
 
 def _zoom(
-        input: np.ndarray,
-        zoom: Union[float, Sequence],
-        output: np.ndarray = None,
-        order: int = 1,
-        mode: str = 'constant',
-        cval: float = 0.0,
-        prefilter: bool = True,
-        *,
-        grid_mode: bool = False,
-        num_threads: int = -1,
+    input: np.ndarray,
+    zoom: Union[float, Sequence],
+    output: np.ndarray = None,
+    order: int = 1,
+    mode: str = 'constant',
+    cval: float = 0.0,
+    prefilter: bool = True,
+    *,
+    grid_mode: bool = False,
+    num_threads: int = -1,
 ) -> np.ndarray:
     """
     Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs
