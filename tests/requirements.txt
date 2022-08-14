@@ -2,3 +2,4 @@ pytest
 pytest-subtests
 pytest-cov
 scikit-image
+deep-pipe

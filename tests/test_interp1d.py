@@ -6,7 +6,6 @@ from utils import seeded_by
 
 from imops import interp1d
 
-
 SEED = 1337
 
 
@@ -60,7 +59,7 @@ def test_dtype():
 @seeded_by(SEED)
 def test_stress():
     for i in range(64):
-        shape = np.random.randint(32, 128, size=np.random.randint(1, 5))
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
         inp = np.random.randn(*shape)
 
         axis = np.random.choice(np.arange(inp.ndim))

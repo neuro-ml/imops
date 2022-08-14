@@ -3,20 +3,20 @@ from typing import Callable, Sequence, Union
 from warnings import warn
 
 import numpy as np
-from dpipe.im.axes import AxesLike, AxesParams, fill_by_indices, resolve_deprecation
 from scipy.ndimage import zoom as scipy_zoom
 
 from .src._fast_zoom import _zoom as src_zoom
-from .utils import get_c_contiguous_permutaion, inverse_permutation
+from .utils import get_c_contiguous_permutaion, inverse_permutation, AxesLike, AxesParams, broadcast_axis, \
+    fill_by_indices
 
 
 def zoom(
-    x: np.ndarray,
-    scale_factor: AxesParams,
-    axis: AxesLike = None,
-    order: int = 1,
-    fill_value: Union[float, Callable] = 0,
-    num_threads: int = -1,
+        x: np.ndarray,
+        scale_factor: AxesParams,
+        axis: AxesLike = None,
+        order: int = 1,
+        fill_value: Union[float, Callable] = 0,
+        num_threads: int = -1,
 ) -> np.ndarray:
     """
     Faster parallelizable version of `dpipe.im.shape_ops.zoom` for fp32 / fp64 inputs
@@ -26,9 +26,8 @@ def zoom(
 
     See `https://github.com/neuro-ml/deep_pipe/blob/master/dpipe/im/shape_ops.py#L19-L44`
     """
-    if not hasattr(x, 'ndim') or not hasattr(x, 'shape'):
-        x = np.asarray(x)
-    axis = resolve_deprecation(axis, x.ndim, scale_factor)
+    x = np.asarray(x)
+    axis, scale_factor = broadcast_axis(axis, x.ndim, scale_factor)
     scale_factor = fill_by_indices(np.ones(x.ndim, 'float64'), scale_factor, axis)
 
     if callable(fill_value):
@@ -38,12 +37,12 @@ def zoom(
 
 
 def zoom_to_shape(
-    x: np.ndarray,
-    shape: AxesLike,
-    axis: AxesLike = None,
-    order: int = 1,
-    fill_value: Union[float, Callable] = 0,
-    num_threads: int = -1,
+        x: np.ndarray,
+        shape: AxesLike,
+        axis: AxesLike = None,
+        order: int = 1,
+        fill_value: Union[float, Callable] = 0,
+        num_threads: int = -1,
 ) -> np.ndarray:
     """
     Faster parallelizable version of `dpipe.im.shape_ops.zoom_to_shape` for fp32 / fp64 inputs
@@ -53,25 +52,24 @@ def zoom_to_shape(
 
     See `https://github.com/neuro-ml/deep_pipe/blob/master/dpipe/im/shape_ops.py#L47-L68`
     """
-    if not hasattr(x, 'ndim') or not hasattr(x, 'shape'):
-        x = np.asarray(x)
-    axis = resolve_deprecation(axis, x.ndim, shape)
+    x = np.asarray(x)
+    axis, shape = broadcast_axis(axis, x.ndim, shape)
     old_shape = np.array(x.shape, 'float64')
     new_shape = np.array(fill_by_indices(x.shape, shape, axis), 'float64')
     return zoom(x, new_shape / old_shape, range(x.ndim), order=order, fill_value=fill_value, num_threads=num_threads)
 
 
 def _zoom(
-    input: np.ndarray,
-    zoom: Union[float, Sequence],
-    output: np.ndarray = None,
-    order: int = 1,
-    mode: str = 'constant',
-    cval: float = 0.0,
-    prefilter: bool = True,
-    *,
-    grid_mode: bool = False,
-    num_threads: int = -1,
+        input: np.ndarray,
+        zoom: Union[float, Sequence],
+        output: np.ndarray = None,
+        order: int = 1,
+        mode: str = 'constant',
+        cval: float = 0.0,
+        prefilter: bool = True,
+        *,
+        grid_mode: bool = False,
+        num_threads: int = -1,
 ) -> np.ndarray:
     """
     Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs
