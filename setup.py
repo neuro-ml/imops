@@ -48,5 +48,5 @@ setup(
     ],
     ext_modules=ext_modules,
     define_macros=[('NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION')],
-    python_requires='>=3.8',
+    python_requires='>=3.6',
 )
