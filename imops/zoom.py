@@ -1,11 +1,19 @@
 import os
-from typing import Callable
+from typing import Callable, Sequence, Union
 from warnings import warn
 
+import numpy as np
 from scipy.ndimage import zoom as scipy_zoom
 
 from .src._fast_zoom import _zoom as src_zoom
-from .utils import *
+from .utils import (
+    AxesLike,
+    AxesParams,
+    broadcast_axis,
+    fill_by_indices,
+    get_c_contiguous_permutaion,
+    inverse_permutation,
+)
 
 
 def zoom(
@@ -59,7 +67,7 @@ def zoom_to_shape(
 
 def _zoom(
     input: np.ndarray,
-    zoom: Union[float, Sequence],
+    zoom: Union[float, Sequence[float]],
     output: np.ndarray = None,
     order: int = 1,
     mode: str = 'constant',
