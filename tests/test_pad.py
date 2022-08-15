@@ -3,7 +3,7 @@ from functools import partial
 import numpy as np
 import pytest
 
-from imops import pad
+from imops import crop_to_box, pad, pad_to_shape, restore_crop
 
 
 assert_eq = np.testing.assert_array_equal
@@ -109,3 +109,17 @@ def test_pad():
             ]
         ),
     )
+
+
+def test_pad_to_shape():
+    x = np.random.rand(3, 10, 10)
+    shape = 3, 15, 16
+    assert pad_to_shape(x, shape).shape == shape
+    with pytest.raises(ValueError):
+        pad_to_shape(x, (3, 4, 10))
+
+
+def test_restore_crop():
+    x = np.random.rand(3, 10, 10)
+    box = [1, 2, 3], [3, 8, 9]
+    assert (restore_crop(crop_to_box(x, box), box, x.shape)).shape == x.shape

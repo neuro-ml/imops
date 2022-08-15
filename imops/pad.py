@@ -93,7 +93,7 @@ def restore_crop(x: np.ndarray, box: np.ndarray, shape: AxesLike, padding_values
     """
     x = np.asarray(x)
     assert len(shape) == x.ndim
-    start, stop = box
+    start, stop = np.asarray(box)
 
     if (stop > shape).any() or (stop - start != x.shape).any():
         raise ValueError(

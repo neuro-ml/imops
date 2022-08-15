@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from imops import crop_to_box
+from imops import crop_to_box, crop_to_shape
 
 
 assert_eq = np.testing.assert_array_equal
@@ -43,3 +43,11 @@ def test_raises():
 
     with pytest.raises(ValueError):
         crop_to_box(x, np.array([[-1], [1]]), axis=(1, 2))
+
+
+def test_crop_to_shape():
+    x = np.random.rand(3, 10, 10)
+    shape = 3, 4, 8
+    assert crop_to_shape(x, shape).shape == shape
+    with pytest.raises(ValueError):
+        crop_to_shape(x, (3, 15, 10))
