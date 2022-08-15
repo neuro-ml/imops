@@ -1,7 +1,8 @@
-import pytest
 import numpy as np
+import pytest
 
 from imops import crop_to_box
+
 
 assert_eq = np.testing.assert_array_equal
 
@@ -26,12 +27,12 @@ def test_axes():
 
     assert_eq(
         x[:, 1:, 2:],
-        crop_to_box(x, np.array([[1, 2], [40, 33]]), padding_values=0, axis=(1, 2))[:, :19, :21]
+        crop_to_box(x, np.array([[1, 2], [40, 33]]), padding_values=0, axis=(1, 2))[:, :19, :21],
     )
 
     assert_eq(
         x[:, :15, :14],
-        crop_to_box(x, np.array([[-10, -5], [15, 14]]), padding_values=0, axis=(1, 2))[:, 10:, 5:]
+        crop_to_box(x, np.array([[-10, -5], [15, 14]]), padding_values=0, axis=(1, 2))[:, 10:, 5:],
     )
 
 

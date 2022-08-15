@@ -2,11 +2,15 @@ from typing import Callable, Sequence, Union
 
 import numpy as np
 
-from .utils import AxesLike, AxesParams, broadcast_axis, fill_by_indices, axis_from_dim
+from .utils import AxesLike, AxesParams, axis_from_dim, broadcast_axis, fill_by_indices
 
 
-def pad(x: np.ndarray, padding: Union[AxesLike, Sequence[Sequence[int]]], axis: AxesLike = None,
-        padding_values: Union[AxesParams, Callable] = 0) -> np.ndarray:
+def pad(
+    x: np.ndarray,
+    padding: Union[AxesLike, Sequence[Sequence[int]]],
+    axis: AxesLike = None,
+    padding_values: Union[AxesParams, Callable] = 0,
+) -> np.ndarray:
     """
     Pad ``x`` according to ``padding`` along the ``axes``.
 
@@ -46,8 +50,13 @@ def pad(x: np.ndarray, padding: Union[AxesLike, Sequence[Sequence[int]]], axis: 
     return new_x
 
 
-def pad_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, padding_values: Union[AxesParams, Callable] = 0,
-                 ratio: AxesParams = 0.5) -> np.ndarray:
+def pad_to_shape(
+    x: np.ndarray,
+    shape: AxesLike,
+    axis: AxesLike = None,
+    padding_values: Union[AxesParams, Callable] = 0,
+    ratio: AxesParams = 0.5,
+) -> np.ndarray:
     """
     Pad ``x`` to match ``shape`` along the ``axes``.
 
@@ -87,8 +96,10 @@ def restore_crop(x: np.ndarray, box: np.ndarray, shape: AxesLike, padding_values
     start, stop = box
 
     if (stop > shape).any() or (stop - start != x.shape).any():
-        raise ValueError(f"The input array (of shape {x.shape}) was not obtained by cropping a "
-                         f"box {start, stop} from the shape {shape}.")
+        raise ValueError(
+            f"The input array (of shape {x.shape}) was not obtained by cropping a "
+            f"box {start, stop} from the shape {shape}."
+        )
 
     padding = np.array([start, shape - stop], dtype=int).T
     x = pad(x, padding, padding_values=padding_values)

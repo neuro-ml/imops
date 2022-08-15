@@ -1,9 +1,10 @@
 from functools import partial
 
-import pytest
 import numpy as np
+import pytest
 
 from imops import pad
+
 
 assert_eq = np.testing.assert_array_equal
 
@@ -22,11 +23,11 @@ def test_broadcasting():
 
     assert_eq(
         pad(x, 3, axis=[0, 1]),
-        pad(x, [[3, 3], [3, 3], [0, 0]])
+        pad(x, [[3, 3], [3, 3], [0, 0]]),
     )
     assert_eq(
         pad(x, [2, 4, 3]),
-        pad(x, [[2, 2], [4, 4], [3, 3]])
+        pad(x, [[2, 2], [4, 4], [3, 3]]),
     )
     p = pad(x, [[1, 2], [3, 4], [5, 6]])
     assert_eq(x, p[1:-2, 3:-4, 5:-6])
@@ -42,20 +43,26 @@ def test_broadcasting():
 
 
 def test_padding_values():
-    x = np.array([
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-    ], dtype=int)
+    x = np.array(
+        [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ],
+        dtype=int,
+    )
 
     p = pad(x, [1, 1], padding_values=1)
-    assert_eq(p, [
-        [1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1],
-    ])
+    assert_eq(
+        p,
+        [
+            [1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1],
+        ],
+    )
 
     x = np.random.randint(0, 100, (3, 20, 23))
     assert_eq(
@@ -74,26 +81,31 @@ def test_pad():
     padding_values = np.min(x, axis=(1, 2), keepdims=True)
 
     y = pad(x, padding, padding_values=padding_values)
-    np.testing.assert_array_equal(y, np.array([
-        [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 1, 0],
-            [0, 0, 2, 3, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-        ],
-        [
-            [4, 4, 4, 4, 4],
-            [4, 4, 4, 5, 4],
-            [4, 4, 6, 7, 4],
-            [4, 4, 4, 4, 4],
-            [4, 4, 4, 4, 4],
-        ],
-        [
-            [8, 8, 8, 8, 8],
-            [8, 8, 8, 9, 8],
-            [8, 8, 10, 11, 8],
-            [8, 8, 8, 8, 8],
-            [8, 8, 8, 8, 8],
-        ],
-    ]))
+    np.testing.assert_array_equal(
+        y,
+        np.array(
+            [
+                [
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 0],
+                    [0, 0, 2, 3, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                ],
+                [
+                    [4, 4, 4, 4, 4],
+                    [4, 4, 4, 5, 4],
+                    [4, 4, 6, 7, 4],
+                    [4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4],
+                ],
+                [
+                    [8, 8, 8, 8, 8],
+                    [8, 8, 8, 9, 8],
+                    [8, 8, 10, 11, 8],
+                    [8, 8, 8, 8, 8],
+                    [8, 8, 8, 8, 8],
+                ],
+            ]
+        ),
+    )
