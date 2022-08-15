@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  release:
+    types: [ released ]
+
+env:
+  MODULE_NAME: imops
+
+jobs:
+  check_version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - id: get_version
+        name: Get the release version
+        uses: battila7/get-version-action@v2
+
+      - name: Check the version
+        run: |
+          RELEASE=${{ steps.get_version.outputs.version-without-v }}
+          VERSION=$(python -c "from pathlib import Path; import runpy; folder, = {d.parent for d in Path().resolve().glob('*/__init__.py') if d.parent.is_dir() and (d.parent / '__version__.py').exists()}; print(runpy.run_path(folder / '__version__.py')['__version__'])")
+          MATCH=$(pip index versions $MODULE_NAME | grep "Available versions:" | grep $VERSION) || echo
+          echo $MATCH
+          if [ "$GITHUB_BASE_REF" = "master" ] && [ "$MATCH" != "" ]; then echo "Version $VERSION already present" && exit 1; fi
+          if [ "$VERSION" != "$RELEASE" ]; then echo "$VERSION vs $RELEASE" && exit 1; fi
+
+  build_wheels:
+    needs: [ check_version ]
+    strategy:
+      matrix:
+        os: [ ubuntu-20.04, windows-2019, macOS-11 ]
+
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.9.0
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl
+
+  build_sdist:
+    needs: [ check_version ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+      - name: Build
+        run: python setup.py sdist
+      - uses: actions/upload-artifact@v2
+        with:
+          path: dist/*.tar.gz
+
+  release:
+    needs: [ build_wheels, build_sdist ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
+
+      - name: Publish to PyPi
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
