@@ -1,8 +1,8 @@
 name: Release
 
-on:
-  release:
-    types: [ released ]
+on: [ push ]
+#  release:
+#    types: [ released ]
 
 env:
   MODULE_NAME: imops
@@ -18,18 +18,18 @@ jobs:
         with:
           python-version: 3.9
 
-      - id: get_version
-        name: Get the release version
-        uses: battila7/get-version-action@v2
-
-      - name: Check the version
-        run: |
-          RELEASE=${{ steps.get_version.outputs.version-without-v }}
-          VERSION=$(python -c "from pathlib import Path; import runpy; folder, = {d.parent for d in Path().resolve().glob('*/__init__.py') if d.parent.is_dir() and (d.parent / '__version__.py').exists()}; print(runpy.run_path(folder / '__version__.py')['__version__'])")
-          MATCH=$(pip index versions $MODULE_NAME | grep "Available versions:" | grep $VERSION) || echo
-          echo $MATCH
-          if [ "$GITHUB_BASE_REF" = "master" ] && [ "$MATCH" != "" ]; then echo "Version $VERSION already present" && exit 1; fi
-          if [ "$VERSION" != "$RELEASE" ]; then echo "$VERSION vs $RELEASE" && exit 1; fi
+#      - id: get_version
+#        name: Get the release version
+#        uses: battila7/get-version-action@v2
+#
+#      - name: Check the version
+#        run: |
+#          RELEASE=${{ steps.get_version.outputs.version-without-v }}
+#          VERSION=$(python -c "from pathlib import Path; import runpy; folder, = {d.parent for d in Path().resolve().glob('*/__init__.py') if d.parent.is_dir() and (d.parent / '__version__.py').exists()}; print(runpy.run_path(folder / '__version__.py')['__version__'])")
+#          MATCH=$(pip index versions $MODULE_NAME | grep "Available versions:" | grep $VERSION) || echo
+#          echo $MATCH
+#          if [ "$GITHUB_BASE_REF" = "master" ] && [ "$MATCH" != "" ]; then echo "Version $VERSION already present" && exit 1; fi
+#          if [ "$VERSION" != "$RELEASE" ]; then echo "$VERSION vs $RELEASE" && exit 1; fi
 
   build_wheels:
     needs: [ check_version ]
@@ -49,6 +49,12 @@ jobs:
         if: matrix.os == 'macOS-11'
         run: |
           brew install llvm libomp gcc
+          print -v version /usr/local/opt/gcc@<->(n[-1])
+          version=${version#*@}
+          for file in /usr/local/opt/gcc@${version}/bin/*-${version}(*); do
+              tail=${file:t}
+              ln -sf ${file} /usr/local/bin/${tail%-*}
+          done
           gcc --version
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
@@ -59,30 +65,30 @@ jobs:
         with:
           path: ./wheelhouse/*.whl
 
-  build_sdist:
-    needs: [ check_version ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
-      - name: Build
-        run: python setup.py sdist
-      - uses: actions/upload-artifact@v2
-        with:
-          path: dist/*.tar.gz
-
-  release:
-    needs: [ build_wheels, build_sdist ]
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: artifact
-          path: dist
-
-      - name: Publish to PyPi
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+#  build_sdist:
+#    needs: [ check_version ]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Set up Python 3.9
+#        uses: actions/setup-python@v2
+#      - name: Build
+#        run: python setup.py sdist
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          path: dist/*.tar.gz
+#
+#  release:
+#    needs: [ build_wheels, build_sdist ]
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - uses: actions/download-artifact@v2
+#        with:
+#          name: artifact
+#          path: dist
+#
+#      - name: Publish to PyPi
+#        uses: pypa/gh-action-pypi-publish@master
+#        with:
+#          password: ${{ secrets.PYPI_API_TOKEN }}
