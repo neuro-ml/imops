@@ -49,6 +49,7 @@ jobs:
         if: matrix.os == 'macOS-11'
         run: |
           echo $PATH
+          ln -sf /usr/local/bin/gcc-12 /usr/local/bin/gcc
           ls /usr/local/bin/gcc*
           ls /usr/local/opt/gcc*
           gcc --version
