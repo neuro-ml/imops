@@ -48,13 +48,9 @@ jobs:
       - name: Install gcc for mac
         if: matrix.os == 'macOS-11'
         run: |
-          brew install llvm libomp gcc
-          print -v version /usr/local/opt/gcc@<->(n[-1])
-          version=${version#*@}
-          for file in /usr/local/opt/gcc@${version}/bin/*-${version}(*); do
-              tail=${file:t}
-              ln -sf ${file} /usr/local/bin/${tail%-*}
-          done
+          echo $PATH
+          ls /usr/local/bin/gcc*
+          ls /usr/local/opt/gcc*
           gcc --version
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
