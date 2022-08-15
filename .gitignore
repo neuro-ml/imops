@@ -2,3 +2,4 @@
 build/
 imops/src/*.c
 imops/src/*.so
+*.egg-info/
