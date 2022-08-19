@@ -121,9 +121,8 @@ def test_thin():
             scale = np.random.uniform(0.5, 2, size=3)
 
             without_borders = np.index_exp[
-                              : None if shape[0] == 1 else -1, : None if shape[1] == 1 else -1,
-                              : None if shape[2] == 1 else -1
-                              ]
+                : None if shape[0] == 1 else -1, : None if shape[1] == 1 else -1, : None if shape[2] == 1 else -1
+            ]
             allclose(
                 zoom(inp, scale)[without_borders],
                 scipy_zoom(inp, scale, order=1)[without_borders],
@@ -132,7 +131,7 @@ def test_thin():
 
 
 def test_stress():
-    """ Make sure that out zoom is consistent with scipy's """
+    """Make sure that out zoom is consistent with scipy's"""
     for i in range(32):
         shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
         inp = np.random.randn(*shape)

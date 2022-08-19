@@ -88,11 +88,17 @@ def _zoom(
     ndim = input.ndim
 
     if (
-        input.dtype not in (np.float32, np.float64) or ndim > 3 or
-        output is not None or order != 1 or mode != 'constant' or grid_mode):
+        input.dtype not in (np.float32, np.float64)
+        or ndim > 3
+        or output is not None
+        or order != 1
+        or mode != 'constant'
+        or grid_mode
+    ):
         warn(
             'Fast interpolation is only supported for ndim<=3, dtype=float32 or float64, output=None, '
-            'order=1, mode=constant, grid_mode=False. Falling back to scipy\'s implementation', UserWarning
+            "order=1, mode=constant, grid_mode=False. Falling back to scipy's implementation",
+            UserWarning,
         )
 
         return scipy_zoom(
