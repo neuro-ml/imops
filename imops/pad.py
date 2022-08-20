@@ -12,7 +12,7 @@ def pad(
     padding_values: Union[AxesParams, Callable] = 0,
 ) -> np.ndarray:
     """
-    Pad ``x`` according to ``padding`` along the ``axes``.
+    Pad `x` according to `padding` along the `axes`.
 
     Parameters
     ----------
@@ -20,14 +20,14 @@ def pad(
         tensor to pad.
     padding
         if 2D array [[start_1, stop_1], ..., [start_n, stop_n]] - specifies individual padding
-        for each axis from ``axes``. The length of the array must either be equal to 1 or match the length of ``axes``.
+        for each axis from `axis`. The length of the array must either be equal to 1 or match the length of `axis`.
         If 1D array [val_1, ..., val_n] - same as [[val_1, val_1], ..., [val_n, val_n]].
         If scalar (val) - same as [[val, val]].
     padding_values
         values to pad with, must be broadcastable to the resulting array.
-        If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
+        If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used.
     axis
-        axes along which ``x`` will be padded.
+        axis along which `x` will be padded.
     """
     x = np.asarray(x)
     padding = np.asarray(padding)
@@ -58,7 +58,7 @@ def pad_to_shape(
     ratio: AxesParams = 0.5,
 ) -> np.ndarray:
     """
-    Pad ``x`` to match ``shape`` along the ``axes``.
+    Pad `x` to match `shape` along the `axis`.
 
     Parameters
     ----------
@@ -66,12 +66,12 @@ def pad_to_shape(
     shape
         final shape.
     padding_values
-        values to pad with. If Callable (e.g. `numpy.min`) - ``padding_values(x)`` will be used.
+        values to pad with. If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used.
     axis
-        axes along which ``x`` will be padded.
+        axis along which `x` will be padded.
     ratio
-        the fraction of the padding that will be applied to the left, ``1.0 - ratio`` will be applied to the right.
-        By default ``0.5 - ratio``, it is applied uniformly to the left and right.
+        the fraction of the padding that will be applied to the left, `1.0 - ratio` will be applied to the right.
+        By default `ratio=0.5`, i.e. it is applied uniformly to the left and right.
     """
     x = np.asarray(x)
     axis, shape, ratio = broadcast_axis(axis, x.ndim, shape, ratio)
@@ -89,7 +89,7 @@ def pad_to_shape(
 
 def restore_crop(x: np.ndarray, box: np.ndarray, shape: AxesLike, padding_values: AxesParams = 0) -> np.ndarray:
     """
-    Pad ``x`` to match ``shape``. The left padding is taken equal to ``box``'s start.
+    Pad `x` to match `shape`. The left padding is taken equal to `box`'s start.
     """
     x = np.asarray(x)
     assert len(shape) == x.ndim

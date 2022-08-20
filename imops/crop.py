@@ -6,7 +6,7 @@ from .utils import AxesLike, AxesParams, broadcast_axis, fill_by_indices
 
 def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: AxesParams = 0.5) -> np.ndarray:
     """
-    Crop ``x`` to match ``shape`` along ``axes``.
+    Crop `x` to match `shape` along `axis`.
 
     Parameters
     ----------
@@ -14,9 +14,10 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
     shape
         final shape.
     axis
-        axes along which ``x`` will be padded. If None - the last ``len(shape)`` axes are used.
+        axis along which `x` will be padded.
     ratio
-        the fraction of the crop that will be applied to the left, ``1 - ratio`` will be applied to the right.
+        the fraction of the crop that will be applied to the left, `1 - ratio` will be applied to the right.
+        By default `ratio=0.5`, i.e. it is applied uniformly to the left and right.
     """
     x = np.asarray(x)
     axis, shape, ratio = broadcast_axis(axis, x.ndim, shape, ratio)
@@ -33,7 +34,7 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
 
 def crop_to_box(x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_values: AxesParams = None) -> np.ndarray:
     """
-    Crop ``x`` according to ``box`` along ``axes``.
+    Crop `x` according to `box` along `axis`.
     """
     x = np.asarray(x)
     start, stop = box

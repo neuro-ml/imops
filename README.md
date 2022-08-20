@@ -1,6 +1,6 @@
 # Imops
 
-Efficient parallelizable algorithms to speed up your data pipelines
+Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines
 
 # Install
 
@@ -12,19 +12,22 @@ pip install imops
 
 ## Fast Radon transform
 
-```
+```python
 from imops import radon, inverse_radon
 ```
 
 ## Fast linear/bilinear/trilinear zoom
 
-```
-from imops import zoom  # Same as `dpipe.im.shape_ops.zoom`
-from imops import zoom_to_shape  # Same as `dpipe.im.shape_ops.zoom_to_shape`
-from imops import _zoom  # Same as `scipy.ndimage.zoom`
-```
+```python
+from imops import zoom
+from imops import zoom_to_shape
 
-Note: all zooms work only with FP32 / FP64 inputs
+# fast zoom with optional fallback to scipy's implementation
+y = zoom(x, 2, axis=[0, 1])
+# a handy function to zoom the array to a given shape 
+#  withtout the need to compute the scale factor
+z = zoom_to_shape(x, (4, 120, 67))
+```
 
 ## Fast 1d linear interpolation
 

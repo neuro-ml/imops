@@ -25,12 +25,22 @@ def zoom(
     num_threads: int = -1,
 ) -> np.ndarray:
     """
-    Faster parallelizable version of `dpipe.im.shape_ops.zoom` for fp32 / fp64 inputs
+    Rescale `x` according to `scale_factor` along the `axis`.
 
-    Works faster only for ndim <= 3. Shares interface with `dpipe.im.shape_ops.zoom`
-    except for `num_threads` argument defining how many threads to use, all available threads are used by default.
+    Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim <= 3 and order = 1.
 
-    See `https://github.com/neuro-ml/deep_pipe/blob/master/dpipe/im/shape_ops.py#L19-L44`
+    Parameters
+    ----------
+    x
+    scale_factor
+    axis
+        axis along which the tensor will be scaled.
+    order
+        order of interpolation.
+    fill_value
+        value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used.
+    num_threads
+        the number of threads to use for computation. Default = the cpu count.
     """
     x = np.asarray(x)
     axis, scale_factor = broadcast_axis(axis, x.ndim, scale_factor)
@@ -51,12 +61,23 @@ def zoom_to_shape(
     num_threads: int = -1,
 ) -> np.ndarray:
     """
-    Faster parallelizable version of `dpipe.im.shape_ops.zoom_to_shape` for fp32 / fp64 inputs
+    Rescale `x` to match `shape` along the `axis`.
 
-    Works faster only for ndim <= 3. Shares interface with `dpipe.im.shape_ops.zoom_to_shape`
-    except for `num_threads` argument defining how many threads to use, all available threads are used by default.
+    Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim <= 3 and order = 1.
 
-    See `https://github.com/neuro-ml/deep_pipe/blob/master/dpipe/im/shape_ops.py#L47-L68`
+    Parameters
+    ----------
+    x
+    shape
+        final shape.
+    axis
+        axes along which the tensor will be scaled.
+    order
+        order of interpolation.
+    fill_value
+        value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used.
+    num_threads
+        the number of threads to use for computation. Default = the cpu count.
     """
     x = np.asarray(x)
     axis, shape = broadcast_axis(axis, x.ndim, shape)
