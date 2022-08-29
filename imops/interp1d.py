@@ -1,5 +1,6 @@
 import os
 from typing import Union
+from warnings import warn
 
 import numpy as np
 from scipy.interpolate import interp1d as scipy_interp1d
@@ -9,7 +10,7 @@ from .src._fast_zoom import _interp1d
 
 class interp1d:
     """
-    Faster parallelizable version of `scipy.interpolate.interp1d`
+    Faster parallelizable version of `scipy.interpolate.interp1d` for fp32 / fp64 inputs
 
     Works faster only for ndim <= 3. Shares interface with `scipy.interpolate.interp1d`
     except for `num_threads` argument defining how many threads to use, all available threads are used by default.
@@ -29,13 +30,14 @@ class interp1d:
         assume_sorted: bool = False,
         num_threads: int = -1,
     ) -> None:
-        if y.dtype not in (np.float32, np.float64):
-            raise ValueError('Only fp32 and fp64 dtypes are allowed for interp1d.')
-        if y.ndim > 3:
+        if y.dtype not in (np.float32, np.float64) or y.ndim > 3 or kind not in ('linear', 1):
+            warn(
+                "Fast interpolation is only supported for ndim<=3, dtype=float32 or float64, order=1 or 'linear' "
+                "Falling back to scipy's implementation",
+                UserWarning,
+            )
             self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
         else:
-            if kind not in ('linear', 1):
-                raise NotImplementedError("Only kind 'linear' and 1 are implemented for ndim <= 3.")
             if bounds_error and fill_value == 'extrapolate':
                 raise ValueError('Cannot extrapolate and raise at the same time.')
             if fill_value == 'extrapolate' and len(x) < 2 or len(y) < 2:

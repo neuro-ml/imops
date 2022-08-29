@@ -117,8 +117,8 @@ def _zoom(
         or grid_mode
     ):
         warn(
-            'Fast interpolation is only supported for ndim<=3, dtype=float32 or float64, output=None, '
-            "order=1, mode=constant, grid_mode=False. Falling back to scipy's implementation",
+            'Fast zoom is only supported for ndim<=3, dtype=float32 or float64, output=None, '
+            "order=1, mode='constant', grid_mode=False. Falling back to scipy's implementation",
             UserWarning,
         )
 
