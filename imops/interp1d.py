@@ -68,7 +68,12 @@ class interp1d:
         if self.scipy_interp1d is not None:
             return self.scipy_interp1d(x_new)
 
-        num_threads = self.num_threads if self.num_threads != -1 else os.cpu_count()
+        if self.num_threads < 0:
+            max_threads = os.cpu_count()
+            num_threads = max_threads + self.num_threads + 1
+        else:
+            num_threads = self.num_threads
+
         extrapolate = self.fill_value == 'extrapolate'
 
         out = _interp1d(
