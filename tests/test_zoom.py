@@ -1,3 +1,4 @@
+from functools import partial
 from itertools import permutations
 
 import numpy as np
@@ -12,6 +13,10 @@ from imops.utils import get_c_contiguous_permutaion, inverse_permutation
 # [:-1, :-1, :-1] below is used because of the strange scipy.ndimage.zoom behaviour at the edge
 # https://github.com/scipy/scipy/issues/4922
 
+# FIXME: fix inconsistency
+# rtol=1e-6 as there is still some inconsistency
+allclose = partial(allclose, rtol=1e-6)
+
 
 def test_zoom_to_shape():
     for i in range(16):
@@ -22,14 +27,12 @@ def test_zoom_to_shape():
 
         without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
 
-        # rtol=1e-6 as there is still some inconsistency
         result = zoom_to_shape(inp, new_shape, axis=axis)
         assert result.shape == tuple(new_shape)
 
         allclose(
             result[without_borders],
             dpipe_zoom_to_shape(inp, new_shape, order=1, axis=axis)[without_borders],
-            rtol=1e-6,
             err_msg=f'{i, shape, new_shape}',
         )
 
@@ -55,12 +58,10 @@ def test_dtype():
             out = zoom(inp, scale)
             desired_out = scipy_zoom(inp, scale, order=1)
 
-            # FIXME: fix inconsistency
-            # rtol=1e-6 as there is still some inconsistency
-            allclose(out[without_borders], desired_out[without_borders], err_msg=f'{i, dtype}', rtol=1e-6)
+            allclose(out[without_borders], desired_out[without_borders], err_msg=f'{i, dtype}')
             assert out.dtype == desired_out.dtype == dtype, f'{i, out.dtype, desired_out.dtype, dtype}'
 
-            allclose(inp, inp_copy, err_msg=f'{i, dtype}', rtol=1e-6)
+            allclose(inp, inp_copy, err_msg=f'{i, dtype}')
             assert inp.dtype == inp_copy.dtype == dtype, f'{i, inp.dtype, inp_copy.dtype, dtype}'
 
 
@@ -139,10 +140,8 @@ def test_stress():
 
         without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
 
-        # rtol=1e-6 as there is still some inconsistency
         allclose(
             zoom(inp, scale)[without_borders],
             scipy_zoom(inp, scale, order=1)[without_borders],
-            rtol=1e-6,
             err_msg=f'{i, shape, scale}',
         )
