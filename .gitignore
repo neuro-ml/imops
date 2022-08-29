@@ -1,4 +1,6 @@
+__pycache__/
 .pytest_cache/
 build/
 imops/src/*.c
 imops/src/*.so
+*.egg-info/

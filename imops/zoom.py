@@ -25,12 +25,22 @@ def zoom(
     num_threads: int = -1,
 ) -> np.ndarray:
     """
-    Faster parallelizable version of `dpipe.im.shape_ops.zoom` for fp32 / fp64 inputs
+    Rescale `x` according to `scale_factor` along the `axis`.
 
-    Works faster only for ndim <= 3. Shares interface with `dpipe.im.shape_ops.zoom`
-    except for `num_threads` argument defining how many threads to use, all available threads are used by default.
+    Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim <= 3 and order = 1.
 
-    See `https://github.com/neuro-ml/deep_pipe/blob/master/dpipe/im/shape_ops.py#L19-L44`
+    Parameters
+    ----------
+    x
+    scale_factor
+    axis
+        axis along which the tensor will be scaled.
+    order
+        order of interpolation.
+    fill_value
+        value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used.
+    num_threads
+        the number of threads to use for computation. Default = the cpu count.
     """
     x = np.asarray(x)
     axis, scale_factor = broadcast_axis(axis, x.ndim, scale_factor)
@@ -51,12 +61,23 @@ def zoom_to_shape(
     num_threads: int = -1,
 ) -> np.ndarray:
     """
-    Faster parallelizable version of `dpipe.im.shape_ops.zoom_to_shape` for fp32 / fp64 inputs
+    Rescale `x` to match `shape` along the `axis`.
 
-    Works faster only for ndim <= 3. Shares interface with `dpipe.im.shape_ops.zoom_to_shape`
-    except for `num_threads` argument defining how many threads to use, all available threads are used by default.
+    Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim <= 3 and order = 1.
 
-    See `https://github.com/neuro-ml/deep_pipe/blob/master/dpipe/im/shape_ops.py#L47-L68`
+    Parameters
+    ----------
+    x
+    shape
+        final shape.
+    axis
+        axes along which the tensor will be scaled.
+    order
+        order of interpolation.
+    fill_value
+        value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used.
+    num_threads
+        the number of threads to use for computation. Default = the cpu count.
     """
     x = np.asarray(x)
     axis, shape = broadcast_axis(axis, x.ndim, shape)
@@ -67,7 +88,7 @@ def zoom_to_shape(
 
 def _zoom(
     input: np.ndarray,
-    zoom: Union[float, Sequence[float]],
+    zoom: Sequence[float],
     output: np.ndarray = None,
     order: int = 1,
     mode: str = 'constant',
@@ -85,32 +106,30 @@ def _zoom(
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.zoom.html`
     """
-    if input.dtype not in (np.float32, np.float64):
-        raise ValueError('Only fp32 and fp64 dtypes are allowed for zoom.')
-
     ndim = input.ndim
 
-    if ndim > 3:
+    if (
+        input.dtype not in (np.float32, np.float64)
+        or ndim > 3
+        or output is not None
+        or order != 1
+        or mode != 'constant'
+        or grid_mode
+    ):
+        warn(
+            'Fast zoom is only supported for ndim<=3, dtype=float32 or float64, output=None, '
+            "order=1, mode='constant', grid_mode=False. Falling back to scipy's implementation",
+            UserWarning,
+        )
+
         return scipy_zoom(
             input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
 
-    if output is not None:
-        raise NotImplementedError('Only output=None is implemented for ndim <= 3.')
-    if order != 1:
-        raise NotImplementedError('Only 1-st order interpolation is implemented for ndim <= 3.')
-    if mode != 'constant':
-        raise NotImplementedError('Only constant mode is implemented for ndim <= 3.')
-    if grid_mode is not False:
-        raise NotImplementedError('Only grid_mode=False is implemented for ndim <= 3.')
+    if num_threads < 0:
+        max_threads = os.cpu_count()
+        num_threads = max_threads + num_threads + 1
 
-    if isinstance(zoom, (Sequence, np.ndarray)):
-        if len(zoom) != ndim:
-            raise RuntimeError(f'Zoom argument {zoom} must be number or have length equal to the input rank {ndim}.')
-    else:
-        zoom = [zoom for _ in range(ndim)]
-
-    num_threads = num_threads if num_threads != -1 else os.cpu_count()
     n_dummy = 3 - ndim
 
     if n_dummy:

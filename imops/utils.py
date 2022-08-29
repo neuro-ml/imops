@@ -50,10 +50,6 @@ def axis_from_dim(axis: Union[AxesLike, None], dim: int) -> tuple:
     if axis is None:
         return tuple(range(dim))
 
-    left, right = -dim, dim - 1
-    if min(axis) < left or max(axis) > right:
-        raise ValueError(f'For dim={dim} axis must be within ({left}, {right}): but provided {axis}.')
-
     return np.core.numeric.normalize_axis_tuple(axis, dim, 'axis')
 
 
