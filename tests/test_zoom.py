@@ -132,7 +132,7 @@ def test_thin():
 
 
 def test_stress():
-    """Make sure that out zoom is consistent with scipy's"""
+    """Make sure that our zoom is consistent with scipy's"""
     for i in range(32):
         shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
         inp = np.random.randn(*shape)
