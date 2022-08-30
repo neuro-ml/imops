@@ -44,7 +44,11 @@ def radon(
 
     # TODO: f(arange)?
     limits = ((squared[:, None] + squared[None, :]) > (radius + 2) ** 2).sum(0) // 2
-    num_threads = num_threads if num_threads != -1 else os.cpu_count()
+
+    if num_threads < 0:
+        max_threads = os.cpu_count()
+        num_threads = max_threads + num_threads + 1
+
     sinogram = radon3d(image, np.deg2rad(theta), limits, num_threads)
 
     result = restore_axes(sinogram, axes, squeeze)
@@ -99,7 +103,11 @@ def inverse_radon(
     dtype = sinogram.dtype
     filtered_sinogram = filtered_sinogram.astype(dtype)
     theta, xs = np.deg2rad(theta).astype(dtype), xs.astype(dtype)
-    num_threads = num_threads if num_threads != -1 else os.cpu_count()
+
+    if num_threads < 0:
+        max_threads = os.cpu_count()
+        num_threads = max_threads + num_threads + 1
+
     reconstructed = backprojection3d(
         filtered_sinogram, theta, xs, inside_circle, fill_value, img_shape, output_size, num_threads
     )
