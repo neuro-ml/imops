@@ -54,6 +54,7 @@ def radon(
     result = restore_axes(sinogram, axes, squeeze)
     if return_fill:
         result = result, min_
+
     return result
 
 
@@ -78,7 +79,7 @@ def inverse_radon(
 
     angles_count = len(theta)
     if angles_count != sinogram.shape[-1]:
-        raise ValueError('The given ``theta`` does not match the number of projections in ``sinogram`.')
+        raise ValueError('The given `theta` does not match the number of projections in `sinogram`.')
     output_size = sinogram.shape[1]
     sinogram = _sinogram_circle_to_square(sinogram)
 
@@ -121,6 +122,7 @@ def _ramp_filter(size: int) -> np.ndarray:
     f[0] = 0.25
     f[1::2] = -1 / (np.pi * n) ** 2
     fourier_filter = 2 * np.real(fft(f))
+
     return fourier_filter.reshape(-1, 1)
 
 
@@ -136,4 +138,5 @@ def _sinogram_circle_to_square(sinogram: np.ndarray) -> np.ndarray:
     new_center = diagonal // 2
     pad_before = new_center - old_center
     pad_width = ((0, 0), (pad_before, pad - pad_before), (0, 0))
+
     return np.pad(sinogram, pad_width, mode='constant', constant_values=0)

@@ -9,6 +9,9 @@ from imops import crop_to_box, pad, pad_to_shape, restore_crop
 assert_eq = np.testing.assert_array_equal
 
 
+# TODO: Add tests for `pad_to_divisible`
+
+
 def test_broadcasting():
     x = np.random.randint(0, 100, (3, 20, 23))
     main = pad(x, [[3, 3], [3, 3], [3, 3]])

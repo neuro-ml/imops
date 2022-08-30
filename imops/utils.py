@@ -28,6 +28,7 @@ def restore_axes(x: np.ndarray, axes, squeeze: bool) -> np.ndarray:
     x = np.moveaxis(x, [1, 2], axes)
     if squeeze:
         (x,) = x
+
     return x
 
 
@@ -67,10 +68,27 @@ def to_axis(axis, value):
     value = np.atleast_1d(value)
     if len(value) == 1:
         value = np.repeat(value, len(axis), 0)
+
     return value
 
 
 def fill_by_indices(target, values, indices):
     target = np.array(target)
     target[list(indices)] = values
+
     return tuple(target)
+
+
+def broadcast_to_axis(axis: AxesLike, *arrays: AxesParams):
+    if not arrays:
+        raise ValueError('No arrays provided.')
+
+    arrays = list(map(np.atleast_1d, arrays))
+    lengths = list(map(len, arrays))
+    if axis is None:
+        raise ValueError('`axis` cannot be None')
+
+    if not all(len(axis) == x or x == 1 for x in lengths):
+        raise ValueError(f'Axes and arrays are not broadcastable: {len(axis)} vs {", ".join(map(str, lengths))}.')
+
+    return tuple(np.repeat(x, len(axis) // len(x), 0) for x in arrays)

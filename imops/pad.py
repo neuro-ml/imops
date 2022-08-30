@@ -2,7 +2,7 @@ from typing import Callable, Sequence, Union
 
 import numpy as np
 
-from .utils import AxesLike, AxesParams, axis_from_dim, broadcast_axis, fill_by_indices
+from .utils import AxesLike, AxesParams, axis_from_dim, broadcast_axis, broadcast_to_axis, fill_by_indices
 
 
 def pad(
@@ -47,6 +47,7 @@ def pad(
     start = padding[:, 0]
     end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
     new_x[tuple(map(slice, start, end))] = x
+
     return new_x
 
 
@@ -84,7 +85,46 @@ def pad_to_shape(
     delta = shape - old_shape
     start = (delta * ratio).astype(int)
     padding = np.array((start, delta - start)).T.astype(int)
+
     return pad(x, padding, axis, padding_values=padding_values)
+
+
+def pad_to_divisible(
+    x: np.ndarray,
+    divisor: AxesLike,
+    axis: AxesLike = None,
+    padding_values: Union[AxesParams, Callable] = 0,
+    ratio: AxesParams = 0.5,
+    remainder: AxesLike = 0,
+):
+    """
+    Pad `x` to be divisible by `divisor` along the `axes`.
+
+    Parameters
+    ----------
+    x
+    divisor
+        a value an incoming array should be divisible by.
+    remainder
+        `x` will be padded such that its shape gives the remainder `remainder` when divided by `divisor`.
+    axis
+        axes along which the array will be padded. If None - the last `len(divisor)` axes are used.
+    padding_values
+        values to pad with. If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used.
+    ratio
+        the fraction of the padding that will be applied to the left, `1 - ratio` will be applied to the right.
+    References
+    ----------
+    `pad_to_shape`
+    """
+    x = np.asarray(x)
+    axis = axis_from_dim(axis, x.ndim)
+    divisor, remainder, ratio = broadcast_to_axis(axis, divisor, remainder, ratio)
+
+    assert np.all(remainder >= 0)
+    shape = np.maximum(np.array(x.shape)[list(axis)], remainder)
+
+    return pad_to_shape(x, shape + (remainder - shape) % divisor, axis, padding_values, ratio)
 
 
 def restore_crop(x: np.ndarray, box: np.ndarray, shape: AxesLike, padding_values: AxesParams = 0) -> np.ndarray:
@@ -104,4 +144,5 @@ def restore_crop(x: np.ndarray, box: np.ndarray, shape: AxesLike, padding_values
     padding = np.array([start, shape - stop], dtype=int).T
     x = pad(x, padding, padding_values=padding_values)
     assert all(np.array(x.shape) == shape)
+
     return x

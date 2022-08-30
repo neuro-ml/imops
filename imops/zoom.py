@@ -5,10 +5,12 @@ from warnings import warn
 import numpy as np
 from scipy.ndimage import zoom as scipy_zoom
 
+from .pad import pad_to_shape
 from .src._fast_zoom import _zoom as src_zoom
 from .utils import (
     AxesLike,
     AxesParams,
+    axis_from_dim,
     broadcast_axis,
     fill_by_indices,
     get_c_contiguous_permutaion,
@@ -83,7 +85,42 @@ def zoom_to_shape(
     axis, shape = broadcast_axis(axis, x.ndim, shape)
     old_shape = np.array(x.shape, 'float64')
     new_shape = np.array(fill_by_indices(x.shape, shape, axis), 'float64')
+
     return zoom(x, new_shape / old_shape, range(x.ndim), order=order, fill_value=fill_value, num_threads=num_threads)
+
+
+def proportional_zoom_to_shape(
+    x: np.ndarray,
+    shape: AxesLike,
+    axis: AxesLike = None,
+    padding_values: Union[AxesParams, Callable] = 0,
+    order: int = 1,
+    num_threads: int = -1,
+) -> np.ndarray:
+    """
+    Proportionally rescale `x` to fit `shape` along `axes` then pad it to that shape.
+
+    Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim <= 3 and order = 1.
+
+    Parameters
+    ----------
+    x
+    shape
+        final shape.
+    axis
+        axes along which `x` will be padded. If None - the last `len(shape)` axes are used.
+    padding_values
+        values to pad with.
+    order
+        order of interpolation.
+    num_threads
+        the number of threads to use for computation. Default = the cpu count.
+    """
+    x = np.asarray(x)
+    axis = axis_from_dim(axis, x.ndim)
+    scale_factor = (np.array(shape, 'float64') / [x.shape[i] for i in axis]).min()
+
+    return pad_to_shape(zoom(x, scale_factor, axis, order, num_threads=num_threads), shape, axis, padding_values)
 
 
 def _zoom(
