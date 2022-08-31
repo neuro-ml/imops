@@ -108,9 +108,7 @@ def test_contiguity_awareness():
             inp = np.random.randn(*(64,) * (3 - i))
             scale = np.random.uniform(0.5, 2, size=inp.ndim)
 
-            # start = time()
             zoom(inp, scale)
-            # runtime = time() - start
 
             desired_out = scipy_zoom(inp, scale, order=1)
             without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
@@ -119,9 +117,7 @@ def test_contiguity_awareness():
                 # This changes contiguity
                 permuted = np.transpose(inp, permutation)
 
-                # start_permuted = time()
                 out_permuted = zoom(permuted, scale[np.array(permutation)])
-                # runtime_permuted = time() - start_permuted
 
                 allclose(
                     np.transpose(out_permuted, inverse_permutation(np.array(permutation)))[without_borders],
@@ -129,8 +125,6 @@ def test_contiguity_awareness():
                     err_msg=f'{i, j, permutation}',
                 )
 
-                # This might not pass time to time
-                # allclose(runtime_permuted, runtime, rtol=1 if runtime > 0.1 else 10, err_msg=f'{i, j, permutation}')
                 assert (
                     get_c_contiguous_permutaion(permuted) is not None
                 ), f"Didn't find permutation for {i, j, permutation}"

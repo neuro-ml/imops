@@ -3,13 +3,10 @@ from functools import partial
 import numpy as np
 import pytest
 
-from imops import crop_to_box, pad, pad_to_shape, restore_crop
+from imops import crop_to_box, pad, pad_to_divisible, pad_to_shape, restore_crop
 
 
 assert_eq = np.testing.assert_array_equal
-
-
-# TODO: Add tests for `pad_to_divisible`
 
 
 def test_broadcasting():
@@ -125,4 +122,23 @@ def test_pad_to_shape():
 def test_restore_crop():
     x = np.random.rand(3, 10, 10)
     box = [1, 2, 3], [3, 8, 9]
+
     assert (restore_crop(crop_to_box(x, box), box, x.shape)).shape == x.shape
+
+
+def test_pad_to_divisible():
+    x = np.zeros((4, 8, 12))
+
+    y = pad_to_divisible(x, 4)
+    np.testing.assert_array_equal(y, x)
+
+    x = np.zeros((3, 5))
+
+    y = pad_to_divisible(x, 1)
+    np.testing.assert_array_equal(y, x)
+
+    y = pad_to_divisible(x, 4)
+    np.testing.assert_array_equal(y, np.zeros((4, 8)))
+
+    y = pad_to_divisible(x, 4, remainder=2)
+    np.testing.assert_array_equal(y, np.zeros((6, 6)))
