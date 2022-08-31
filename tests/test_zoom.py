@@ -8,19 +8,22 @@ from dpipe.im import (
 )
 from numpy.testing import assert_allclose as allclose
 from scipy.ndimage import zoom as scipy_zoom
+from utils import seeded_by
 
-from imops import proportional_zoom_to_shape, zoom, zoom_to_shape
+from imops import crop_to_shape, proportional_zoom_to_shape, zoom, zoom_to_shape
 from imops.utils import get_c_contiguous_permutaion, inverse_permutation
 
 
 # [:-1, :-1, :-1] below is used because of the strange scipy.ndimage.zoom behaviour at the edge
 # https://github.com/scipy/scipy/issues/4922
 
+SEED = 1337
 # FIXME: fix inconsistency
 # rtol=1e-6 as there is still some inconsistency
 allclose = partial(allclose, rtol=1e-6)
 
 
+@seeded_by(SEED)
 def test_zoom_to_shape():
     for i in range(16):
         shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
@@ -40,6 +43,7 @@ def test_zoom_to_shape():
         )
 
 
+@seeded_by(SEED)
 def test_proportional_zoom_to_shape():
     for i in range(16):
         shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
@@ -52,13 +56,21 @@ def test_proportional_zoom_to_shape():
         result = proportional_zoom_to_shape(inp, new_shape, axis=axis)
         assert result.shape == tuple(new_shape)
 
+        zoomed_by = np.min(new_shape / shape)
+
+        # Due to inconsistency at the edge after zoom we need to crop padding and remove borders before comparison
         allclose(
-            result[without_borders],
-            dpipe_proportional_zoom_to_shape(inp, new_shape, order=1, axis=axis)[without_borders],
+            crop_to_shape(result, (shape * zoomed_by).astype(int), axis=axis)[without_borders],
+            crop_to_shape(
+                dpipe_proportional_zoom_to_shape(inp, new_shape, order=1, axis=axis),
+                (shape * zoomed_by).astype(int),
+                axis=axis,
+            )[without_borders],
             err_msg=f'{i, shape, new_shape}',
         )
 
 
+@seeded_by(SEED)
 def test_identity():
     for i in range(16):
         shape = np.random.randint(2, 128, size=np.random.randint(1, 4))
@@ -67,6 +79,7 @@ def test_identity():
         allclose(inp, zoom(inp, 1), err_msg=f'{i, shape}')
 
 
+@seeded_by(SEED)
 def test_dtype():
     for dtype in (np.float32, np.float64):
         for i in range(4):
@@ -87,6 +100,7 @@ def test_dtype():
             assert inp.dtype == inp_copy.dtype == dtype, f'{i, inp.dtype, inp_copy.dtype, dtype}'
 
 
+@seeded_by(SEED)
 def test_scale_types():
     scales = [2, 2.0, (2, 2, 2), [2, 2, 2], np.array([2, 2, 2])]
 
@@ -102,6 +116,7 @@ def test_scale_types():
         prev = out
 
 
+@seeded_by(SEED)
 def test_contiguity_awareness():
     for i in range(2):
         for j in range(2):
@@ -130,6 +145,7 @@ def test_contiguity_awareness():
                 ), f"Didn't find permutation for {i, j, permutation}"
 
 
+@seeded_by(SEED)
 def test_thin():
     for i in range(3):
         for j in range(16):
@@ -147,6 +163,7 @@ def test_thin():
             )
 
 
+@seeded_by(SEED)
 def test_stress():
     """Make sure that our zoom is consistent with scipy's"""
     for i in range(32):
