@@ -6,7 +6,7 @@ from numpy.testing import assert_allclose as allclose
 from scipy.ndimage import zoom as scipy_zoom
 from utils import seeded_by
 
-from imops import zoom
+from imops import zoom, zoom_to_shape
 from imops.utils import get_c_contiguous_permutaion, inverse_permutation
 
 
@@ -17,6 +17,17 @@ SEED = 1337
 # FIXME: fix inconsistency
 # rtol=1e-6 as there is still some inconsistency
 allclose = partial(allclose, rtol=1e-6)
+
+
+@seeded_by(SEED)
+def test_shape():
+    inp = np.random.rand(3, 10, 10) * 2 + 3
+    shape = inp.shape
+
+    assert zoom_to_shape(inp, shape).shape == shape
+    assert zoom_to_shape(inp, shape[::-1]).shape == shape[::-1]
+    assert zoom(inp, (3, 4, 15)).shape == (9, 40, 150)
+    assert zoom(inp, (4, 3), axis=(1, 2)).shape == (3, 40, 30)
 
 
 @seeded_by(SEED)
