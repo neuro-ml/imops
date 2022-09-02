@@ -2,15 +2,11 @@ from functools import partial
 from itertools import permutations
 
 import numpy as np
-from dpipe.im import (
-    proportional_zoom_to_shape as dpipe_proportional_zoom_to_shape,
-    zoom_to_shape as dpipe_zoom_to_shape,
-)
 from numpy.testing import assert_allclose as allclose
 from scipy.ndimage import zoom as scipy_zoom
 from utils import seeded_by
 
-from imops import crop_to_shape, proportional_zoom_to_shape, zoom, zoom_to_shape
+from imops import zoom
 from imops.utils import get_c_contiguous_permutaion, inverse_permutation
 
 
@@ -21,53 +17,6 @@ SEED = 1337
 # FIXME: fix inconsistency
 # rtol=1e-6 as there is still some inconsistency
 allclose = partial(allclose, rtol=1e-6)
-
-
-@seeded_by(SEED)
-def test_zoom_to_shape():
-    for i in range(16):
-        shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
-        new_shape = np.random.poisson(shape) + 1
-        inp = np.random.randn(*shape)
-        axis = np.arange(len(inp.shape))
-
-        without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
-
-        result = zoom_to_shape(inp, new_shape, axis=axis)
-        assert result.shape == tuple(new_shape)
-
-        allclose(
-            result[without_borders],
-            dpipe_zoom_to_shape(inp, new_shape, order=1, axis=axis)[without_borders],
-            err_msg=f'{i, shape, new_shape}',
-        )
-
-
-@seeded_by(SEED)
-def test_proportional_zoom_to_shape():
-    for i in range(16):
-        shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
-        new_shape = np.random.poisson(shape) + 1
-        inp = np.random.randn(*shape)
-        axis = np.arange(len(inp.shape))
-
-        without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
-
-        result = proportional_zoom_to_shape(inp, new_shape, axis=axis)
-        assert result.shape == tuple(new_shape)
-
-        zoomed_by = np.min(new_shape / shape)
-
-        # Due to inconsistency at the edge after zoom we need to crop padding and remove borders before comparison
-        allclose(
-            crop_to_shape(result, (shape * zoomed_by).astype(int), axis=axis)[without_borders],
-            crop_to_shape(
-                dpipe_proportional_zoom_to_shape(inp, new_shape, order=1, axis=axis),
-                (shape * zoomed_by).astype(int),
-                axis=axis,
-            )[without_borders],
-            err_msg=f'{i, shape, new_shape}',
-        )
 
 
 @seeded_by(SEED)
