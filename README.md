@@ -46,9 +46,9 @@ from imops import pad, pad_to_shape
 
 y = pad(x, 10, axis=[0, 1])
 # `ratio` controls how much padding is applied to left side:
-#  0 - pad from right
-#  1 - pad from left
-#  0.5 - distribute the padding equally
+# 0 - pad from right
+# 1 - pad from left
+# 0.5 - distribute the padding equally
 z = pad_to_shape(x, (4, 120, 67), ratio=0.25)
 ```
 
@@ -58,9 +58,9 @@ z = pad_to_shape(x, (4, 120, 67), ratio=0.25)
 from imops import crop_to_shape
 
 # `ratio` controls the position of the crop
-#  0 - crop from right
-#  1 - crop from left
-#  0.5 - crop from the middle
+# 0 - crop from right
+# 1 - crop from left
+# 0.5 - crop from the middle
 z = crop_to_shape(x, (4, 120, 67), ratio=0.25)
 ```
 
