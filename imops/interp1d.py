@@ -48,13 +48,16 @@ class interp1d:
             else:
                 self.bounds_error = True if bounds_error is None else bounds_error
 
-            self.fill_value = fill_value
-            self.scipy_interp1d = None
-            self.x = np.copy(x) if copy else x
+            if len(x) != y.shape[axis]:
+                raise ValueError('x and y arrays must be equal in length along interpolation axis.')
 
             self.axis = axis
             if axis not in (-1, y.ndim - 1):
                 y = np.swapaxes(y, -1, axis)
+
+            self.fill_value = fill_value
+            self.scipy_interp1d = None
+            self.x = np.copy(x) if copy else x
 
             self.n_dummy = 3 - y.ndim
             self.y = y[(None,) * self.n_dummy] if self.n_dummy else y

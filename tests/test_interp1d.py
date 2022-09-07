@@ -17,9 +17,29 @@ def test_extrapolation_exception():
 
     with pytest.raises(ValueError):
         scipy_interp1d(x, y, axis=0, fill_value=0)(x_new)
-
     with pytest.raises(ValueError):
         interp1d(x, y, axis=0, fill_value=0)(x_new)
+
+
+@seeded_by(SEED)
+def test_length_inequality_exception():
+    x = np.array([1.0, 2.0, 3.0, 4.0])
+    y = np.random.randn(3, 4, 5)
+
+    with pytest.raises(ValueError):
+        scipy_interp1d(x, y)
+    with pytest.raises(ValueError):
+        interp1d(x, y)
+
+    with pytest.raises(ValueError):
+        scipy_interp1d(x, y, axis=2)
+    with pytest.raises(ValueError):
+        interp1d(x, y, axis=2)
+
+    with pytest.raises(ValueError):
+        scipy_interp1d(x, y, axis=0)
+    with pytest.raises(ValueError):
+        interp1d(x, y, axis=0)
 
 
 @seeded_by(SEED)
