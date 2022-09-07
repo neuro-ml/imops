@@ -93,7 +93,7 @@ class interp1d:
         if self.axis not in (-1, out.ndim - 1):
             out = np.swapaxes(out, -1, self.axis)
 
-        # TODO: fix behaviour with np.inf-s
+        # FIXME: fix behaviour with np.inf-s
         if np.isnan(out).any():
             if not np.isinf(out).any():
                 raise RuntimeError("Can't decide how to handle nans in the output.")

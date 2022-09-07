@@ -2,9 +2,9 @@ from functools import partial
 from itertools import permutations
 
 import numpy as np
-from dpipe.im import zoom_to_shape as dpipe_zoom_to_shape
 from numpy.testing import assert_allclose as allclose
 from scipy.ndimage import zoom as scipy_zoom
+from utils import seeded_by
 
 from imops import zoom, zoom_to_shape
 from imops.utils import get_c_contiguous_permutaion, inverse_permutation
@@ -13,30 +13,24 @@ from imops.utils import get_c_contiguous_permutaion, inverse_permutation
 # [:-1, :-1, :-1] below is used because of the strange scipy.ndimage.zoom behaviour at the edge
 # https://github.com/scipy/scipy/issues/4922
 
+SEED = 1337
 # FIXME: fix inconsistency
 # rtol=1e-6 as there is still some inconsistency
 allclose = partial(allclose, rtol=1e-6)
 
 
-def test_zoom_to_shape():
-    for i in range(16):
-        shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
-        new_shape = np.random.poisson(shape) + 1
-        inp = np.random.randn(*shape)
-        axis = np.arange(len(inp.shape))
+@seeded_by(SEED)
+def test_shape():
+    inp = np.random.rand(3, 10, 10) * 2 + 3
+    shape = inp.shape
 
-        without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
-
-        result = zoom_to_shape(inp, new_shape, axis=axis)
-        assert result.shape == tuple(new_shape)
-
-        allclose(
-            result[without_borders],
-            dpipe_zoom_to_shape(inp, new_shape, order=1, axis=axis)[without_borders],
-            err_msg=f'{i, shape, new_shape}',
-        )
+    assert zoom_to_shape(inp, shape).shape == shape
+    assert zoom_to_shape(inp, shape[::-1]).shape == shape[::-1]
+    assert zoom(inp, (3, 4, 15)).shape == (9, 40, 150)
+    assert zoom(inp, (4, 3), axis=(1, 2)).shape == (3, 40, 30)
 
 
+@seeded_by(SEED)
 def test_identity():
     for i in range(16):
         shape = np.random.randint(2, 128, size=np.random.randint(1, 4))
@@ -45,6 +39,7 @@ def test_identity():
         allclose(inp, zoom(inp, 1), err_msg=f'{i, shape}')
 
 
+@seeded_by(SEED)
 def test_dtype():
     for dtype in (np.float32, np.float64):
         for i in range(4):
@@ -65,6 +60,7 @@ def test_dtype():
             assert inp.dtype == inp_copy.dtype == dtype, f'{i, inp.dtype, inp_copy.dtype, dtype}'
 
 
+@seeded_by(SEED)
 def test_scale_types():
     scales = [2, 2.0, (2, 2, 2), [2, 2, 2], np.array([2, 2, 2])]
 
@@ -80,15 +76,14 @@ def test_scale_types():
         prev = out
 
 
+@seeded_by(SEED)
 def test_contiguity_awareness():
     for i in range(2):
         for j in range(2):
             inp = np.random.randn(*(64,) * (3 - i))
             scale = np.random.uniform(0.5, 2, size=inp.ndim)
 
-            # start = time()
             zoom(inp, scale)
-            # runtime = time() - start
 
             desired_out = scipy_zoom(inp, scale, order=1)
             without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
@@ -97,9 +92,7 @@ def test_contiguity_awareness():
                 # This changes contiguity
                 permuted = np.transpose(inp, permutation)
 
-                # start_permuted = time()
                 out_permuted = zoom(permuted, scale[np.array(permutation)])
-                # runtime_permuted = time() - start_permuted
 
                 allclose(
                     np.transpose(out_permuted, inverse_permutation(np.array(permutation)))[without_borders],
@@ -107,13 +100,12 @@ def test_contiguity_awareness():
                     err_msg=f'{i, j, permutation}',
                 )
 
-                # This might not pass time to time
-                # allclose(runtime_permuted, runtime, rtol=1 if runtime > 0.1 else 10, err_msg=f'{i, j, permutation}')
                 assert (
                     get_c_contiguous_permutaion(permuted) is not None
                 ), f"Didn't find permutation for {i, j, permutation}"
 
 
+@seeded_by(SEED)
 def test_thin():
     for i in range(3):
         for j in range(16):
@@ -131,6 +123,7 @@ def test_thin():
             )
 
 
+@seeded_by(SEED)
 def test_stress():
     """Make sure that our zoom is consistent with scipy's"""
     for i in range(32):

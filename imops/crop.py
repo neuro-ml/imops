@@ -29,6 +29,7 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
     ndim = len(x.shape)
     ratio = fill_by_indices(np.zeros(ndim), ratio, axis)
     start = ((old_shape - new_shape) * ratio).astype(int)
+
     return x[tuple(map(slice, start, start + new_shape))]
 
 
@@ -52,4 +53,5 @@ def crop_to_box(x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_v
 
     if padding_values is not None and padding.any():
         x = pad(x, padding, axis, padding_values)
+
     return x

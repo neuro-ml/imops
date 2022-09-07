@@ -1,12 +1,15 @@
 import numpy as np
 import pytest
+from utils import seeded_by
 
 from imops import crop_to_box, crop_to_shape
 
 
+SEED = 1337
 assert_eq = np.testing.assert_array_equal
 
 
+@seeded_by(SEED)
 def test_shape():
     for _ in range(100):
         shape = np.random.randint(10, 50, size=2)
@@ -20,6 +23,7 @@ def test_shape():
         assert (crop_to_box(x, box, padding_values=0).shape == box_shape).all()
 
 
+@seeded_by(SEED)
 def test_axes():
     x = np.random.randint(0, 100, (3, 20, 23))
 
@@ -45,6 +49,7 @@ def test_raises():
         crop_to_box(x, np.array([[-1], [1]]), axis=(1, 2))
 
 
+@seeded_by(SEED)
 def test_crop_to_shape():
     x = np.random.rand(3, 10, 10)
     shape = 3, 4, 8

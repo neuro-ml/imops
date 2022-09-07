@@ -83,6 +83,7 @@ def zoom_to_shape(
     axis, shape = broadcast_axis(axis, x.ndim, shape)
     old_shape = np.array(x.shape, 'float64')
     new_shape = np.array(fill_by_indices(x.shape, shape, axis), 'float64')
+
     return zoom(x, new_shape / old_shape, range(x.ndim), order=order, fill_value=fill_value, num_threads=num_threads)
 
 

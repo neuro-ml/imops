@@ -2,13 +2,16 @@ from functools import partial
 
 import numpy as np
 import pytest
+from utils import seeded_by
 
-from imops import crop_to_box, pad, pad_to_shape, restore_crop
+from imops import crop_to_box, pad, pad_to_divisible, pad_to_shape, restore_crop
 
 
+SEED = 1337
 assert_eq = np.testing.assert_array_equal
 
 
+@seeded_by(SEED)
 def test_broadcasting():
     x = np.random.randint(0, 100, (3, 20, 23))
     main = pad(x, [[3, 3], [3, 3], [3, 3]])
@@ -42,6 +45,7 @@ def test_broadcasting():
         pad(x, [1, 2], axis=-1)
 
 
+@seeded_by(SEED)
 def test_padding_values():
     x = np.array(
         [
@@ -111,6 +115,7 @@ def test_pad():
     )
 
 
+@seeded_by(SEED)
 def test_pad_to_shape():
     x = np.random.rand(3, 10, 10)
     shape = 3, 15, 16
@@ -119,7 +124,27 @@ def test_pad_to_shape():
         pad_to_shape(x, (3, 4, 10))
 
 
+@seeded_by(SEED)
 def test_restore_crop():
     x = np.random.rand(3, 10, 10)
     box = [1, 2, 3], [3, 8, 9]
+
     assert (restore_crop(crop_to_box(x, box), box, x.shape)).shape == x.shape
+
+
+def test_pad_to_divisible():
+    x = np.zeros((4, 8, 12))
+
+    y = pad_to_divisible(x, 4)
+    np.testing.assert_array_equal(y, x)
+
+    x = np.zeros((3, 5))
+
+    y = pad_to_divisible(x, 1)
+    np.testing.assert_array_equal(y, x)
+
+    y = pad_to_divisible(x, 4)
+    np.testing.assert_array_equal(y, np.zeros((4, 8)))
+
+    y = pad_to_divisible(x, 4, remainder=2)
+    np.testing.assert_array_equal(y, np.zeros((6, 6)))
