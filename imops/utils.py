@@ -92,11 +92,3 @@ def broadcast_to_axis(axis: AxesLike, *arrays: AxesParams):
         raise ValueError(f'Axes and arrays are not broadcastable: {len(axis)} vs {", ".join(map(str, lengths))}.')
 
     return tuple(np.repeat(x, len(axis) // len(x), 0) for x in arrays)
-
-
-def to_array(x):
-    # TODO: smarter check
-    # we want to handle torch when possible
-    if not hasattr(x, 'ndim') or not hasattr(x, 'shape'):
-        x = np.asarray(x)
-    return x

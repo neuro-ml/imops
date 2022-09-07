@@ -2,7 +2,7 @@ from typing import Callable, Sequence, Union
 
 import numpy as np
 
-from .utils import AxesLike, AxesParams, axis_from_dim, broadcast_axis, broadcast_to_axis, fill_by_indices, to_array
+from .utils import AxesLike, AxesParams, axis_from_dim, broadcast_axis, broadcast_to_axis, fill_by_indices
 
 
 def pad(
@@ -29,7 +29,7 @@ def pad(
     axis
         axis along which `x` will be padded.
     """
-    x = to_array(x)
+    x = np.asarray(x)
     padding = np.asarray(padding)
     if padding.ndim < 2:
         padding = padding.reshape(-1, 1)
@@ -74,7 +74,7 @@ def pad_to_shape(
         the fraction of the padding that will be applied to the left, `1.0 - ratio` will be applied to the right.
         By default `ratio=0.5`, i.e. it is applied uniformly to the left and right.
     """
-    x = to_array(x)
+    x = np.asarray(x)
     axis, shape, ratio = broadcast_axis(axis, x.ndim, shape, ratio)
 
     old_shape = np.array(x.shape)[list(axis)]
@@ -117,7 +117,7 @@ def pad_to_divisible(
     ----------
     `pad_to_shape`
     """
-    x = to_array(x)
+    x = np.asarray(x)
     axis = axis_from_dim(axis, x.ndim)
     divisor, remainder, ratio = broadcast_to_axis(axis, divisor, remainder, ratio)
 
@@ -131,7 +131,7 @@ def restore_crop(x: np.ndarray, box: np.ndarray, shape: AxesLike, padding_values
     """
     Pad `x` to match `shape`. The left padding is taken equal to `box`'s start.
     """
-    x = to_array(x)
+    x = np.asarray(x)
     assert len(shape) == x.ndim
     start, stop = np.asarray(box)
 

@@ -1,7 +1,7 @@
 import numpy as np
 
 from .pad import pad
-from .utils import AxesLike, AxesParams, broadcast_axis, fill_by_indices, to_array
+from .utils import AxesLike, AxesParams, broadcast_axis, fill_by_indices
 
 
 def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: AxesParams = 0.5) -> np.ndarray:
@@ -19,7 +19,7 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
         the fraction of the crop that will be applied to the left, `1 - ratio` will be applied to the right.
         By default `ratio=0.5`, i.e. it is applied uniformly to the left and right.
     """
-    x = to_array(x)
+    x = np.asarray(x)
     axis, shape, ratio = broadcast_axis(axis, x.ndim, shape, ratio)
 
     old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axis))
@@ -37,7 +37,7 @@ def crop_to_box(x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_v
     """
     Crop `x` according to `box` along `axis`.
     """
-    x = to_array(x)
+    x = np.asarray(x)
     start, stop = box
     axis, start, stop = broadcast_axis(axis, x.ndim, start, stop)
 
