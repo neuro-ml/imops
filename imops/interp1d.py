@@ -5,7 +5,9 @@ from warnings import warn
 import numpy as np
 from scipy.interpolate import interp1d as scipy_interp1d
 
-from .src._fast_zoom import _interp1d
+from .src._fast_zoom import _interp1d as fast_src_interp1d
+from .src._zoom import _interp1d as src_interp1d
+from .utils import FAST_MATH_WARNING
 
 
 class interp1d:
@@ -29,6 +31,7 @@ class interp1d:
         fill_value: Union[float, str] = np.nan,
         assume_sorted: bool = False,
         num_threads: int = -1,
+        fast: bool = False,
     ) -> None:
         if y.dtype not in (np.float32, np.float64) or y.ndim > 3 or kind not in ('linear', 1):
             warn(
@@ -66,6 +69,13 @@ class interp1d:
 
             self.assume_sorted = assume_sorted
             self.num_threads = num_threads
+            self.fast = fast
+
+            if fast:
+                warn(FAST_MATH_WARNING, UserWarning)
+                self.src_interp1d = fast_src_interp1d
+            else:
+                self.src_interp1d = src_interp1d
 
     def __call__(self, x_new: np.ndarray) -> np.ndarray:
         if self.scipy_interp1d is not None:
@@ -79,7 +89,7 @@ class interp1d:
 
         extrapolate = self.fill_value == 'extrapolate'
 
-        out = _interp1d(
+        out = self.src_interp1d(
             self.y,
             self.x,
             x_new,

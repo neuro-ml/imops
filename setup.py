@@ -1,4 +1,5 @@
 import runpy
+import shutil
 from pathlib import Path
 
 from setuptools import Extension, find_packages, setup
@@ -21,16 +22,24 @@ with open(root / 'README.md', encoding='utf-8') as file:
     long_description = file.read()
 version = runpy.run_path(root / name / '__version__.py')['__version__']
 
+# Cython extension and .pyx source file names must be the same to compile
+# https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
+modules = ['backprojection', 'radon', 'zoom']
+for module in modules:
+    src_dir = Path(__file__).parent / 'imops' / 'src'
+    shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
+
 args = ['-fopenmp']
 ext_modules = [
     Extension(
-        f'{name}.src._{module}',
-        [f'{name}/src/_{module}.pyx'],
+        f'{name}.src._{prefix}{module}',
+        [f'{name}/src/_{prefix}{module}.pyx'],
         include_dirs=[NumpyImport()],
-        extra_compile_args=args,
-        extra_link_args=args,
+        extra_compile_args=args + additional_args,
+        extra_link_args=args + additional_args,
     )
-    for module in ['backprojection', 'fast_radon', 'fast_zoom']
+    for module in modules
+    for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
 ]
 
 setup(

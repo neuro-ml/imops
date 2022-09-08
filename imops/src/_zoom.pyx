@@ -5,7 +5,6 @@
 # cython: nonecheck = False
 # cython: language_level = 3
 
-
 import numpy as np
 
 cimport cython

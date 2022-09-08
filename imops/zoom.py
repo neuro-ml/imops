@@ -5,8 +5,10 @@ from warnings import warn
 import numpy as np
 from scipy.ndimage import zoom as scipy_zoom
 
-from .src._fast_zoom import _zoom as src_zoom
+from .src._fast_zoom import _zoom as fast_src_zoom
+from .src._zoom import _zoom as src_zoom
 from .utils import (
+    FAST_MATH_WARNING,
     AxesLike,
     AxesParams,
     broadcast_axis,
@@ -23,6 +25,7 @@ def zoom(
     order: int = 1,
     fill_value: Union[float, Callable] = 0,
     num_threads: int = -1,
+    fast: bool = False,
 ) -> np.ndarray:
     """
     Rescale `x` according to `scale_factor` along the `axis`.
@@ -49,7 +52,7 @@ def zoom(
     if callable(fill_value):
         fill_value = fill_value(x)
 
-    return _zoom(x, scale_factor, order=order, cval=fill_value, num_threads=num_threads)
+    return _zoom(x, scale_factor, order=order, cval=fill_value, num_threads=num_threads, fast=fast)
 
 
 def zoom_to_shape(
@@ -59,6 +62,7 @@ def zoom_to_shape(
     order: int = 1,
     fill_value: Union[float, Callable] = 0,
     num_threads: int = -1,
+    fast: bool = False,
 ) -> np.ndarray:
     """
     Rescale `x` to match `shape` along the `axis`.
@@ -84,7 +88,9 @@ def zoom_to_shape(
     old_shape = np.array(x.shape, 'float64')
     new_shape = np.array(fill_by_indices(x.shape, shape, axis), 'float64')
 
-    return zoom(x, new_shape / old_shape, range(x.ndim), order=order, fill_value=fill_value, num_threads=num_threads)
+    return zoom(
+        x, new_shape / old_shape, range(x.ndim), order=order, fill_value=fill_value, num_threads=num_threads, fast=fast
+    )
 
 
 def _zoom(
@@ -98,6 +104,7 @@ def _zoom(
     *,
     grid_mode: bool = False,
     num_threads: int = -1,
+    fast: bool = False,
 ) -> np.ndarray:
     """
     Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs
@@ -127,6 +134,12 @@ def _zoom(
             input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
 
+    if fast:
+        warn(FAST_MATH_WARNING, UserWarning)
+        src_zoom_ = fast_src_zoom
+    else:
+        src_zoom_ = src_zoom
+
     if num_threads < 0:
         max_threads = os.cpu_count()
         num_threads = max_threads + num_threads + 1
@@ -143,7 +156,7 @@ def _zoom(
     if not is_contiguous:
         c_contiguous_permutaion = get_c_contiguous_permutaion(input)
         if c_contiguous_permutaion is not None:
-            out = src_zoom(
+            out = src_zoom_(
                 np.transpose(input, c_contiguous_permutaion),
                 np.array(zoom, dtype=np.float64)[c_contiguous_permutaion],
                 cval,
@@ -151,9 +164,9 @@ def _zoom(
             )
         else:
             warn("Input array can't be represented as C-contiguous, performance can drop a lot.")
-            out = src_zoom(input, np.array(zoom, dtype=np.float64), cval, num_threads)
+            out = src_zoom_(input, np.array(zoom, dtype=np.float64), cval, num_threads)
     else:
-        out = src_zoom(input, np.array(zoom, dtype=np.float64), cval, num_threads)
+        out = src_zoom_(input, np.array(zoom, dtype=np.float64), cval, num_threads)
 
     if c_contiguous_permutaion is not None:
         out = np.transpose(out, inverse_permutation(c_contiguous_permutaion))

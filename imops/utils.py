@@ -7,6 +7,11 @@ import numpy as np
 AxesLike = Union[int, Sequence[int]]
 AxesParams = Union[float, Sequence[float]]
 
+FAST_MATH_WARNING = (
+    'Be careful, `fast=True` is an experimental feature. It enables some dangerous optimizations which can lead to '
+    'unexpected results, use at your own risk! Visit https://simonbyrne.github.io/notes/fastmath/ for more information.'
+)
+
 
 def normalize_axes(x: np.ndarray, axes) -> np.ndarray:
     assert x.ndim in [2, 3]
