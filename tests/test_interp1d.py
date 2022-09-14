@@ -48,10 +48,15 @@ def test_extrapolation(fast):
         inp = np.random.randn(*shape)
 
         axis = np.random.choice(np.arange(inp.ndim))
-        old_locations = np.random.randn(shape[axis])
-        new_locations = np.random.randn(np.random.randint(shape[axis] // 2, shape[axis] * 2)) * 2
 
-        assert np.max(new_locations) > np.max(old_locations) or np.min(new_locations) < np.min(old_locations)
+        extrapolation = False
+        while not extrapolation:
+            old_locations = np.random.randn(shape[axis])
+            new_locations = np.random.randn(np.random.randint(shape[axis] // 2, shape[axis] * 2)) * 2
+
+            extrapolation = np.max(new_locations) > np.max(old_locations) or np.min(new_locations) < np.min(
+                old_locations
+            )
 
         out = interp1d(old_locations, inp, axis=axis, bounds_error=False, fill_value='extrapolate', fast=fast)(
             new_locations
