@@ -16,11 +16,9 @@ FAST_MATH_WARNING = (
 
 def normalize_num_threads(num_threads):
     omp_num_threads = os.environ.get('OMP_NUM_THREADS')
-    if num_threads < 0:
-        max_threads = os.cpu_count() if omp_num_threads is None else int(omp_num_threads)
-        return max_threads + num_threads + 1
+    max_threads = os.cpu_count() if omp_num_threads is None else int(omp_num_threads)
 
-    return min(num_threads, int(omp_num_threads))
+    return max_threads + num_threads + 1 if num_threads < 0 else min(num_threads, max_threads)
 
 
 def normalize_axes(x: np.ndarray, axes) -> np.ndarray:
