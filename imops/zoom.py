@@ -44,6 +44,8 @@ def zoom(
         value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used.
     num_threads
         the number of threads to use for computation. Default = the cpu count.
+    fast
+        whether to use `-ffast-math` compiled version (almost no effect for zoom).
     """
     x = np.asarray(x)
     axis, scale_factor = broadcast_axis(axis, x.ndim, scale_factor)
@@ -82,6 +84,8 @@ def zoom_to_shape(
         value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used.
     num_threads
         the number of threads to use for computation. Default = the cpu count.
+    fast
+        whether to use `-ffast-math` compiled version (almost no effect for zoom).
     """
     x = np.asarray(x)
     axis, shape = broadcast_axis(axis, x.ndim, shape)
@@ -110,7 +114,8 @@ def _zoom(
     Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs
 
     Works faster only for ndim <= 3. Shares interface with `scipy.ndimage.zoom`
-    except for `num_threads` argument defining how many threads to use, all available threads are used by default.
+    except for `num_threads` argument defining how many threads to use (all available threads are used by default)
+    and `fast` argument defining whether to use `-ffast-math` compiled version or not (almost no effect for zoom).
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.zoom.html`
     """

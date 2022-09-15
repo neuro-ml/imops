@@ -14,7 +14,8 @@ class interp1d:
     Faster parallelizable version of `scipy.interpolate.interp1d` for fp32 / fp64 inputs
 
     Works faster only for ndim <= 3. Shares interface with `scipy.interpolate.interp1d`
-    except for `num_threads` argument defining how many threads to use, all available threads are used by default.
+    except for `num_threads` argument defining how many threads to use (all available threads are used by default)
+    and `fast` argument defining whether to use `-ffast-math` compiled version or not.
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html`
     """
