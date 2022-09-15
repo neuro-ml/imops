@@ -16,7 +16,7 @@ FAST_MATH_WARNING = (
 
 def normalize_num_threads(num_threads):
     omp_num_threads = os.environ.get('OMP_NUM_THREADS')
-    max_threads = os.cpu_count() if omp_num_threads is None else int(omp_num_threads)
+    max_threads = len(os.sched_getaffinity(0)) if omp_num_threads is None else int(omp_num_threads)
 
     return max_threads + num_threads + 1 if num_threads < 0 else min(num_threads, max_threads)
 
