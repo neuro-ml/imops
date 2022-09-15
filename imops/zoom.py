@@ -1,4 +1,3 @@
-import os
 from typing import Callable, Sequence, Union
 from warnings import warn
 
@@ -15,6 +14,7 @@ from .utils import (
     fill_by_indices,
     get_c_contiguous_permutaion,
     inverse_permutation,
+    normalize_num_threads,
 )
 
 
@@ -140,9 +140,7 @@ def _zoom(
     else:
         src_zoom_ = src_zoom
 
-    if num_threads < 0:
-        max_threads = os.cpu_count()
-        num_threads = max_threads + num_threads + 1
+    num_threads = normalize_num_threads(num_threads)
 
     n_dummy = 3 - ndim
 

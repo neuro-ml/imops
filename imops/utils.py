@@ -1,3 +1,4 @@
+import os
 from itertools import permutations
 from typing import Optional, Sequence, Union
 
@@ -11,6 +12,15 @@ FAST_MATH_WARNING = (
     'Be careful, `fast=True` is an experimental feature. It enables some dangerous optimizations which can lead to '
     'unexpected results, use at your own risk! Visit https://simonbyrne.github.io/notes/fastmath/ for more information.'
 )
+
+
+def normalize_num_threads(num_threads):
+    omp_num_threads = os.environ.get('OMP_NUM_THREADS')
+    if num_threads < 0:
+        max_threads = os.cpu_count() if omp_num_threads is None else int(omp_num_threads)
+        return max_threads + num_threads + 1
+
+    return min(num_threads, int(omp_num_threads))
 
 
 def normalize_axes(x: np.ndarray, axes) -> np.ndarray:

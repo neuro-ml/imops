@@ -1,4 +1,3 @@
-import os
 from typing import Union
 from warnings import warn
 
@@ -7,7 +6,7 @@ from scipy.interpolate import interp1d as scipy_interp1d
 
 from .src._fast_zoom import _interp1d as fast_src_interp1d
 from .src._zoom import _interp1d as src_interp1d
-from .utils import FAST_MATH_WARNING
+from .utils import FAST_MATH_WARNING, normalize_num_threads
 
 
 class interp1d:
@@ -81,11 +80,7 @@ class interp1d:
         if self.scipy_interp1d is not None:
             return self.scipy_interp1d(x_new)
 
-        if self.num_threads < 0:
-            max_threads = os.cpu_count()
-            num_threads = max_threads + self.num_threads + 1
-        else:
-            num_threads = self.num_threads
+        num_threads = normalize_num_threads(self.num_threads)
 
         extrapolate = self.fill_value == 'extrapolate'
 

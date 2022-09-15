@@ -1,4 +1,3 @@
-import os
 from typing import Sequence, Tuple, Union
 from warnings import warn
 
@@ -9,7 +8,7 @@ from .src._backprojection import backprojection3d
 from .src._fast_backprojection import backprojection3d as fast_backprojection3d
 from .src._fast_radon import radon3d as fast_radon3d
 from .src._radon import radon3d
-from .utils import FAST_MATH_WARNING, normalize_axes, restore_axes
+from .utils import FAST_MATH_WARNING, normalize_axes, normalize_num_threads, restore_axes
 
 
 def radon(
@@ -49,9 +48,7 @@ def radon(
     # TODO: f(arange)?
     limits = ((squared[:, None] + squared[None, :]) > (radius + 2) ** 2).sum(0) // 2
 
-    if num_threads < 0:
-        max_threads = os.cpu_count()
-        num_threads = max_threads + num_threads + 1
+    num_threads = normalize_num_threads(num_threads)
 
     if fast:
         warn(FAST_MATH_WARNING, UserWarning)
@@ -116,9 +113,7 @@ def inverse_radon(
     filtered_sinogram = filtered_sinogram.astype(dtype)
     theta, xs = np.deg2rad(theta).astype(dtype), xs.astype(dtype)
 
-    if num_threads < 0:
-        max_threads = os.cpu_count()
-        num_threads = max_threads + num_threads + 1
+    num_threads = normalize_num_threads(num_threads)
 
     if fast:
         warn(FAST_MATH_WARNING, UserWarning)
