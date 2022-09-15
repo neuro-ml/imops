@@ -14,8 +14,8 @@ FAST_MATH_WARNING = (
 )
 
 
-def normalize_num_threads(num_threads: Union[int, None]):
-    if num_threads is None or num_threads >= 0:
+def normalize_num_threads(num_threads: int):
+    if num_threads >= 0:
         return num_threads
 
     omp_num_threads = os.environ.get('OMP_NUM_THREADS')
