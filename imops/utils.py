@@ -14,11 +14,14 @@ FAST_MATH_WARNING = (
 )
 
 
-def normalize_num_threads(num_threads):
-    omp_num_threads = os.environ.get('OMP_NUM_THREADS')
-    max_threads = len(os.sched_getaffinity(0)) if omp_num_threads is None else int(omp_num_threads)
+def normalize_num_threads(num_threads: Union[int, None]):
+    if num_threads is None or num_threads >= 0:
+        return num_threads
 
-    return max_threads + num_threads + 1 if num_threads < 0 else min(num_threads, max_threads)
+    omp_num_threads = os.environ.get('OMP_NUM_THREADS')
+    # here we also handle the case OMP_NUM_THREADS="" gracefully
+    max_threads = int(omp_num_threads) if omp_num_threads else len(os.sched_getaffinity(0))
+    return max_threads + num_threads + 1
 
 
 def normalize_axes(x: np.ndarray, axes) -> np.ndarray:
