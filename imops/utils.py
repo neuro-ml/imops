@@ -1,3 +1,4 @@
+import os
 from itertools import permutations
 from typing import Optional, Sequence, Union
 
@@ -6,6 +7,21 @@ import numpy as np
 
 AxesLike = Union[int, Sequence[int]]
 AxesParams = Union[float, Sequence[float]]
+
+FAST_MATH_WARNING = (
+    'Be careful, `fast=True` is an experimental feature. It enables some dangerous optimizations which can lead to '
+    'unexpected results, use at your own risk! Visit https://simonbyrne.github.io/notes/fastmath/ for more information.'
+)
+
+
+def normalize_num_threads(num_threads: int):
+    if num_threads >= 0:
+        return num_threads
+
+    omp_num_threads = os.environ.get('OMP_NUM_THREADS')
+    # here we also handle the case OMP_NUM_THREADS="" gracefully
+    max_threads = int(omp_num_threads) if omp_num_threads else len(os.sched_getaffinity(0))
+    return max_threads + num_threads + 1
 
 
 def normalize_axes(x: np.ndarray, axes) -> np.ndarray:

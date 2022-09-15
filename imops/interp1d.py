@@ -1,11 +1,12 @@
-import os
 from typing import Union
 from warnings import warn
 
 import numpy as np
 from scipy.interpolate import interp1d as scipy_interp1d
 
-from .src._fast_zoom import _interp1d
+from .src._fast_zoom import _interp1d as fast_src_interp1d
+from .src._zoom import _interp1d as src_interp1d
+from .utils import FAST_MATH_WARNING, normalize_num_threads
 
 
 class interp1d:
@@ -13,7 +14,8 @@ class interp1d:
     Faster parallelizable version of `scipy.interpolate.interp1d` for fp32 / fp64 inputs
 
     Works faster only for ndim <= 3. Shares interface with `scipy.interpolate.interp1d`
-    except for `num_threads` argument defining how many threads to use, all available threads are used by default.
+    except for `num_threads` argument defining how many threads to use (all available threads are used by default)
+    and `fast` argument defining whether to use `-ffast-math` compiled version or not.
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html`
     """
@@ -29,6 +31,7 @@ class interp1d:
         fill_value: Union[float, str] = np.nan,
         assume_sorted: bool = False,
         num_threads: int = -1,
+        fast: bool = False,
     ) -> None:
         if y.dtype not in (np.float32, np.float64) or y.ndim > 3 or kind not in ('linear', 1):
             warn(
@@ -48,13 +51,16 @@ class interp1d:
             else:
                 self.bounds_error = True if bounds_error is None else bounds_error
 
-            self.fill_value = fill_value
-            self.scipy_interp1d = None
-            self.x = np.copy(x) if copy else x
+            if len(x) != y.shape[axis]:
+                raise ValueError('x and y arrays must be equal in length along interpolation axis.')
 
             self.axis = axis
             if axis not in (-1, y.ndim - 1):
                 y = np.swapaxes(y, -1, axis)
+
+            self.fill_value = fill_value
+            self.scipy_interp1d = None
+            self.x = np.copy(x) if copy else x
 
             self.n_dummy = 3 - y.ndim
             self.y = y[(None,) * self.n_dummy] if self.n_dummy else y
@@ -63,20 +69,23 @@ class interp1d:
 
             self.assume_sorted = assume_sorted
             self.num_threads = num_threads
+            self.fast = fast
+
+            if fast:
+                warn(FAST_MATH_WARNING, UserWarning)
+                self.src_interp1d = fast_src_interp1d
+            else:
+                self.src_interp1d = src_interp1d
 
     def __call__(self, x_new: np.ndarray) -> np.ndarray:
         if self.scipy_interp1d is not None:
             return self.scipy_interp1d(x_new)
 
-        if self.num_threads < 0:
-            max_threads = os.cpu_count()
-            num_threads = max_threads + self.num_threads + 1
-        else:
-            num_threads = self.num_threads
+        num_threads = normalize_num_threads(self.num_threads)
 
         extrapolate = self.fill_value == 'extrapolate'
 
-        out = _interp1d(
+        out = self.src_interp1d(
             self.y,
             self.x,
             x_new,

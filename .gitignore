@@ -3,4 +3,5 @@ __pycache__/
 build/
 imops/src/*.c
 imops/src/*.so
+imops/src/_fast*.pyx
 *.egg-info/

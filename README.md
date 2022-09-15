@@ -1,6 +1,7 @@
 [![codecov](https://codecov.io/gh/neuro-ml/imops/branch/master/graph/badge.svg)](https://codecov.io/gh/neuro-ml/imops)
 [![pypi](https://img.shields.io/pypi/v/imops?logo=pypi&label=PyPi)](https://pypi.org/project/imops/)
 ![License](https://img.shields.io/github/license/neuro-ml/imops)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/imops)](https://pypi.org/project/imops/)
 
 # Imops
 
@@ -46,9 +47,9 @@ from imops import pad, pad_to_shape
 
 y = pad(x, 10, axis=[0, 1])
 # `ratio` controls how much padding is applied to left side:
-#  0 - pad from right
-#  1 - pad from left
-#  0.5 - distribute the padding equally
+# 0 - pad from right
+# 1 - pad from left
+# 0.5 - distribute the padding equally
 z = pad_to_shape(x, (4, 120, 67), ratio=0.25)
 ```
 
@@ -58,9 +59,9 @@ z = pad_to_shape(x, (4, 120, 67), ratio=0.25)
 from imops import crop_to_shape
 
 # `ratio` controls the position of the crop
-#  0 - crop from right
-#  1 - crop from left
-#  0.5 - crop from the middle
+# 0 - crop from right
+# 1 - crop from left
+# 0.5 - crop from the middle
 z = crop_to_shape(x, (4, 120, 67), ratio=0.25)
 ```
 
