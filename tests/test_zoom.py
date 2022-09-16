@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose as allclose
 from scipy.ndimage import zoom as scipy_zoom
 
 from imops.utils import get_c_contiguous_permutaion, inverse_permutation
-from imops.zoom import zoom, zoom_to_shape
+from imops.zoom import _zoom, zoom, zoom_to_shape
 
 
 # [:-1, :-1, :-1] below is used because of the strange scipy.ndimage.zoom behaviour at the edge
@@ -123,16 +123,24 @@ def test_thin(fast):
 
 
 def test_stress(fast):
-    """Make sure that our zoom is consistent with scipy's"""
+    """Make sure that our zoom-s are consistent with scipy's"""
     for i in range(32):
         shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
         inp = np.random.randn(*shape)
-        scale = np.random.uniform(0.5, 2, size=inp.ndim)
+        scale = np.random.uniform(0.5, 2, size=inp.ndim if np.random.binomial(1, 0.5) else 1)
+        if len(scale) == 1:
+            scale = scale[0]
 
         without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
+        desired_out = scipy_zoom(inp, scale, order=1)[without_borders]
 
         allclose(
             zoom(inp, scale, fast=fast)[without_borders],
-            scipy_zoom(inp, scale, order=1)[without_borders],
+            desired_out,
+            err_msg=f'{i, shape, scale}',
+        )
+        allclose(
+            _zoom(inp, scale, fast=fast)[without_borders],
+            desired_out,
             err_msg=f'{i, shape, scale}',
         )

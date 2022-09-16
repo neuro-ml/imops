@@ -120,6 +120,7 @@ def _zoom(
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.zoom.html`
     """
     ndim = input.ndim
+    zoom = fill_by_indices(np.ones(input.ndim, 'float64'), zoom, range(input.ndim))
 
     if (
         input.dtype not in (np.float32, np.float64)
