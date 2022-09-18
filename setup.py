@@ -37,6 +37,7 @@ ext_modules = [
         include_dirs=[NumpyImport()],
         extra_compile_args=args + additional_args,
         extra_link_args=args + additional_args,
+        define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
     )
     for module in modules
     for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
@@ -56,6 +57,5 @@ setup(
         'Cython',
     ],
     ext_modules=ext_modules,
-    define_macros=[('NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION')],
     python_requires='>=3.6',
 )
