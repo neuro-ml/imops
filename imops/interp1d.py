@@ -4,9 +4,13 @@ from warnings import warn
 import numpy as np
 from scipy.interpolate import interp1d as scipy_interp1d
 
-from .src._fast_zoom import _interp1d as fast_src_interp1d
-from .src._zoom import _interp1d as src_interp1d
+# from .src._fast_zoom import _interp1d as fast_src_interp1d
+# from .src._zoom import _interp1d as src_interp1d
+from .src._numba_zoom import _interp1d as src_interp1d
 from .utils import FAST_MATH_WARNING, normalize_num_threads
+
+
+fast_src_interp1d = src_interp1d
 
 
 class interp1d:

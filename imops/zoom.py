@@ -4,8 +4,9 @@ from warnings import warn
 import numpy as np
 from scipy.ndimage import zoom as scipy_zoom
 
-from .src._fast_zoom import _zoom as fast_src_zoom
-from .src._zoom import _zoom as src_zoom
+# from .src._fast_zoom import _zoom as fast_src_zoom
+# from .src._zoom import _zoom as src_zoom
+from .src._numba_zoom import _zoom as src_zoom
 from .utils import (
     FAST_MATH_WARNING,
     AxesLike,
@@ -16,6 +17,9 @@ from .utils import (
     inverse_permutation,
     normalize_num_threads,
 )
+
+
+fast_src_zoom = src_zoom
 
 
 def zoom(
