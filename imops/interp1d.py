@@ -85,7 +85,8 @@ class interp1d:
         if self.scipy_interp1d is not None:
             return self.scipy_interp1d(x_new)
 
-        num_threads = normalize_num_threads(self.num_threads)
+        # TODO: Remove hardcode
+        num_threads = normalize_num_threads(self.num_threads, 'NUMBA_NUM_THREADS')
 
         extrapolate = self.fill_value == 'extrapolate'
 

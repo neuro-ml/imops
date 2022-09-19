@@ -150,7 +150,8 @@ def _zoom(
     else:
         src_zoom_ = src_zoom
 
-    num_threads = normalize_num_threads(num_threads)
+    # TODO: Remove hardcode
+    num_threads = normalize_num_threads(num_threads, 'NUMBA_NUM_THREADS')
 
     n_dummy = 3 - ndim
 

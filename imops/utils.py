@@ -14,11 +14,11 @@ FAST_MATH_WARNING = (
 )
 
 
-def normalize_num_threads(num_threads: int):
+def normalize_num_threads(num_threads: int, env_var_name: str = 'OMP_NUM_THREADS'):
     if num_threads >= 0:
         return num_threads
 
-    omp_num_threads = os.environ.get('OMP_NUM_THREADS')
+    omp_num_threads = os.environ.get(env_var_name)
     # here we also handle the case OMP_NUM_THREADS="" gracefully
     max_threads = int(omp_num_threads) if omp_num_threads else len(os.sched_getaffinity(0))
     return max_threads + num_threads + 1
