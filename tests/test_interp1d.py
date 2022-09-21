@@ -73,6 +73,7 @@ def test_extrapolation(fast, backend):
         allclose(out, desired_out, err_msg=f'{i, shape}')
 
 
+# TODO: test for different dtypes of arguments
 def test_dtype(fast, backend):
     for dtype in (np.float32, np.float64):
         shape = (128, 128)

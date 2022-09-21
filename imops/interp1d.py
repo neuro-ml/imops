@@ -36,11 +36,11 @@ class interp1d:
         backend: str = DEFAULT_BACKEND,
     ) -> None:
         self.backend = backend
-        dtype = y.dtype
+        self.dtype = y.dtype
 
         if backend == 'scipy':
             self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
-        elif dtype not in (np.float32, np.float64) or y.ndim > 3 or kind not in ('linear', 1):
+        elif self.dtype not in (np.float32, np.float64) or y.ndim > 3 or kind not in ('linear', 1):
             warn(
                 "Fast interpolation is only supported for ndim<=3, dtype=float32 or float64, order=1 or 'linear' "
                 "Falling back to scipy's implementation",
@@ -85,23 +85,24 @@ class interp1d:
                 else:
                     self.src_interp1d = cython_interp1d
             # TODO: Investigate whether it is safe to use -ffast-math in numba
-            elif dtype == np.float32:
+            elif self.dtype == np.float32:
                 self.src_interp1d = numba_interp1d_fp32
             else:
                 self.src_interp1d = numba_interp1d_fp64
 
     def __call__(self, x_new: np.ndarray) -> np.ndarray:
         if self.scipy_interp1d is not None:
-            return self.scipy_interp1d(x_new)
+            return self.scipy_interp1d(x_new).astype(self.dtype)
 
         num_threads = normalize_num_threads(self.num_threads, self.backend)
 
         extrapolate = self.fill_value == 'extrapolate'
 
+        # TODO: Figure out how to handle multiple type signatures in Cython
         out = self.src_interp1d(
             self.y,
-            self.x,
-            x_new,
+            self.x.astype(np.float64),
+            x_new.astype(np.float64),
             self.bounds_error,
             0.0 if extrapolate else self.fill_value,
             extrapolate,

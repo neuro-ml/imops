@@ -47,6 +47,7 @@ def test_identity(fast, backend):
         allclose(inp, zoom(inp, 1, fast=fast, backend=backend), err_msg=f'{i, shape}')
 
 
+# TODO: test for different dtypes of arguments
 def test_dtype(fast, backend):
     for dtype in (np.float32, np.float64):
         for i in range(4):
