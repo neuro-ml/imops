@@ -4,10 +4,12 @@ from warnings import warn
 import numpy as np
 from scipy.ndimage import zoom as scipy_zoom
 
-# from .src._fast_zoom import _zoom as fast_src_zoom
-# from .src._zoom import _zoom as src_zoom
-from .src._numba_zoom import _zoom as src_zoom
+from .src._fast_zoom import _zoom as cython_fast_zoom
+from .src._numba_zoom import _zoom_fp32 as numba_zoom_fp32, _zoom_fp64 as numba_zoom_fp64
+from .src._zoom import _zoom as cython_zoom
 from .utils import (
+    AVAILABLE_BACKENDS,
+    DEFAULT_BACKEND,
     FAST_MATH_WARNING,
     AxesLike,
     AxesParams,
@@ -19,9 +21,6 @@ from .utils import (
 )
 
 
-fast_src_zoom = src_zoom
-
-
 def zoom(
     x: np.ndarray,
     scale_factor: AxesParams,
@@ -30,6 +29,7 @@ def zoom(
     fill_value: Union[float, Callable] = 0,
     num_threads: int = -1,
     fast: bool = False,
+    backend: str = DEFAULT_BACKEND,
 ) -> np.ndarray:
     """
     Rescale `x` according to `scale_factor` along the `axis`.
@@ -58,7 +58,7 @@ def zoom(
     if callable(fill_value):
         fill_value = fill_value(x)
 
-    return _zoom(x, scale_factor, order=order, cval=fill_value, num_threads=num_threads, fast=fast)
+    return _zoom(x, scale_factor, order=order, cval=fill_value, num_threads=num_threads, fast=fast, backend=backend)
 
 
 def zoom_to_shape(
@@ -69,6 +69,7 @@ def zoom_to_shape(
     fill_value: Union[float, Callable] = 0,
     num_threads: int = -1,
     fast: bool = False,
+    backend: str = DEFAULT_BACKEND,
 ) -> np.ndarray:
     """
     Rescale `x` to match `shape` along the `axis`.
@@ -97,7 +98,14 @@ def zoom_to_shape(
     new_shape = np.array(fill_by_indices(x.shape, shape, axis), 'float64')
 
     return zoom(
-        x, new_shape / old_shape, range(x.ndim), order=order, fill_value=fill_value, num_threads=num_threads, fast=fast
+        x,
+        new_shape / old_shape,
+        range(x.ndim),
+        order=order,
+        fill_value=fill_value,
+        num_threads=num_threads,
+        fast=fast,
+        backend=DEFAULT_BACKEND,
     )
 
 
@@ -113,6 +121,7 @@ def _zoom(
     grid_mode: bool = False,
     num_threads: int = -1,
     fast: bool = False,
+    backend: str = DEFAULT_BACKEND,
 ) -> np.ndarray:
     """
     Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs
@@ -123,11 +132,20 @@ def _zoom(
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.zoom.html`
     """
+    if backend not in AVAILABLE_BACKENDS:
+        raise ValueError(f'Backend `{backend}` is not an available backend')
+
     ndim = input.ndim
+    dtype = input.dtype
     zoom = fill_by_indices(np.ones(input.ndim, 'float64'), zoom, range(input.ndim))
 
+    if backend == 'scipy':
+        return scipy_zoom(
+            input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
+        )
+
     if (
-        input.dtype not in (np.float32, np.float64)
+        dtype not in (np.float32, np.float64)
         or ndim > 3
         or output is not None
         or order != 1
@@ -144,14 +162,19 @@ def _zoom(
             input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
 
-    if fast:
-        warn(FAST_MATH_WARNING, UserWarning)
-        src_zoom_ = fast_src_zoom
+    if backend == 'cython':
+        if fast:
+            warn(FAST_MATH_WARNING, UserWarning)
+            src_zoom = cython_fast_zoom
+        else:
+            src_zoom = cython_zoom
+    # TODO: Investigate whether it is safe to use -ffast-math in numba
+    elif dtype == np.float32:
+        src_zoom = numba_zoom_fp32
     else:
-        src_zoom_ = src_zoom
+        src_zoom = numba_zoom_fp64
 
-    # TODO: Remove hardcode
-    num_threads = normalize_num_threads(num_threads, 'NUMBA_NUM_THREADS')
+    num_threads = normalize_num_threads(num_threads, backend)
 
     n_dummy = 3 - ndim
 
@@ -165,7 +188,7 @@ def _zoom(
     if not is_contiguous:
         c_contiguous_permutaion = get_c_contiguous_permutaion(input)
         if c_contiguous_permutaion is not None:
-            out = src_zoom_(
+            out = src_zoom(
                 np.transpose(input, c_contiguous_permutaion),
                 np.array(zoom, dtype=np.float64)[c_contiguous_permutaion],
                 cval,
@@ -173,9 +196,9 @@ def _zoom(
             )
         else:
             warn("Input array can't be represented as C-contiguous, performance can drop a lot.")
-            out = src_zoom_(input, np.array(zoom, dtype=np.float64), cval, num_threads)
+            out = src_zoom(input, np.array(zoom, dtype=np.float64), cval, num_threads)
     else:
-        out = src_zoom_(input, np.array(zoom, dtype=np.float64), cval, num_threads)
+        out = src_zoom(input, np.array(zoom, dtype=np.float64), cval, num_threads)
 
     if c_contiguous_permutaion is not None:
         out = np.transpose(out, inverse_permutation(c_contiguous_permutaion))
@@ -183,4 +206,5 @@ def _zoom(
     if n_dummy:
         out = out[(0,) * n_dummy]
 
-    return out.astype(input.dtype, copy=False)
+    # TODO: Why `astype`?
+    return out.astype(dtype, copy=False)

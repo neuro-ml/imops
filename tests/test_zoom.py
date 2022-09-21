@@ -24,25 +24,30 @@ def fast(request):
     return request.param
 
 
-def test_shape(fast):
+@pytest.fixture(params=['scipy', 'cython', 'numba'])
+def backend(request):
+    return request.param
+
+
+def test_shape(fast, backend):
     inp = np.random.rand(3, 10, 10) * 2 + 3
     shape = inp.shape
 
-    assert zoom_to_shape(inp, shape, fast=fast).shape == shape
-    assert zoom_to_shape(inp, shape[::-1], fast=fast).shape == shape[::-1]
-    assert zoom(inp, (3, 4, 15), fast=fast).shape == (9, 40, 150)
-    assert zoom(inp, (4, 3), axis=(1, 2), fast=fast).shape == (3, 40, 30)
+    assert zoom_to_shape(inp, shape, fast=fast, backend=backend).shape == shape
+    assert zoom_to_shape(inp, shape[::-1], fast=fast, backend=backend).shape == shape[::-1]
+    assert zoom(inp, (3, 4, 15), fast=fast, backend=backend).shape == (9, 40, 150)
+    assert zoom(inp, (4, 3), axis=(1, 2), fast=fast, backend=backend).shape == (3, 40, 30)
 
 
-def test_identity(fast):
+def test_identity(fast, backend):
     for i in range(16):
         shape = np.random.randint(2, 128, size=np.random.randint(1, 4))
         inp = np.random.randn(*shape)
 
-        allclose(inp, zoom(inp, 1, fast=fast), err_msg=f'{i, shape}')
+        allclose(inp, zoom(inp, 1, fast=fast, backend=backend), err_msg=f'{i, shape}')
 
 
-def test_dtype(fast):
+def test_dtype(fast, backend):
     for dtype in (np.float32, np.float64):
         for i in range(4):
             shape = np.random.randint(2, 128, size=np.random.randint(1, 4))
@@ -52,7 +57,7 @@ def test_dtype(fast):
 
             without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
 
-            out = zoom(inp, scale, fast=fast)
+            out = zoom(inp, scale, fast=fast, backend=backend)
             desired_out = scipy_zoom(inp, scale, order=1)
 
             allclose(out[without_borders], desired_out[without_borders], err_msg=f'{i, dtype}')
@@ -62,14 +67,14 @@ def test_dtype(fast):
             assert inp.dtype == inp_copy.dtype == dtype, f'{i, inp.dtype, inp_copy.dtype, dtype}'
 
 
-def test_scale_types(fast):
+def test_scale_types(fast, backend):
     scales = [2, 2.0, (2, 2, 2), [2, 2, 2], np.array([2, 2, 2])]
 
     inp = np.random.randn(64, 64, 64)
     prev = None
 
     for scale in scales:
-        out = zoom(inp, scale, fast=fast)
+        out = zoom(inp, scale, fast=fast, backend=backend)
 
         if prev is not None:
             allclose(prev, out, err_msg=f'{scale}')
@@ -77,13 +82,13 @@ def test_scale_types(fast):
         prev = out
 
 
-def test_contiguity_awareness(fast):
+def test_contiguity_awareness(fast, backend):
     for i in range(2):
         for j in range(2):
             inp = np.random.randn(*(64,) * (3 - i))
             scale = np.random.uniform(0.5, 2, size=inp.ndim)
 
-            zoom(inp, scale, fast=fast)
+            zoom(inp, scale, fast=fast, backend=backend)
 
             desired_out = scipy_zoom(inp, scale, order=1)
             without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
@@ -92,7 +97,7 @@ def test_contiguity_awareness(fast):
                 # This changes contiguity
                 permuted = np.transpose(inp, permutation)
 
-                out_permuted = zoom(permuted, scale[np.array(permutation)])
+                out_permuted = zoom(permuted, scale[np.array(permutation)], backend=backend)
 
                 allclose(
                     np.transpose(out_permuted, inverse_permutation(np.array(permutation)))[without_borders],
@@ -105,7 +110,7 @@ def test_contiguity_awareness(fast):
                 ), f"Didn't find permutation for {i, j, permutation}"
 
 
-def test_thin(fast):
+def test_thin(fast, backend):
     for i in range(3):
         for j in range(16):
             shape = [1 if k < i else np.random.randint(2, 128) for k in range(3)]
@@ -116,13 +121,13 @@ def test_thin(fast):
                 : None if shape[0] == 1 else -1, : None if shape[1] == 1 else -1, : None if shape[2] == 1 else -1
             ]
             allclose(
-                zoom(inp, scale, fast=fast)[without_borders],
+                zoom(inp, scale, fast=fast, backend=backend)[without_borders],
                 scipy_zoom(inp, scale, order=1)[without_borders],
                 err_msg=f'{i, j, shape, scale}',
             )
 
 
-def test_stress(fast):
+def test_stress(fast, backend):
     """Make sure that our zoom-s are consistent with scipy's"""
     for i in range(32):
         shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
@@ -135,12 +140,12 @@ def test_stress(fast):
         desired_out = scipy_zoom(inp, scale, order=1)[without_borders]
 
         allclose(
-            zoom(inp, scale, fast=fast)[without_borders],
+            zoom(inp, scale, fast=fast, backend=backend)[without_borders],
             desired_out,
             err_msg=f'{i, shape, scale}',
         )
         allclose(
-            _zoom(inp, scale, fast=fast)[without_borders],
+            _zoom(inp, scale, fast=fast, backend=backend)[without_borders],
             desired_out,
             err_msg=f'{i, shape, scale}',
         )

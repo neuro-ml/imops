@@ -4,13 +4,10 @@ from warnings import warn
 import numpy as np
 from scipy.interpolate import interp1d as scipy_interp1d
 
-# from .src._fast_zoom import _interp1d as fast_src_interp1d
-# from .src._zoom import _interp1d as src_interp1d
-from .src._numba_zoom import _interp1d as src_interp1d
-from .utils import FAST_MATH_WARNING, normalize_num_threads
-
-
-fast_src_interp1d = src_interp1d
+from .src._fast_zoom import _interp1d as cython_fast_interp1d
+from .src._numba_zoom import _interp1d_fp32 as numba_interp1d_fp32, _interp1d_fp64 as numba_interp1d_fp64
+from .src._zoom import _interp1d as cython_interp1d
+from .utils import DEFAULT_BACKEND, FAST_MATH_WARNING, normalize_num_threads
 
 
 class interp1d:
@@ -36,8 +33,14 @@ class interp1d:
         assume_sorted: bool = False,
         num_threads: int = -1,
         fast: bool = False,
+        backend: str = DEFAULT_BACKEND,
     ) -> None:
-        if y.dtype not in (np.float32, np.float64) or y.ndim > 3 or kind not in ('linear', 1):
+        self.backend = backend
+        dtype = y.dtype
+
+        if backend == 'scipy':
+            self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
+        elif dtype not in (np.float32, np.float64) or y.ndim > 3 or kind not in ('linear', 1):
             warn(
                 "Fast interpolation is only supported for ndim<=3, dtype=float32 or float64, order=1 or 'linear' "
                 "Falling back to scipy's implementation",
@@ -75,18 +78,23 @@ class interp1d:
             self.num_threads = num_threads
             self.fast = fast
 
-            if fast:
-                warn(FAST_MATH_WARNING, UserWarning)
-                self.src_interp1d = fast_src_interp1d
+            if backend == 'cython':
+                if fast:
+                    warn(FAST_MATH_WARNING, UserWarning)
+                    self.src_interp1d = cython_fast_interp1d
+                else:
+                    self.src_interp1d = cython_interp1d
+            # TODO: Investigate whether it is safe to use -ffast-math in numba
+            elif dtype == np.float32:
+                self.src_interp1d = numba_interp1d_fp32
             else:
-                self.src_interp1d = src_interp1d
+                self.src_interp1d = numba_interp1d_fp64
 
     def __call__(self, x_new: np.ndarray) -> np.ndarray:
         if self.scipy_interp1d is not None:
             return self.scipy_interp1d(x_new)
 
-        # TODO: Remove hardcode
-        num_threads = normalize_num_threads(self.num_threads, 'NUMBA_NUM_THREADS')
+        num_threads = normalize_num_threads(self.num_threads, self.backend)
 
         extrapolate = self.fill_value == 'extrapolate'
 

@@ -1,6 +1,7 @@
 import os
 from itertools import permutations
 from typing import Optional, Sequence, Union
+from warnings import warn
 
 import numpy as np
 
@@ -12,15 +13,24 @@ FAST_MATH_WARNING = (
     'Be careful, `fast=True` is an experimental feature. It enables some dangerous optimizations which can lead to '
     'unexpected results, use at your own risk! Visit https://simonbyrne.github.io/notes/fastmath/ for more information.'
 )
+AVAILABLE_BACKENDS = ('scipy', 'cython', 'numba')
+DEFAULT_BACKEND = 'numba'
+BACKEND2NUM_THREADS_VAR_NAME = {'cython': 'OMP_NUM_THREADS', 'numba': 'NUMBA_NUM_THREADS'}
+SINGLE_THREADED_BACKENDS = ('scipy',)
 
 
-def normalize_num_threads(num_threads: int, env_var_name: str = 'OMP_NUM_THREADS'):
+def normalize_num_threads(num_threads: int, backend: str):
+    if backend in SINGLE_THREADED_BACKENDS:
+        warn(f'`{backend}` backend is single-threaded.')
+        return 1
     if num_threads >= 0:
         return num_threads
 
-    omp_num_threads = os.environ.get(env_var_name)
-    # here we also handle the case OMP_NUM_THREADS="" gracefully
-    max_threads = int(omp_num_threads) if omp_num_threads else len(os.sched_getaffinity(0))
+    num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend]
+    env_num_threads = os.environ.get(num_threads_var_name)
+    # here we also handle the case `num_threads_var`="" gracefully
+    max_threads = int(env_num_threads) if env_num_threads else len(os.sched_getaffinity(0))
+
     return max_threads + num_threads + 1
 
 
