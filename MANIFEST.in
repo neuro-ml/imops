@@ -1,2 +1,4 @@
 include *.md
 include requirements.txt
+include pyproject.toml
+recursive-include ira *.py
