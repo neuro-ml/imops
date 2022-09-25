@@ -5,7 +5,7 @@ import numpy as np
 from scipy.ndimage import zoom as scipy_zoom
 
 from .src._fast_zoom import _zoom as cython_fast_zoom
-from .src._numba_zoom import _zoom_fp32 as numba_zoom_fp32, _zoom_fp64 as numba_zoom_fp64
+from .src._numba_zoom import _zoom as numba_zoom
 from .src._zoom import _zoom as cython_zoom
 from .utils import (
     AVAILABLE_BACKENDS,
@@ -169,10 +169,8 @@ def _zoom(
         else:
             src_zoom = cython_zoom
     # TODO: Investigate whether it is safe to use -ffast-math in numba
-    elif dtype == np.float32:
-        src_zoom = numba_zoom_fp32
     else:
-        src_zoom = numba_zoom_fp64
+        src_zoom = numba_zoom
 
     num_threads = normalize_num_threads(num_threads, backend)
 

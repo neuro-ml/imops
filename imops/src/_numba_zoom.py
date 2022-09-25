@@ -1,15 +1,8 @@
 import numpy as np
-from numba import njit, prange  # , set_num_threads
-from numba.pycc import CC
+from numba import njit, prange, set_num_threads
 
 
-cc = CC('_numba_zoom')
-cc._source_module = 'imops.src._numba_zoom'
-
-
-@cc.export('_interp1d_fp32', 'f4[:, :, ::1](f4[:, :, :], f8[:], f8[:], b1, f4, b1, b1, i4)')
-@cc.export('_interp1d_fp64', 'f8[:, :, ::1](f8[:, :, :], f8[:], f8[:], b1, f8, b1, b1, i4)')
-@njit(parallel=True)
+@njit(parallel=True, nogil=True, cache=True)
 def _interp1d(
     input: np.ndarray,
     old_locations: np.ndarray,
@@ -20,8 +13,8 @@ def _interp1d(
     assume_sorted: bool,
     num_threads: int,
 ) -> np.ndarray:
-    # FIXME: using `set_num_threads` causes segfault in AOT usage. Use env variable `NUMBA_NUM_THREADS` for now
-    # set_num_threads(num_threads)
+    # Note: using `set_num_threads` causes segfault in AOT usage. Use env variable `NUMBA_NUM_THREADS` for AOT.
+    set_num_threads(num_threads)
 
     rows, cols, dims = input.shape[0], input.shape[1], len(new_locations)
     contiguous_input = np.ascontiguousarray(input)
@@ -98,19 +91,19 @@ def _interp1d(
     return interpolated
 
 
-@njit
-def get_slope(x1: float, y1: float, x2: float, y2: float) -> float:
+@njit(nogil=True)
+def get_slope(x1: np.ndarray, y1: np.ndarray, x2: np.ndarray, y2: np.ndarray) -> np.ndarray:
     return (y2 - y1) / (x2 - x1)
 
 
-@njit
+@njit(nogil=True)
 def adjusted_coef(old_n: int, new_n: int) -> float:
     if new_n == 1:
         return old_n
     return (np.float64(old_n) - 1) / (np.float64(new_n) - 1)
 
 
-@njit
+@njit(nogil=True)
 def get_pixel3d(input: np.ndarray, rows: int, cols: int, dims: int, r: int, c: int, d: int, cval: float) -> float:
     if 0 <= r < rows and 0 <= c < cols and 0 <= d < dims:
         return input[r, c, d]
@@ -118,7 +111,7 @@ def get_pixel3d(input: np.ndarray, rows: int, cols: int, dims: int, r: int, c: i
     return cval
 
 
-@njit
+@njit(nogil=True)
 def interpolate3d(input: np.ndarray, rows: int, cols: int, dims: int, r: int, c: int, d: int, cval: float) -> float:
     minr = int(r)
     minc = int(c)
@@ -151,12 +144,10 @@ def interpolate3d(input: np.ndarray, rows: int, cols: int, dims: int, r: int, c:
     return c0 * (1 - dd) + c1 * dd
 
 
-@cc.export('_zoom_fp32', 'f4[:, :, ::1](f4[:, :, :], f8[:], f4, i4)')
-@cc.export('_zoom_fp64', 'f8[:, :, ::1](f8[:, :, :], f8[:], f8, i4)')
-@njit(parallel=True)
+@njit(parallel=True, nogil=True, cache=True)
 def _zoom(input: np.ndarray, zoom: np.ndarray, cval: float, num_threads: int) -> np.ndarray:
-    # FIXME: using `set_num_threads` causes segfault in AOT usage. Use env variable `NUMBA_NUM_THREADS` for now
-    # set_num_threads(num_threads)
+    # Note: using `set_num_threads` causes segfault in AOT usage. Use env variable `NUMBA_NUM_THREADS` for AOT.
+    set_num_threads(num_threads)
 
     contiguous_input = np.ascontiguousarray(input)
 

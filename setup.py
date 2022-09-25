@@ -1,6 +1,5 @@
 import runpy
 import shutil
-import sys
 from pathlib import Path
 
 from setuptools import Extension, find_packages, setup
@@ -8,19 +7,6 @@ from setuptools import Extension, find_packages, setup
 
 name = 'imops'
 root = Path(__file__).parent
-
-# FIXME
-for numba_so_file in Path(root / name / 'src').glob('_numba_zoom*.so'):
-    numba_so_file.unlink()
-root_init_file = Path(__file__).parent / name / '__init__.py'
-shutil.move(root_init_file, root / '__init__.py')
-
-if root not in sys.path:
-    sys.path.append(str(root))
-from imops.src._numba_zoom import cc  # noqa: I251, E402
-
-
-shutil.move(root / '__init__.py', root_init_file)
 
 
 class NumpyImport:
@@ -57,7 +43,7 @@ ext_modules = [
     )
     for module in modules
     for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
-] + [cc.distutils_extension()]
+]
 
 setup(
     name=name,
