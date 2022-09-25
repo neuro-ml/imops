@@ -1,4 +1,4 @@
 include *.md
 include requirements.txt
 include pyproject.toml
-recursive-include *.py
+recursive-include imops *.py
