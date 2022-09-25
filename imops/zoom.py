@@ -51,6 +51,8 @@ def zoom(
         the number of threads to use for computation. Default = the cpu count.
     fast
         whether to use `-ffast-math` compiled version (almost no effect for zoom).
+    backend
+        which backend to use. `numba`, `cython` and `scipy` are available, `numba` is used by default.
     """
     x = np.asarray(x)
     axis, scale_factor = broadcast_axis(axis, x.ndim, scale_factor)
@@ -92,6 +94,8 @@ def zoom_to_shape(
         the number of threads to use for computation. Default = the cpu count.
     fast
         whether to use `-ffast-math` compiled version (almost no effect for zoom).
+    backend
+        which backend to use. `numba`, `cython` and `scipy` are available, `numba` is used by default.
     """
     x = np.asarray(x)
     axis, shape = broadcast_axis(axis, x.ndim, shape)
@@ -128,8 +132,12 @@ def _zoom(
     Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs
 
     Works faster only for ndim <= 3. Shares interface with `scipy.ndimage.zoom`
-    except for `num_threads` argument defining how many threads to use (all available threads are used by default)
-    and `fast` argument defining whether to use `-ffast-math` compiled version or not (almost no effect for zoom).
+    except for
+    - `num_threads` argument defining how many threads to use (all available threads are used by default)
+    - `fast` argument defining whether to use `-ffast-math` compiled version or not,
+        almost no effect for zoom.
+    - `backend` argument defining which backend to use. `numba`, `cython` and `scipy` are available,
+        `numba` is used by default.
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.zoom.html`
     """

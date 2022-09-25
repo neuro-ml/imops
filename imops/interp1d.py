@@ -15,8 +15,12 @@ class interp1d:
     Faster parallelizable version of `scipy.interpolate.interp1d` for fp32 / fp64 inputs
 
     Works faster only for ndim <= 3. Shares interface with `scipy.interpolate.interp1d`
-    except for `num_threads` argument defining how many threads to use (all available threads are used by default)
-    and `fast` argument defining whether to use `-ffast-math` compiled version or not.
+    except for
+    - `num_threads` argument defining how many threads to use (all available threads are used by default)
+    - `fast` argument defining whether to use `-ffast-math` compiled version or not.
+        almost no effect for `backend='numba'`).
+    - `backend` argument defining which backend to use. `numba`, `cython` and `scipy` are available,
+        `numba` is used by default.
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html`
     """
