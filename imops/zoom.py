@@ -11,6 +11,7 @@ from .utils import (
     AVAILABLE_BACKENDS,
     DEFAULT_BACKEND,
     FAST_MATH_WARNING,
+    NUMBA_FAST_MATH_NO_EFFECT,
     AxesLike,
     AxesParams,
     broadcast_axis,
@@ -170,6 +171,8 @@ def _zoom(
             src_zoom = cython_zoom
     # TODO: Investigate whether it is safe to use -ffast-math in numba
     else:
+        if fast:
+            warn(NUMBA_FAST_MATH_NO_EFFECT, UserWarning)
         src_zoom = numba_zoom
 
     num_threads = normalize_num_threads(num_threads, backend)
@@ -180,6 +183,8 @@ def _zoom(
         input = input[(None,) * n_dummy]
         zoom = [*(1,) * n_dummy, *zoom]
 
+    zoom = np.array(zoom, dtype=np.float64)
+
     is_contiguous = input.data.c_contiguous
     c_contiguous_permutaion = None
 
@@ -188,15 +193,15 @@ def _zoom(
         if c_contiguous_permutaion is not None:
             out = src_zoom(
                 np.transpose(input, c_contiguous_permutaion),
-                np.array(zoom, dtype=np.float64)[c_contiguous_permutaion],
+                zoom[c_contiguous_permutaion],
                 cval,
                 num_threads,
             )
         else:
             warn("Input array can't be represented as C-contiguous, performance can drop a lot.")
-            out = src_zoom(input, np.array(zoom, dtype=np.float64), cval, num_threads)
+            out = src_zoom(input, zoom, cval, num_threads)
     else:
-        out = src_zoom(input, np.array(zoom, dtype=np.float64), cval, num_threads)
+        out = src_zoom(input, zoom, cval, num_threads)
 
     if c_contiguous_permutaion is not None:
         out = np.transpose(out, inverse_permutation(c_contiguous_permutaion))
@@ -204,5 +209,4 @@ def _zoom(
     if n_dummy:
         out = out[(0,) * n_dummy]
 
-    # TODO: Why `astype`?
-    return out.astype(dtype, copy=False)
+    return out

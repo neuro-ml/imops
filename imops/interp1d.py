@@ -7,7 +7,7 @@ from scipy.interpolate import interp1d as scipy_interp1d
 from .src._fast_zoom import _interp1d as cython_fast_interp1d
 from .src._numba_zoom import _interp1d as numba_interp1d
 from .src._zoom import _interp1d as cython_interp1d
-from .utils import DEFAULT_BACKEND, FAST_MATH_WARNING, normalize_num_threads
+from .utils import DEFAULT_BACKEND, FAST_MATH_WARNING, NUMBA_FAST_MATH_NO_EFFECT, normalize_num_threads
 
 
 class interp1d:
@@ -83,6 +83,8 @@ class interp1d:
                     warn(FAST_MATH_WARNING, UserWarning)
                     self.src_interp1d = cython_fast_interp1d
                 else:
+                    if fast:
+                        warn(NUMBA_FAST_MATH_NO_EFFECT, UserWarning)
                     self.src_interp1d = cython_interp1d
             # TODO: Investigate whether it is safe to use -ffast-math in numba
             else:

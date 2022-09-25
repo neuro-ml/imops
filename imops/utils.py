@@ -13,6 +13,7 @@ FAST_MATH_WARNING = (
     'Be careful, `fast=True` is an experimental feature. It enables some dangerous optimizations which can lead to '
     'unexpected results, use at your own risk! Visit https://simonbyrne.github.io/notes/fastmath/ for more information.'
 )
+NUMBA_FAST_MATH_NO_EFFECT = 'Setting `fast=True` have no effect for `scipy` and `numba` backends.'
 AVAILABLE_BACKENDS = ('scipy', 'cython', 'numba')
 DEFAULT_BACKEND = 'numba'
 BACKEND2NUM_THREADS_VAR_NAME = {'cython': 'OMP_NUM_THREADS', 'numba': 'NUMBA_NUM_THREADS'}
