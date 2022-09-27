@@ -96,13 +96,13 @@ class interp1d:
 
     def __call__(self, x_new: np.ndarray) -> np.ndarray:
         if self.scipy_interp1d is not None:
-            return self.scipy_interp1d(x_new).astype(self.dtype)
+            return self.scipy_interp1d(x_new)
 
         num_threads = normalize_num_threads(self.num_threads, self.backend)
 
         extrapolate = self.fill_value == 'extrapolate'
 
-        # TODO: Figure out how to handle multiple type signatures in Cython
+        # TODO: Figure out how to properly handle multiple type signatures in Cython and remove `.astype`-s
         out = self.src_interp1d(
             self.y,
             self.x.astype(np.float64),
@@ -112,7 +112,7 @@ class interp1d:
             extrapolate,
             self.assume_sorted,
             num_threads,
-        )
+        ).astype(max(self.y.dtype, self.x.dtype, x_new.dtype, key=lambda x: x.type(0).itemsize))
 
         if self.n_dummy:
             out = out[(0,) * self.n_dummy]

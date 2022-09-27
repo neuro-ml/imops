@@ -73,21 +73,26 @@ def test_extrapolation(fast, backend):
         allclose(out, desired_out, err_msg=f'{i, shape}')
 
 
-# TODO: test for different dtypes of arguments
 def test_dtype(fast, backend):
-    for dtype in (np.float32, np.float64):
-        shape = (128, 128)
-        inp = np.random.randn(*shape).astype(dtype)
+    for inp_dtype in (np.float32, np.float64):
+        for old_locations_dtype in (np.float32, np.float64):
+            for new_locations_dtype in (np.float32, np.float64):
+                shape = (128, 128)
+                inp = np.random.randn(*shape).astype(inp_dtype)
 
-        axis = np.random.choice(np.arange(inp.ndim))
-        old_locations = np.random.randn(shape[axis])
-        new_locations = np.random.randn(np.random.randint(shape[axis] // 2, shape[axis] * 2))
+                axis = np.random.choice(np.arange(inp.ndim))
+                old_locations = np.random.randn(shape[axis]).astype(old_locations_dtype)
+                new_locations = np.random.randn(np.random.randint(shape[axis] // 2, shape[axis] * 2)).astype(
+                    new_locations_dtype
+                )
 
-        out = interp1d(old_locations, inp, axis=axis, bounds_error=False, fill_value=0, fast=fast, backend=backend)(
-            new_locations
-        )
+                out = interp1d(
+                    old_locations, inp, axis=axis, bounds_error=False, fill_value=0, fast=fast, backend=backend
+                )(new_locations)
 
-        assert out.dtype == inp.dtype == dtype, f'{out.dtype}, {inp.dtype}, {dtype}'
+                assert out.dtype == max(
+                    inp_dtype, old_locations_dtype, new_locations_dtype, key=lambda x: x(0).itemsize
+                ), f'{out.dtype}, {inp_dtype}, {old_locations_dtype}, {new_locations_dtype}'
 
 
 def test_stress(fast, backend):

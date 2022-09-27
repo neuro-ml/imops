@@ -47,25 +47,29 @@ def test_identity(fast, backend):
         allclose(inp, zoom(inp, 1, fast=fast, backend=backend), err_msg=f'{i, shape}')
 
 
-# TODO: test for different dtypes of arguments
 def test_dtype(fast, backend):
-    for dtype in (np.float32, np.float64):
-        for i in range(4):
-            shape = np.random.randint(2, 128, size=np.random.randint(1, 4))
-            inp = (10 * np.random.randn(*shape)).astype(dtype)
-            inp_copy = np.copy(inp)
-            scale = np.random.uniform(0.5, 2, size=inp.ndim)
+    for inp_dtype in (np.float32, np.float64):
+        for scale_dtype in (np.int32, np.float32, np.float64):
+            for i in range(4):
+                shape = np.random.randint(2, 128, size=np.random.randint(1, 4))
+                inp = (10 * np.random.randn(*shape)).astype(inp_dtype)
+                inp_copy = np.copy(inp)
+                scale = np.random.uniform(0.5, 2, size=inp.ndim).astype(scale_dtype)
 
-            without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
+                without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
 
-            out = zoom(inp, scale, fast=fast, backend=backend)
-            desired_out = scipy_zoom(inp, scale, order=1)
+                out = zoom(inp, scale, fast=fast, backend=backend)
+                desired_out = scipy_zoom(inp, scale, order=1)
 
-            allclose(out[without_borders], desired_out[without_borders], err_msg=f'{i, dtype}')
-            assert out.dtype == desired_out.dtype == dtype, f'{i, out.dtype, desired_out.dtype, dtype}'
+                allclose(out[without_borders], desired_out[without_borders], err_msg=f'{i, inp_dtype, scale_dtype}')
+                assert (
+                    out.dtype == desired_out.dtype == inp_dtype
+                ), f'{i, out.dtype, desired_out.dtype, inp_dtype, scale_dtype}'
 
-            allclose(inp, inp_copy, err_msg=f'{i, dtype}')
-            assert inp.dtype == inp_copy.dtype == dtype, f'{i, inp.dtype, inp_copy.dtype, dtype}'
+                allclose(inp, inp_copy, err_msg=f'{i, inp_dtype, scale_dtype}')
+                assert (
+                    inp.dtype == inp_copy.dtype == inp_dtype
+                ), f'{i, inp.dtype, inp_copy.dtype, inp_dtype, scale_dtype}'
 
 
 def test_scale_types(fast, backend):

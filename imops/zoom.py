@@ -133,7 +133,7 @@ def _zoom(
 
     Works faster only for ndim <= 3. Shares interface with `scipy.ndimage.zoom`
     except for
-    - `num_threads` argument defining how many threads to use (all available threads are used by default)
+    - `num_threads` argument defining how many threads to use (all available threads are used by default).
     - `fast` argument defining whether to use `-ffast-math` compiled version or not,
         almost no effect for zoom.
     - `backend` argument defining which backend to use. `numba`, `cython` and `scipy` are available,
