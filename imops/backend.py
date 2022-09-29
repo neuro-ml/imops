@@ -88,7 +88,7 @@ class scipy(Backend):
     pass
 
 
-DEFAULT_BACKEND: Backend = cython()
+DEFAULT_BACKEND = cython()
 
 BACKEND2NUM_THREADS_VAR_NAME = {cython.__name__: 'OMP_NUM_THREADS', numba.__name__: 'NUMBA_NUM_THREADS'}
 SINGLE_THREADED_BACKENDS = (scipy.__name__,)
