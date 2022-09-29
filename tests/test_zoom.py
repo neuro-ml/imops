@@ -26,7 +26,7 @@ numba_configurations = [numba(*flags) for flags in product([False, True], repeat
 
 
 @dataclass
-class alien(Backend):
+class alien1(Backend):
     pass
 
 
@@ -35,7 +35,7 @@ def backend(request):
     return request.param
 
 
-@pytest.mark.parametrize('alien_backend', ['', 'alien', alien()])
+@pytest.mark.parametrize('alien_backend', ['', alien1(), 'alien2'])
 def test_alien_backend(alien_backend):
     inp = np.random.randn(32, 32, 32)
 
