@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import contextlib
-from typing import Union, Type, Dict, NamedTuple
+from dataclasses import dataclass
+from typing import Union, Type, Dict
 
 
 class Backend:
@@ -65,15 +66,16 @@ def imops_backend(backend: BackendLike):
 # implementations
 
 # TODO: make sure the dependency is importable before creating the backend
-class numba(Backend, NamedTuple):
+@dataclass
+class numba(Backend):
     cache: bool = True
 
 
-class cython(Backend, NamedTuple):
+class cython(Backend):
     pass
 
 
-class scipy(Backend, NamedTuple):
+class scipy(Backend):
     pass
 
 

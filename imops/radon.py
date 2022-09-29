@@ -4,11 +4,12 @@ from warnings import warn
 import numpy as np
 from scipy.fftpack import fft, ifft
 
+from .backend import BackendLike
 from .src._backprojection import backprojection3d
 from .src._fast_backprojection import backprojection3d as fast_backprojection3d
 from .src._fast_radon import radon3d as fast_radon3d
 from .src._radon import radon3d
-from .utils import DEFAULT_BACKEND, FAST_MATH_WARNING, normalize_axes, normalize_num_threads, restore_axes
+from .utils import FAST_MATH_WARNING, normalize_axes, normalize_num_threads, restore_axes
 
 
 def radon(
@@ -18,7 +19,7 @@ def radon(
     return_fill: bool = False,
     num_threads: int = -1,
     fast: bool = False,
-    backend: str = DEFAULT_BACKEND,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Fast implementation of Radon transform. Adapted from scikit-image.
@@ -75,7 +76,7 @@ def inverse_radon(
     axes: Tuple[int, int] = None,
     num_threads: int = -1,
     fast: bool = False,
-    backend: str = DEFAULT_BACKEND,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Fast implementation of inverse Radon transform. Adapted from scikit-image.

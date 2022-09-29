@@ -4,10 +4,11 @@ from warnings import warn
 import numpy as np
 from scipy.interpolate import interp1d as scipy_interp1d
 
+from .backend import BackendLike
 from .src._fast_zoom import _interp1d as cython_fast_interp1d
 from .src._numba_zoom import _interp1d as numba_interp1d
 from .src._zoom import _interp1d as cython_interp1d
-from .utils import DEFAULT_BACKEND, FAST_MATH_WARNING, NUMBA_FAST_MATH_NO_EFFECT, normalize_num_threads
+from .utils import FAST_MATH_WARNING, NUMBA_FAST_MATH_NO_EFFECT, normalize_num_threads
 
 
 class interp1d:
@@ -37,7 +38,7 @@ class interp1d:
         assume_sorted: bool = False,
         num_threads: int = -1,
         fast: bool = False,
-        backend: str = DEFAULT_BACKEND,
+        backend: BackendLike = None,
     ) -> None:
         self.backend = backend
         self.dtype = y.dtype
