@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import contextlib
 from dataclasses import dataclass
 from typing import Dict, Type, Union
@@ -18,10 +16,14 @@ class Backend:
     def name(self):
         return type(self).__name__
 
-    # to simplify static analysis for IDEs
-    cython: cython
-    numba: numba
-    scipy: scipy
+    def cython(self):
+        return cython
+
+    def numba(self):
+        return numba
+
+    def scipy(self):
+        return scipy
 
 
 BackendLike = Union[str, Backend, Type[Backend], None]
