@@ -24,7 +24,7 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
 
     old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axis))
     if (old_shape < new_shape).any():
-        raise ValueError(f'The resulting shape cannot be greater than the original one: {old_shape} vs {new_shape}')
+        raise ValueError(f'The resulting shape cannot be greater than the original one: {old_shape} vs {new_shape}.')
 
     ndim = len(x.shape)
     ratio = fill_by_indices(np.zeros(ndim), ratio, axis)

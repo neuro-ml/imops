@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import contextlib
 from dataclasses import dataclass
-from typing import Union, Type, Dict
+from typing import Dict, Type, Union
 
 
 class Backend:
     def __init_subclass__(cls, **kwargs):
         name = cls.__name__
         if name in AVAILABLE_BACKENDS:
-            raise ValueError(f'The name "{name}" is already in use')
+            raise ValueError(f'The name "{name}" is already in use.')
         AVAILABLE_BACKENDS[name] = cls
         if not hasattr(Backend, name):
             setattr(Backend, name, cls)
@@ -34,7 +34,7 @@ def resolve_backend(value: BackendLike) -> Backend:
 
     if isinstance(value, str):
         if value not in AVAILABLE_BACKENDS:
-            raise ValueError(f'"{value}" is not in the list of available backends: {tuple(AVAILABLE_BACKENDS)}')
+            raise ValueError(f'"{value}" is not in the list of available backends: {tuple(AVAILABLE_BACKENDS)}.')
 
         return AVAILABLE_BACKENDS[value]()
 
@@ -42,7 +42,7 @@ def resolve_backend(value: BackendLike) -> Backend:
         value = value()
 
     if not isinstance(value, Backend):
-        raise ValueError(f'Expected a `Backend instance`, got {value}')
+        raise ValueError(f'Expected a `Backend` instance, got {value}.')
 
     return value
 
@@ -64,17 +64,26 @@ def imops_backend(backend: BackendLike):
 
 
 # implementations
-
-# TODO: make sure the dependency is importable before creating the backend
+# TODO: Investigate whether it is safe to use -ffast-math in numba
 @dataclass
 class numba(Backend):
+    parallel: bool = True
+    nogil: bool = True
     cache: bool = True
 
+    def __post_init__(self):
+        try:
+            import numba  # noqa: F401
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError('Install `numba` package (pip install numba) to use "numba" backend.')
 
+
+@dataclass
 class cython(Backend):
-    pass
+    fast: bool = False
 
 
+@dataclass
 class scipy(Backend):
     pass
 
@@ -82,4 +91,4 @@ class scipy(Backend):
 DEFAULT_BACKEND: Backend = cython()
 
 BACKEND2NUM_THREADS_VAR_NAME = {cython.__name__: 'OMP_NUM_THREADS', numba.__name__: 'NUMBA_NUM_THREADS'}
-SINGLE_THREADED_BACKENDS = scipy.__name__,
+SINGLE_THREADED_BACKENDS = (scipy.__name__,)

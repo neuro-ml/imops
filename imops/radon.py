@@ -4,7 +4,7 @@ from warnings import warn
 import numpy as np
 from scipy.fftpack import fft, ifft
 
-from .backend import BackendLike
+from .backend import BackendLike, resolve_backend
 from .src._backprojection import backprojection3d
 from .src._fast_backprojection import backprojection3d as fast_backprojection3d
 from .src._fast_radon import radon3d as fast_radon3d
@@ -18,15 +18,18 @@ def radon(
     theta: Union[int, Sequence[float]] = None,
     return_fill: bool = False,
     num_threads: int = -1,
-    fast: bool = False,
     backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Fast implementation of Radon transform. Adapted from scikit-image.
     """
+    backend = resolve_backend(backend)
+    if backend.name not in ('cython',):
+        raise ValueError(f'Unsupported backend "{backend.name}".')
+
     image, axes, squeeze = normalize_axes(image, axes)
     if image.shape[1] != image.shape[2]:
-        raise ValueError(f'The image must be square along the provided axes. Shape: {image.shape[1:]}')
+        raise ValueError(f'The image must be square along the provided axes. Shape: {image.shape[1:]}.')
 
     if theta is None:
         theta = 180
@@ -41,7 +44,9 @@ def radon(
     values = image[:, outside_circle]
     min_, max_ = values.min(), values.max()
     if max_ - min_ > 0.1:
-        raise ValueError(f'The image must be constant outside the circle. ' f'Got values ranging from {min_} to {max_}')
+        raise ValueError(
+            f'The image must be constant outside the circle. ' f'Got values ranging from {min_} to {max_}.'
+        )
 
     if min_ != 0 or max_ != 0:
         image = image.copy()
@@ -52,7 +57,7 @@ def radon(
 
     num_threads = normalize_num_threads(num_threads, backend)
 
-    if fast:
+    if backend.fast:
         warn(FAST_MATH_WARNING, UserWarning)
         radon3d_ = fast_radon3d
     else:
@@ -75,12 +80,15 @@ def inverse_radon(
     theta: Union[int, Sequence[float]] = None,
     axes: Tuple[int, int] = None,
     num_threads: int = -1,
-    fast: bool = False,
     backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Fast implementation of inverse Radon transform. Adapted from scikit-image.
     """
+    backend = resolve_backend(backend)
+    if backend.name not in ('cython',):
+        raise ValueError(f'Unsupported backend "{backend.name}".')
+
     sinogram, axes, squeeze = normalize_axes(sinogram, axes)
 
     if theta is None:
@@ -118,7 +126,7 @@ def inverse_radon(
 
     num_threads = normalize_num_threads(num_threads, backend)
 
-    if fast:
+    if backend.fast:
         warn(FAST_MATH_WARNING, UserWarning)
         backprojection3d_ = fast_backprojection3d
     else:
