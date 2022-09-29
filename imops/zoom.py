@@ -4,12 +4,11 @@ from warnings import warn
 import numpy as np
 from scipy.ndimage import zoom as scipy_zoom
 
+from .backend import BackendLike, resolve_backend
 from .src._fast_zoom import _zoom as cython_fast_zoom
 from .src._numba_zoom import _zoom as numba_zoom
 from .src._zoom import _zoom as cython_zoom
 from .utils import (
-    AVAILABLE_BACKENDS,
-    DEFAULT_BACKEND,
     FAST_MATH_WARNING,
     NUMBA_FAST_MATH_NO_EFFECT,
     AxesLike,
@@ -30,7 +29,7 @@ def zoom(
     fill_value: Union[float, Callable] = 0,
     num_threads: int = -1,
     fast: bool = False,
-    backend: str = DEFAULT_BACKEND,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Rescale `x` according to `scale_factor` along the `axis`.
@@ -72,7 +71,7 @@ def zoom_to_shape(
     fill_value: Union[float, Callable] = 0,
     num_threads: int = -1,
     fast: bool = False,
-    backend: str = DEFAULT_BACKEND,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Rescale `x` to match `shape` along the `axis`.
@@ -110,7 +109,7 @@ def zoom_to_shape(
         fill_value=fill_value,
         num_threads=num_threads,
         fast=fast,
-        backend=DEFAULT_BACKEND,
+        backend=backend,
     )
 
 
@@ -126,7 +125,7 @@ def _zoom(
     grid_mode: bool = False,
     num_threads: int = -1,
     fast: bool = False,
-    backend: str = DEFAULT_BACKEND,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs
@@ -141,14 +140,15 @@ def _zoom(
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.zoom.html`
     """
-    if backend not in AVAILABLE_BACKENDS:
-        raise ValueError(f'Backend `{backend}` is not an available backend')
+    backend = resolve_backend(backend)
+    if backend.name not in ('scipy', 'numba', 'cython'):
+        raise ValueError(f'Unsupported backend "{backend.name}"')
 
     ndim = input.ndim
     dtype = input.dtype
     zoom = fill_by_indices(np.ones(input.ndim, 'float64'), zoom, range(input.ndim))
 
-    if backend == 'scipy':
+    if backend.name == 'scipy':
         return scipy_zoom(
             input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
@@ -171,14 +171,15 @@ def _zoom(
             input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
 
-    if backend == 'cython':
+    if backend.name == 'cython':
         if fast:
             warn(FAST_MATH_WARNING, UserWarning)
             src_zoom = cython_fast_zoom
         else:
             src_zoom = cython_zoom
+
     # TODO: Investigate whether it is safe to use -ffast-math in numba
-    else:
+    if backend.name == 'numba':
         if fast:
             warn(NUMBA_FAST_MATH_NO_EFFECT, UserWarning)
         src_zoom = numba_zoom

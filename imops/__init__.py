@@ -1,4 +1,5 @@
 from .__version__ import __version__
+from .backend import set_backend, imops_backend, Backend
 from .crop import crop_to_box, crop_to_shape
 from .interp1d import interp1d
 from .pad import pad, pad_to_divisible, pad_to_shape, restore_crop

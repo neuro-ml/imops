@@ -5,6 +5,7 @@ from warnings import warn
 
 import numpy as np
 
+from .backend import Backend, SINGLE_THREADED_BACKENDS, BACKEND2NUM_THREADS_VAR_NAME
 
 AxesLike = Union[int, Sequence[int]]
 AxesParams = Union[float, Sequence[float]]
@@ -14,21 +15,17 @@ FAST_MATH_WARNING = (
     'unexpected results, use at your own risk! Visit https://simonbyrne.github.io/notes/fastmath/ for more information.'
 )
 NUMBA_FAST_MATH_NO_EFFECT = 'Setting `fast=True` have no effect for `scipy` and `numba` backends.'
-AVAILABLE_BACKENDS = ('scipy', 'cython', 'numba')
-DEFAULT_BACKEND = 'numba'
-BACKEND2NUM_THREADS_VAR_NAME = {'cython': 'OMP_NUM_THREADS', 'numba': 'NUMBA_NUM_THREADS'}
-SINGLE_THREADED_BACKENDS = ('scipy',)
 
 
-def normalize_num_threads(num_threads: int, backend: str):
-    if backend in SINGLE_THREADED_BACKENDS:
+def normalize_num_threads(num_threads: int, backend: Backend):
+    if backend.name in SINGLE_THREADED_BACKENDS:
         warn(f'`{backend}` backend is single-threaded.')
         return 1
     if num_threads >= 0:
         return num_threads
 
-    num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend]
-    env_num_threads = os.environ.get(num_threads_var_name)
+    num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend.name]
+    env_num_threads = os.environ.get(num_threads_var_name).strip()
     # here we also handle the case `num_threads_var`="" gracefully
     max_threads = int(env_num_threads) if env_num_threads else len(os.sched_getaffinity(0))
 
