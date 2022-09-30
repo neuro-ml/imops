@@ -10,8 +10,12 @@ from imops.backend import Cython
 
 almost_eq = np.testing.assert_array_almost_equal
 
+cython_configurations = [Cython(fast) for fast in [False, True]]
+all_configurations = cython_configurations
+names = list(map(str, all_configurations))
 
-@pytest.fixture(params=[Cython(fast=False), Cython(fast=True)])
+
+@pytest.fixture(params=all_configurations, ids=names)
 def backend(request):
     return request.param
 

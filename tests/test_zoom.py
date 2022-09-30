@@ -23,6 +23,8 @@ allclose = partial(allclose, rtol=1e-6)
 scipy_configurations = [Scipy()]
 cython_configurations = [Cython(fast) for fast in [False, True]]
 numba_configurations = [Numba(*flags) for flags in product([False, True], repeat=3)]
+all_configurations = scipy_configurations + cython_configurations + numba_configurations
+names = list(map(str, all_configurations))
 
 
 @dataclass
@@ -30,12 +32,12 @@ class Alien1(Backend):
     pass
 
 
-@pytest.fixture(params=scipy_configurations + cython_configurations + numba_configurations)
+@pytest.fixture(params=all_configurations, ids=names)
 def backend(request):
     return request.param
 
 
-@pytest.mark.parametrize('alien_backend', ['', Alien1(), 'Alien2'])
+@pytest.mark.parametrize('alien_backend', ['', Alien1(), 'Alien2'], ids=['empty', 'Alien1', 'Alien2'])
 def test_alien_backend(alien_backend):
     inp = np.random.randn(32, 32, 32)
 
