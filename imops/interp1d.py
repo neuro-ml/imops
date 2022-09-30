@@ -4,23 +4,20 @@ from warnings import warn
 import numpy as np
 from scipy.interpolate import interp1d as scipy_interp1d
 
+from .backend import BackendLike, resolve_backend
 from .src._fast_zoom import _interp1d as cython_fast_interp1d
-from .src._numba_zoom import _interp1d as numba_interp1d
 from .src._zoom import _interp1d as cython_interp1d
-from .utils import DEFAULT_BACKEND, FAST_MATH_WARNING, NUMBA_FAST_MATH_NO_EFFECT, normalize_num_threads
+from .utils import FAST_MATH_WARNING, normalize_num_threads
 
 
 class interp1d:
     """
-    Faster parallelizable version of `scipy.interpolate.interp1d` for fp32 / fp64 inputs
+    Faster parallelizable version of `scipy.interpolate.interp1d` for fp32 / fp64 inputs.
 
-    Works faster only for ndim <= 3. Shares interface with `scipy.interpolate.interp1d`
-    except for
+    Works faster only for ndim <= 3. Shares interface with `scipy.interpolate.interp1d` except for
     - `num_threads` argument defining how many threads to use (all available threads are used by default)
-    - `fast` argument defining whether to use `-ffast-math` compiled version or not.
-        almost no effect for `backend='numba'`).
     - `backend` argument defining which backend to use. `numba`, `cython` and `scipy` are available,
-        `numba` is used by default.
+        `cython` is used by default.
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html`
     """
@@ -36,19 +33,21 @@ class interp1d:
         fill_value: Union[float, str] = np.nan,
         assume_sorted: bool = False,
         num_threads: int = -1,
-        fast: bool = False,
-        backend: str = DEFAULT_BACKEND,
+        backend: BackendLike = None,
     ) -> None:
+        backend = resolve_backend(backend)
+        if backend.name not in ('Scipy', 'Numba', 'Cython'):
+            raise ValueError(f'Unsupported backend "{backend.name}".')
+
         self.backend = backend
         self.dtype = y.dtype
 
-        if backend == 'scipy':
+        if backend.name == 'Scipy':
             self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
         elif self.dtype not in (np.float32, np.float64) or y.ndim > 3 or kind not in ('linear', 1):
             warn(
-                "Fast interpolation is only supported for ndim<=3, dtype=float32 or float64, order=1 or 'linear' "
-                "Falling back to scipy's implementation",
-                UserWarning,
+                "Fast interpolation is only supported for ndim<=3, dtype=float32 or float64, order=1 or 'linear'. "
+                "Falling back to scipy's implementation.",
             )
             self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
         else:
@@ -80,19 +79,20 @@ class interp1d:
 
             self.assume_sorted = assume_sorted
             self.num_threads = num_threads
-            self.fast = fast
 
-            if backend == 'cython':
-                if fast:
-                    warn(FAST_MATH_WARNING, UserWarning)
+            if backend.name == 'Cython':
+                if backend.fast:
+                    warn(FAST_MATH_WARNING)
                     self.src_interp1d = cython_fast_interp1d
                 else:
-                    if fast:
-                        warn(NUMBA_FAST_MATH_NO_EFFECT, UserWarning)
                     self.src_interp1d = cython_interp1d
-            # TODO: Investigate whether it is safe to use -ffast-math in numba
-            else:
-                self.src_interp1d = numba_interp1d
+            if backend.name == 'Numba':
+                from numba import njit
+
+                from .src._numba_zoom import _interp1d as numba_interp1d
+
+                njit_kwargs = {kwarg: getattr(backend, kwarg) for kwarg in backend.__dataclass_fields__.keys()}
+                self.src_interp1d = njit(**njit_kwargs)(numba_interp1d)
 
     def __call__(self, x_new: np.ndarray) -> np.ndarray:
         if self.scipy_interp1d is not None:
@@ -102,17 +102,36 @@ class interp1d:
 
         extrapolate = self.fill_value == 'extrapolate'
 
+        if self.backend.name == 'Numba':
+            from numba import get_num_threads, set_num_threads
+
+            old_num_threads = get_num_threads()
+            set_num_threads(num_threads)
         # TODO: Figure out how to properly handle multiple type signatures in Cython and remove `.astype`-s
-        out = self.src_interp1d(
-            self.y,
-            self.x.astype(np.float64),
-            x_new.astype(np.float64),
-            self.bounds_error,
-            0.0 if extrapolate else self.fill_value,
-            extrapolate,
-            self.assume_sorted,
-            num_threads,
-        ).astype(max(self.y.dtype, self.x.dtype, x_new.dtype, key=lambda x: x.type(0).itemsize))
+        if self.backend.name in ('Numba',):
+            out = self.src_interp1d(
+                self.y,
+                self.x.astype(np.float64),
+                x_new.astype(np.float64),
+                self.bounds_error,
+                0.0 if extrapolate else self.fill_value,
+                extrapolate,
+                self.assume_sorted,
+            )
+            if self.backend.name == 'Numba':
+                set_num_threads(old_num_threads)
+        else:
+            out = self.src_interp1d(
+                self.y,
+                self.x.astype(np.float64),
+                x_new.astype(np.float64),
+                self.bounds_error,
+                0.0 if extrapolate else self.fill_value,
+                extrapolate,
+                self.assume_sorted,
+                num_threads,
+            )
+        out = out.astype(max(self.y.dtype, self.x.dtype, x_new.dtype, key=lambda x: x.type(0).itemsize))
 
         if self.n_dummy:
             out = out[(0,) * self.n_dummy]

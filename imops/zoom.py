@@ -1,17 +1,15 @@
+from platform import python_version
 from typing import Callable, Sequence, Union
 from warnings import warn
 
 import numpy as np
-from scipy.ndimage import zoom as scipy_zoom
+from scipy.ndimage import zoom as _scipy_zoom
 
+from .backend import BackendLike, resolve_backend
 from .src._fast_zoom import _zoom as cython_fast_zoom
-from .src._numba_zoom import _zoom as numba_zoom
 from .src._zoom import _zoom as cython_zoom
 from .utils import (
-    AVAILABLE_BACKENDS,
-    DEFAULT_BACKEND,
     FAST_MATH_WARNING,
-    NUMBA_FAST_MATH_NO_EFFECT,
     AxesLike,
     AxesParams,
     broadcast_axis,
@@ -22,6 +20,13 @@ from .utils import (
 )
 
 
+def scipy_zoom(*args, grid_mode, **kwargs):
+    return _scipy_zoom(*args, **kwargs)
+
+
+scipy_zoom = scipy_zoom if python_version()[:3] == '3.6' else _scipy_zoom
+
+
 def zoom(
     x: np.ndarray,
     scale_factor: AxesParams,
@@ -29,8 +34,7 @@ def zoom(
     order: int = 1,
     fill_value: Union[float, Callable] = 0,
     num_threads: int = -1,
-    fast: bool = False,
-    backend: str = DEFAULT_BACKEND,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Rescale `x` according to `scale_factor` along the `axis`.
@@ -49,10 +53,8 @@ def zoom(
         value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used.
     num_threads
         the number of threads to use for computation. Default = the cpu count.
-    fast
-        whether to use `-ffast-math` compiled version (almost no effect for zoom).
     backend
-        which backend to use. `numba`, `cython` and `scipy` are available, `numba` is used by default.
+        which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default.
     """
     x = np.asarray(x)
     axis, scale_factor = broadcast_axis(axis, x.ndim, scale_factor)
@@ -61,7 +63,7 @@ def zoom(
     if callable(fill_value):
         fill_value = fill_value(x)
 
-    return _zoom(x, scale_factor, order=order, cval=fill_value, num_threads=num_threads, fast=fast, backend=backend)
+    return _zoom(x, scale_factor, order=order, cval=fill_value, num_threads=num_threads, backend=backend)
 
 
 def zoom_to_shape(
@@ -71,8 +73,7 @@ def zoom_to_shape(
     order: int = 1,
     fill_value: Union[float, Callable] = 0,
     num_threads: int = -1,
-    fast: bool = False,
-    backend: str = DEFAULT_BACKEND,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Rescale `x` to match `shape` along the `axis`.
@@ -92,10 +93,8 @@ def zoom_to_shape(
         value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used.
     num_threads
         the number of threads to use for computation. Default = the cpu count.
-    fast
-        whether to use `-ffast-math` compiled version (almost no effect for zoom).
     backend
-        which backend to use. `numba`, `cython` and `scipy` are available, `numba` is used by default.
+        which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default.
     """
     x = np.asarray(x)
     axis, shape = broadcast_axis(axis, x.ndim, shape)
@@ -109,8 +108,7 @@ def zoom_to_shape(
         order=order,
         fill_value=fill_value,
         num_threads=num_threads,
-        fast=fast,
-        backend=DEFAULT_BACKEND,
+        backend=backend,
     )
 
 
@@ -125,30 +123,28 @@ def _zoom(
     *,
     grid_mode: bool = False,
     num_threads: int = -1,
-    fast: bool = False,
-    backend: str = DEFAULT_BACKEND,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
-    Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs
+    Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs.
 
     Works faster only for ndim <= 3. Shares interface with `scipy.ndimage.zoom`
     except for
     - `num_threads` argument defining how many threads to use (all available threads are used by default).
-    - `fast` argument defining whether to use `-ffast-math` compiled version or not,
-        almost no effect for zoom.
     - `backend` argument defining which backend to use. `numba`, `cython` and `scipy` are available,
-        `numba` is used by default.
+        `cython` is used by default.
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.zoom.html`
     """
-    if backend not in AVAILABLE_BACKENDS:
-        raise ValueError(f'Backend `{backend}` is not an available backend')
+    backend = resolve_backend(backend)
+    if backend.name not in ('Scipy', 'Numba', 'Cython'):
+        raise ValueError(f'Unsupported backend "{backend.name}"')
 
     ndim = input.ndim
     dtype = input.dtype
     zoom = fill_by_indices(np.ones(input.ndim, 'float64'), zoom, range(input.ndim))
 
-    if backend == 'scipy':
+    if backend.name == 'Scipy':
         return scipy_zoom(
             input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
@@ -163,27 +159,32 @@ def _zoom(
     ):
         warn(
             'Fast zoom is only supported for ndim<=3, dtype=float32 or float64, output=None, '
-            "order=1, mode='constant', grid_mode=False. Falling back to scipy's implementation",
-            UserWarning,
+            "order=1, mode='constant', grid_mode=False. Falling back to scipy's implementation.",
         )
 
         return scipy_zoom(
             input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
 
-    if backend == 'cython':
-        if fast:
-            warn(FAST_MATH_WARNING, UserWarning)
+    num_threads = normalize_num_threads(num_threads, backend)
+
+    if backend.name == 'Cython':
+        if backend.fast:
+            warn(FAST_MATH_WARNING)
             src_zoom = cython_fast_zoom
         else:
             src_zoom = cython_zoom
-    # TODO: Investigate whether it is safe to use -ffast-math in numba
-    else:
-        if fast:
-            warn(NUMBA_FAST_MATH_NO_EFFECT, UserWarning)
-        src_zoom = numba_zoom
 
-    num_threads = normalize_num_threads(num_threads, backend)
+    if backend.name == 'Numba':
+        from numba import get_num_threads, njit, set_num_threads
+
+        from .src._numba_zoom import _zoom as numba_zoom
+
+        old_num_threads = get_num_threads()
+        set_num_threads(num_threads)
+
+        njit_kwargs = {kwarg: getattr(backend, kwarg) for kwarg in backend.__dataclass_fields__.keys()}
+        src_zoom = njit(**njit_kwargs)(numba_zoom)
 
     n_dummy = 3 - ndim
 
@@ -199,22 +200,37 @@ def _zoom(
     if not is_contiguous:
         c_contiguous_permutaion = get_c_contiguous_permutaion(input)
         if c_contiguous_permutaion is not None:
-            out = src_zoom(
-                np.transpose(input, c_contiguous_permutaion),
-                zoom[c_contiguous_permutaion],
-                cval,
-                num_threads,
-            )
+            if backend.name in ('Numba',):
+                out = src_zoom(
+                    np.transpose(input, c_contiguous_permutaion),
+                    zoom[c_contiguous_permutaion],
+                    cval,
+                )
+            else:
+                out = src_zoom(
+                    np.transpose(input, c_contiguous_permutaion),
+                    zoom[c_contiguous_permutaion],
+                    cval,
+                    num_threads,
+                )
         else:
             warn("Input array can't be represented as C-contiguous, performance can drop a lot.")
-            out = src_zoom(input, zoom, cval, num_threads)
+            if backend.name in ('Numba',):
+                out = src_zoom(input, zoom, cval)
+            else:
+                out = src_zoom(input, zoom, cval, num_threads)
     else:
-        out = src_zoom(input, zoom, cval, num_threads)
+        if backend.name in ('Numba',):
+            out = src_zoom(input, zoom, cval)
+        else:
+            out = src_zoom(input, zoom, cval, num_threads)
 
     if c_contiguous_permutaion is not None:
         out = np.transpose(out, inverse_permutation(c_contiguous_permutaion))
 
     if n_dummy:
         out = out[(0,) * n_dummy]
+    if backend.name == 'Numba':
+        set_num_threads(old_num_threads)
 
     return out

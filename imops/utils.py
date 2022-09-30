@@ -5,6 +5,8 @@ from warnings import warn
 
 import numpy as np
 
+from .backend import BACKEND2NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Backend
+
 
 AxesLike = Union[int, Sequence[int]]
 AxesParams = Union[float, Sequence[float]]
@@ -13,24 +15,25 @@ FAST_MATH_WARNING = (
     'Be careful, `fast=True` is an experimental feature. It enables some dangerous optimizations which can lead to '
     'unexpected results, use at your own risk! Visit https://simonbyrne.github.io/notes/fastmath/ for more information.'
 )
-NUMBA_FAST_MATH_NO_EFFECT = 'Setting `fast=True` have no effect for `scipy` and `numba` backends.'
-AVAILABLE_BACKENDS = ('scipy', 'cython', 'numba')
-DEFAULT_BACKEND = 'numba'
-BACKEND2NUM_THREADS_VAR_NAME = {'cython': 'OMP_NUM_THREADS', 'numba': 'NUMBA_NUM_THREADS'}
-SINGLE_THREADED_BACKENDS = ('scipy',)
 
 
-def normalize_num_threads(num_threads: int, backend: str):
-    if backend in SINGLE_THREADED_BACKENDS:
+def normalize_num_threads(num_threads: int, backend: Backend):
+    if backend.name in SINGLE_THREADED_BACKENDS:
         warn(f'`{backend}` backend is single-threaded.')
         return 1
     if num_threads >= 0:
+        # FIXME
+        if backend.name == 'Numba':
+            warn(
+                'Setting `num_threads` has no effect with "Numba" backend. '
+                'Use `NUMBA_NUM_THREADS` environment variable.'
+            )
         return num_threads
 
-    num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend]
+    num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend.name]
     env_num_threads = os.environ.get(num_threads_var_name)
     # here we also handle the case `num_threads_var`="" gracefully
-    max_threads = int(env_num_threads) if env_num_threads else len(os.sched_getaffinity(0))
+    max_threads = int(env_num_threads.strip()) if env_num_threads else len(os.sched_getaffinity(0))
 
     return max_threads + num_threads + 1
 
@@ -86,7 +89,7 @@ def broadcast_axis(axis: Union[AxesLike, None], dim: int, *values: Union[AxesLik
     values = [to_axis(axis, x) for x in values]
     sizes = set(map(len, values))
     if not sizes <= {len(axis)}:
-        raise ValueError(f"Params sizes don't match with the axes: {axis} vs {sizes}")
+        raise ValueError(f"Params sizes don't match with the axes: {axis} vs {sizes}.")
 
     return (axis, *values)
 
@@ -113,7 +116,7 @@ def broadcast_to_axis(axis: AxesLike, *arrays: AxesParams):
     arrays = list(map(np.atleast_1d, arrays))
     lengths = list(map(len, arrays))
     if axis is None:
-        raise ValueError('`axis` cannot be None')
+        raise ValueError('`axis` cannot be None.')
 
     if not all(len(axis) == x or x == 1 for x in lengths):
         raise ValueError(f'Axes and arrays are not broadcastable: {len(axis)} vs {", ".join(map(str, lengths))}.')

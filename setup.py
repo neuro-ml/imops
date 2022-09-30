@@ -53,6 +53,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=requirements,
+    extras_require={'numba': ['numba'], 'all': ['numba']},
     setup_requires=[
         # Setuptools 18.0 properly handles Cython extensions.
         'setuptools>=18.0',

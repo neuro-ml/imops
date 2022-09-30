@@ -1,8 +1,7 @@
 import numpy as np
-from numba import njit, prange, set_num_threads
+from numba import njit, prange
 
 
-@njit(parallel=True, nogil=True, cache=True)
 def _interp1d(
     input: np.ndarray,
     old_locations: np.ndarray,
@@ -11,10 +10,7 @@ def _interp1d(
     fill_value: float,
     extrapolate: bool,
     assume_sorted: bool,
-    num_threads: int,
 ) -> np.ndarray:
-    # Note: using `set_num_threads` causes segfault in AOT usage. Use env variable `NUMBA_NUM_THREADS` for AOT.
-    set_num_threads(num_threads)
 
     rows, cols, dims = input.shape[0], input.shape[1], len(new_locations)
     contiguous_input = np.ascontiguousarray(input)
@@ -144,11 +140,7 @@ def interpolate3d(input: np.ndarray, rows: int, cols: int, dims: int, r: int, c:
     return c0 * (1 - dd) + c1 * dd
 
 
-@njit(parallel=True, nogil=True, cache=True)
-def _zoom(input: np.ndarray, zoom: np.ndarray, cval: float, num_threads: int) -> np.ndarray:
-    # Note: using `set_num_threads` causes segfault in AOT usage. Use env variable `NUMBA_NUM_THREADS` for AOT.
-    set_num_threads(num_threads)
-
+def _zoom(input: np.ndarray, zoom: np.ndarray, cval: float) -> np.ndarray:
     contiguous_input = np.ascontiguousarray(input)
 
     old_rows, old_cols, old_dims = input.shape
