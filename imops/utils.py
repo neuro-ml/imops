@@ -22,6 +22,12 @@ def normalize_num_threads(num_threads: int, backend: Backend):
         warn(f'`{backend}` backend is single-threaded.')
         return 1
     if num_threads >= 0:
+        # FIXME
+        if backend.name == 'Numba':
+            warn(
+                'Setting `num_threads` has no effect with "Numba" backend. '
+                'Use `NUMBA_NUM_THREADS` environment variable.'
+            )
         return num_threads
 
     num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend.name]

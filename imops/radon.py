@@ -24,7 +24,7 @@ def radon(
     Fast implementation of Radon transform. Adapted from scikit-image.
     """
     backend = resolve_backend(backend)
-    if backend.name not in ('cython',):
+    if backend.name not in ('Cython',):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
     image, axes, squeeze = normalize_axes(image, axes)
@@ -58,7 +58,7 @@ def radon(
     num_threads = normalize_num_threads(num_threads, backend)
 
     if backend.fast:
-        warn(FAST_MATH_WARNING, UserWarning)
+        warn(FAST_MATH_WARNING)
         radon3d_ = fast_radon3d
     else:
         radon3d_ = radon3d
@@ -86,7 +86,7 @@ def inverse_radon(
     Fast implementation of inverse Radon transform. Adapted from scikit-image.
     """
     backend = resolve_backend(backend)
-    if backend.name not in ('cython',):
+    if backend.name not in ('Cython',):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
     sinogram, axes, squeeze = normalize_axes(sinogram, axes)
@@ -127,7 +127,7 @@ def inverse_radon(
     num_threads = normalize_num_threads(num_threads, backend)
 
     if backend.fast:
-        warn(FAST_MATH_WARNING, UserWarning)
+        warn(FAST_MATH_WARNING)
         backprojection3d_ = fast_backprojection3d
     else:
         backprojection3d_ = backprojection3d

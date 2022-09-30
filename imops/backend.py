@@ -16,14 +16,14 @@ class Backend:
     def name(self):
         return type(self).__name__
 
-    def cython(self):
-        return cython
+    def Cython(self):
+        return Cython
 
-    def numba(self):
-        return numba
+    def Numba(self):
+        return Numba
 
-    def scipy(self):
-        return scipy
+    def Scipy(self):
+        return Scipy
 
 
 BackendLike = Union[str, Backend, Type[Backend], None]
@@ -68,7 +68,7 @@ def imops_backend(backend: BackendLike):
 # implementations
 # TODO: Investigate whether it is safe to use -ffast-math in numba
 @dataclass
-class numba(Backend):
+class Numba(Backend):
     parallel: bool = True
     nogil: bool = True
     cache: bool = True
@@ -81,16 +81,16 @@ class numba(Backend):
 
 
 @dataclass
-class cython(Backend):
+class Cython(Backend):
     fast: bool = False
 
 
 @dataclass
-class scipy(Backend):
+class Scipy(Backend):
     pass
 
 
-DEFAULT_BACKEND = cython()
+DEFAULT_BACKEND = Cython()
 
-BACKEND2NUM_THREADS_VAR_NAME = {cython.__name__: 'OMP_NUM_THREADS', numba.__name__: 'NUMBA_NUM_THREADS'}
-SINGLE_THREADED_BACKENDS = (scipy.__name__,)
+BACKEND2NUM_THREADS_VAR_NAME = {Cython.__name__: 'OMP_NUM_THREADS', Numba.__name__: 'NUMBA_NUM_THREADS'}
+SINGLE_THREADED_BACKENDS = (Scipy.__name__,)

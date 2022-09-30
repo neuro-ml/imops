@@ -137,14 +137,14 @@ def _zoom(
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.zoom.html`
     """
     backend = resolve_backend(backend)
-    if backend.name not in ('scipy', 'numba', 'cython'):
+    if backend.name not in ('Scipy', 'Numba', 'Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}"')
 
     ndim = input.ndim
     dtype = input.dtype
     zoom = fill_by_indices(np.ones(input.ndim, 'float64'), zoom, range(input.ndim))
 
-    if backend.name == 'scipy':
+    if backend.name == 'Scipy':
         return scipy_zoom(
             input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
@@ -160,7 +160,6 @@ def _zoom(
         warn(
             'Fast zoom is only supported for ndim<=3, dtype=float32 or float64, output=None, '
             "order=1, mode='constant', grid_mode=False. Falling back to scipy's implementation.",
-            UserWarning,
         )
 
         return scipy_zoom(
@@ -169,14 +168,14 @@ def _zoom(
 
     num_threads = normalize_num_threads(num_threads, backend)
 
-    if backend.name == 'cython':
+    if backend.name == 'Cython':
         if backend.fast:
-            warn(FAST_MATH_WARNING, UserWarning)
+            warn(FAST_MATH_WARNING)
             src_zoom = cython_fast_zoom
         else:
             src_zoom = cython_zoom
 
-    if backend.name == 'numba':
+    if backend.name == 'Numba':
         from numba import get_num_threads, njit, set_num_threads
 
         from .src._numba_zoom import _zoom as numba_zoom
@@ -201,7 +200,7 @@ def _zoom(
     if not is_contiguous:
         c_contiguous_permutaion = get_c_contiguous_permutaion(input)
         if c_contiguous_permutaion is not None:
-            if backend.name in ('numba',):
+            if backend.name in ('Numba',):
                 out = src_zoom(
                     np.transpose(input, c_contiguous_permutaion),
                     zoom[c_contiguous_permutaion],
@@ -216,12 +215,12 @@ def _zoom(
                 )
         else:
             warn("Input array can't be represented as C-contiguous, performance can drop a lot.")
-            if backend.name in ('numba',):
+            if backend.name in ('Numba',):
                 out = src_zoom(input, zoom, cval)
             else:
                 out = src_zoom(input, zoom, cval, num_threads)
     else:
-        if backend.name in ('numba',):
+        if backend.name in ('Numba',):
             out = src_zoom(input, zoom, cval)
         else:
             out = src_zoom(input, zoom, cval, num_threads)
@@ -231,7 +230,7 @@ def _zoom(
 
     if n_dummy:
         out = out[(0,) * n_dummy]
-    if backend.name == 'numba':
+    if backend.name == 'Numba':
         set_num_threads(old_num_threads)
 
     return out

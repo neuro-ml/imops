@@ -7,16 +7,16 @@ from numpy.testing import assert_allclose as allclose
 from scipy.interpolate import interp1d as scipy_interp1d
 
 from imops import interp1d
-from imops.backend import Backend, cython, numba, scipy
+from imops.backend import Backend, Cython, Numba, Scipy
 
 
-scipy_configurations = [scipy()]
-cython_configurations = [cython(fast) for fast in [False, True]]
-numba_configurations = [numba(*flags) for flags in product([False, True], repeat=3)]
+scipy_configurations = [Scipy()]
+cython_configurations = [Cython(fast) for fast in [False, True]]
+numba_configurations = [Numba(*flags) for flags in product([False, True], repeat=3)]
 
 
 @dataclass
-class alien3(Backend):
+class Alien3(Backend):
     pass
 
 
@@ -25,7 +25,7 @@ def backend(request):
     return request.param
 
 
-@pytest.mark.parametrize('alien_backend', ['', alien3(), 'alien4'])
+@pytest.mark.parametrize('alien_backend', ['', Alien3(), 'Alien4'])
 def test_alien_backend(alien_backend):
     x = np.array([1.0, 2.0, 3.0])
     y = np.array([1.0, 2.0, 3.0])

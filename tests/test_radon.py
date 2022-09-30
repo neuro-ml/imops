@@ -5,13 +5,13 @@ import pytest
 from utils import fill_outside, sample_ct, sk_iradon, sk_radon
 
 from imops import inverse_radon, radon
-from imops.backend import cython
+from imops.backend import Cython
 
 
 almost_eq = np.testing.assert_array_almost_equal
 
 
-@pytest.fixture(params=[cython(fast=False), cython(fast=True)])
+@pytest.fixture(params=[Cython(fast=False), Cython(fast=True)])
 def backend(request):
     return request.param
 

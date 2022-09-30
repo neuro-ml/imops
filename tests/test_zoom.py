@@ -7,7 +7,7 @@ import pytest
 from numpy.testing import assert_allclose as allclose
 from scipy.ndimage import zoom as scipy_zoom
 
-from imops.backend import Backend, cython, numba, scipy
+from imops.backend import Backend, Cython, Numba, Scipy
 from imops.utils import get_c_contiguous_permutaion, inverse_permutation
 from imops.zoom import _zoom, zoom, zoom_to_shape
 
@@ -20,13 +20,13 @@ from imops.zoom import _zoom, zoom, zoom_to_shape
 # rtol=1e-6 as there is still some inconsistency
 allclose = partial(allclose, rtol=1e-6)
 
-scipy_configurations = [scipy()]
-cython_configurations = [cython(fast) for fast in [False, True]]
-numba_configurations = [numba(*flags) for flags in product([False, True], repeat=3)]
+scipy_configurations = [Scipy()]
+cython_configurations = [Cython(fast) for fast in [False, True]]
+numba_configurations = [Numba(*flags) for flags in product([False, True], repeat=3)]
 
 
 @dataclass
-class alien1(Backend):
+class Alien1(Backend):
     pass
 
 
@@ -35,7 +35,7 @@ def backend(request):
     return request.param
 
 
-@pytest.mark.parametrize('alien_backend', ['', alien1(), 'alien2'])
+@pytest.mark.parametrize('alien_backend', ['', Alien1(), 'Alien2'])
 def test_alien_backend(alien_backend):
     inp = np.random.randn(32, 32, 32)
 

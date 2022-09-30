@@ -36,19 +36,18 @@ class interp1d:
         backend: BackendLike = None,
     ) -> None:
         backend = resolve_backend(backend)
-        if backend.name not in ('scipy', 'numba', 'cython'):
+        if backend.name not in ('Scipy', 'Numba', 'Cython'):
             raise ValueError(f'Unsupported backend "{backend.name}".')
 
         self.backend = backend
         self.dtype = y.dtype
 
-        if backend.name == 'scipy':
+        if backend.name == 'Scipy':
             self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
         elif self.dtype not in (np.float32, np.float64) or y.ndim > 3 or kind not in ('linear', 1):
             warn(
                 "Fast interpolation is only supported for ndim<=3, dtype=float32 or float64, order=1 or 'linear'. "
                 "Falling back to scipy's implementation.",
-                UserWarning,
             )
             self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
         else:
@@ -81,13 +80,13 @@ class interp1d:
             self.assume_sorted = assume_sorted
             self.num_threads = num_threads
 
-            if backend.name == 'cython':
+            if backend.name == 'Cython':
                 if backend.fast:
-                    warn(FAST_MATH_WARNING, UserWarning)
+                    warn(FAST_MATH_WARNING)
                     self.src_interp1d = cython_fast_interp1d
                 else:
                     self.src_interp1d = cython_interp1d
-            if backend.name == 'numba':
+            if backend.name == 'Numba':
                 from numba import njit
 
                 from .src._numba_zoom import _interp1d as numba_interp1d
@@ -103,13 +102,13 @@ class interp1d:
 
         extrapolate = self.fill_value == 'extrapolate'
 
-        if self.backend.name == 'numba':
+        if self.backend.name == 'Numba':
             from numba import get_num_threads, set_num_threads
 
             old_num_threads = get_num_threads()
             set_num_threads(num_threads)
         # TODO: Figure out how to properly handle multiple type signatures in Cython and remove `.astype`-s
-        if self.backend.name in ('numba',):
+        if self.backend.name in ('Numba',):
             out = self.src_interp1d(
                 self.y,
                 self.x.astype(np.float64),
@@ -119,7 +118,7 @@ class interp1d:
                 extrapolate,
                 self.assume_sorted,
             )
-            if self.backend.name == 'numba':
+            if self.backend.name == 'Numba':
                 set_num_threads(old_num_threads)
         else:
             out = self.src_interp1d(
