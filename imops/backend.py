@@ -16,14 +16,9 @@ class Backend:
     def name(self):
         return type(self).__name__
 
-    def Cython(self):
-        return Cython
-
-    def Numba(self):
-        return Numba
-
-    def Scipy(self):
-        return Scipy
+    Cython: 'Cython'
+    Numba: 'Numba'
+    Scipy: 'Scipy'
 
 
 BackendLike = Union[str, Backend, Type[Backend], None]
