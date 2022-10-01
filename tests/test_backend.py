@@ -1,6 +1,6 @@
 import pytest
 
-from imops.backend import resolve_backend, Cython, Numba, Scipy, set_backend, imops_backend
+from imops.backend import Cython, Numba, Scipy, imops_backend, resolve_backend, set_backend
 
 
 def test_resolve():
