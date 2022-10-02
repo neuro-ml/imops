@@ -8,7 +8,7 @@ skip-string-normalization = true
 
 # FIXME: coverage can't reach lines of numba.njit-ed functions
 [tool.coverage.run]
-omit = 'imops/src/_numba_zoom.py'
+omit = ['imops/src/_numba_zoom.py']
 
 [tool.isort]
 line_length = 120
