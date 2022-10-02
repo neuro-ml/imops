@@ -27,7 +27,7 @@ def backend(request):
     return request.param
 
 
-@pytest.mark.parametrize('alien_backend', ['', Alien3(), 'Alien4'])
+@pytest.mark.parametrize('alien_backend', ['', Alien3(), 'Alien4'], ids=['empty', 'Alien3', 'Alien4'])
 def test_alien_backend(alien_backend):
     x = np.array([1.0, 2.0, 3.0])
     y = np.array([1.0, 2.0, 3.0])

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from functools import partial
 
 import numpy as np
@@ -5,7 +6,7 @@ import pytest
 from utils import fill_outside, sample_ct, sk_iradon, sk_radon
 
 from imops import inverse_radon, radon
-from imops.backend import Cython
+from imops.backend import Backend, Cython
 
 
 almost_eq = np.testing.assert_array_almost_equal
@@ -15,9 +16,26 @@ all_configurations = cython_configurations
 names = list(map(str, all_configurations))
 
 
+@dataclass
+class Alien5(Backend):
+    pass
+
+
 @pytest.fixture(params=all_configurations, ids=names)
 def backend(request):
     return request.param
+
+
+@pytest.mark.parametrize('alien_backend', ['', Alien5(), 'Alien6'], ids=['empty', 'Alien5', 'Alien6'])
+def test_alien_backend(alien_backend):
+    image = sample_ct(4, 64)
+    sinogram = sk_radon(image)
+
+    with pytest.raises(ValueError):
+        radon(image, axes=(1, 2), backend=backend)
+
+    with pytest.raises(ValueError):
+        inverse_radon(sinogram, axes=(1, 2), backend=alien_backend)
 
 
 def test_inverse_radon(backend):

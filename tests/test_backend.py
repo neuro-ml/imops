@@ -1,6 +1,8 @@
+import sys
+
 import pytest
 
-from imops.backend import Cython, Numba, Scipy, imops_backend, resolve_backend, set_backend
+from imops.backend import Backend, Cython, Numba, Scipy, imops_backend, resolve_backend, set_backend
 
 
 def test_resolve():
@@ -27,3 +29,29 @@ def test_backend_change():
         assert resolve_backend(None) == Scipy()
 
     assert resolve_backend(None) == Cython()
+
+
+def test_existing_backend():
+    with pytest.raises(ValueError):
+
+        class Numba(Backend):
+            pass
+
+    with pytest.raises(ValueError):
+
+        class Cython(Backend):
+            pass
+
+    with pytest.raises(ValueError):
+
+        class Scipy(Backend):
+            pass
+
+
+def test_without_numba():
+    sys.modules['numba'] = None
+
+    with pytest.raises(ModuleNotFoundError):
+        Numba()
+
+    sys.modules.pop('numba')
