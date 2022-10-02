@@ -131,6 +131,20 @@ def test_contiguity_awareness(backend):
                 ), f"Didn't find permutation for {i, j, permutation}"
 
 
+def test_nocontiguous(backend):
+    inp = np.random.randn(64, 64, 64)[::2]
+    scale = 2
+
+    desired_out = scipy_zoom(inp, scale, order=1)
+    without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
+
+    if backend.name == 'Scipy':
+        allclose(zoom(inp, 2, backend=backend)[without_borders], desired_out[without_borders])
+    else:
+        with pytest.warns(UserWarning):
+            allclose(zoom(inp, 2, backend=backend)[without_borders], desired_out[without_borders])
+
+
 def test_thin(backend):
     for i in range(3):
         for j in range(16):
