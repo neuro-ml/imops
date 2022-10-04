@@ -51,9 +51,9 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pytest tests -m nonumba
-          pip install numba
           pytest tests -m "not nonumba" --junitxml=reports/junit-${{ matrix.python-version }}.xml --cov="$MODULE_PARENT/$MODULE_NAME" --cov-report=xml --cov-branch
+          pip uninstall numba
+          pytest tests/test_backend -m nonumba
       - name: Generate coverage report
         run: |
           coverage xml -o reports/coverage-${{ matrix.python-version }}.xml

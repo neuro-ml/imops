@@ -6,6 +6,11 @@ build-backend = 'setuptools.build_meta'
 line-length = 120
 skip-string-normalization = true
 
+[tool.pytest.ini_options]
+markers = [
+    "nonumba",
+]
+
 # FIXME: coverage can't reach lines of numba.njit-ed functions
 [tool.coverage.report]
 omit = ['imops/src/_numba_zoom.py']

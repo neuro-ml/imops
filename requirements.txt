@@ -3,3 +3,4 @@ numpy>=1.22,<2.0.0; python_version >= '3.8'
 scipy>=1.0,<2.0.0
 dataclasses; python_version < '3.7'
 Cython
+numba
