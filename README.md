@@ -25,8 +25,7 @@ from imops import radon, inverse_radon
 ## Fast linear/bilinear/trilinear zoom
 
 ```python
-from imops import zoom
-from imops import zoom_to_shape
+from imops import zoom, zoom_to_shape
 
 # fast zoom with optional fallback to scipy's implementation
 y = zoom(x, 2, axis=[0, 1])
@@ -67,7 +66,7 @@ z = crop_to_shape(x, (4, 120, 67), ratio=0.25)
 ```
 
 # Backends
-For `zoom`, `zoom_to_shape`, `_zoom`, `interp1d`, `radon`, `inverse_radon` you can specify which backend to use. Backend can be specified by a string or by an instance of `Backend` class. The latter allows you to customize some backend options:
+For `zoom`, `zoom_to_shape`, `interp1d`, `radon`, `inverse_radon` you can specify which backend to use. Backend can be specified by a string or by an instance of `Backend` class. The latter allows you to customize some backend options:
 ```python
 from imops import Cython, Numba, Scipy, zoom
 
@@ -92,10 +91,10 @@ Available backends:
 |-----------------|---------|---------|---------|
 | `zoom`          | &check; | &check; | &check; |
 | `zoom_to_shape` | &check; | &check; | &check; |
-| `_zoom`         | &check; | &check; | &check; |
 | `interp1d`      | &check; | &check; | &check; |
 | `radon`         | &cross; | &check; | &cross; |
 | `inverse_radon` | &cross; | &check; | &cross; |
+
 # Acknowledgements
 
 Some parts of our code for radon/inverse radon transform as well as the code for linear interpolation are inspired by
