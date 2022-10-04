@@ -71,7 +71,7 @@ class Numba(Backend):
     def __post_init__(self):
         try:
             import numba  # noqa: F401
-        except ModuleNotFoundError:
+        except ModuleNotFoundError:  # pragma: no cover
             raise ModuleNotFoundError('Install `numba` package (pip install numba) to use "numba" backend.')
 
 

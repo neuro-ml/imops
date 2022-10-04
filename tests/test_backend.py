@@ -1,5 +1,3 @@
-import sys
-
 import pytest
 
 from imops.backend import Backend, Cython, Numba, Scipy, imops_backend, resolve_backend, set_backend
@@ -48,11 +46,7 @@ def test_existing_backend():
             pass
 
 
-def test_without_numba():
-    numba = sys.modules.pop('numba', None)
-
+@pytest.mark.nonumba
+def test_error_without_numba():
     with pytest.raises(ModuleNotFoundError):
         Numba()
-
-    if numba is not None:
-        sys.modules['numba'] = numba

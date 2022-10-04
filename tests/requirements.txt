@@ -2,4 +2,3 @@ pytest
 pytest-subtests
 pytest-cov
 scikit-image
-numba
