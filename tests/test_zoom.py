@@ -20,13 +20,11 @@ from imops.zoom import _zoom, zoom, zoom_to_shape
 # rtol=1e-6 as there is still some inconsistency
 allclose = partial(allclose, rtol=1e-6)
 
-
-def all_configurations():
-    scipy_configurations = [Scipy()]
-    cython_configurations = [Cython(fast) for fast in [False, True]]
-    numba_configurations = [Numba(*flags) for flags in product([False, True], repeat=3)]
-
-    return scipy_configurations + cython_configurations + numba_configurations
+scipy_configurations = [Scipy()]
+cython_configurations = [Cython(fast) for fast in [False, True]]
+numba_configurations = [Numba(*flags) for flags in product([False, True], repeat=3)]
+all_configurations = scipy_configurations + cython_configurations + numba_configurations
+names = list(map(str, all_configurations))
 
 
 @dataclass
@@ -34,7 +32,7 @@ class Alien1(Backend):
     pass
 
 
-@pytest.fixture(params=all_configurations(), ids=list(map(str, all_configurations())))
+@pytest.fixture(params=all_configurations, ids=names)
 def backend(request):
     return request.param
 
