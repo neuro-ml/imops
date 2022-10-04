@@ -99,8 +99,8 @@ class interp1d:
             return self.scipy_interp1d(x_new)
 
         num_threads = normalize_num_threads(self.num_threads, self.backend)
-
         extrapolate = self.fill_value == 'extrapolate'
+        args = () if self.backend.name in ('Numba',) else (num_threads,)
 
         if self.backend.name == 'Numba':
             from numba import get_num_threads, set_num_threads
@@ -108,29 +108,20 @@ class interp1d:
             old_num_threads = get_num_threads()
             set_num_threads(num_threads)
         # TODO: Figure out how to properly handle multiple type signatures in Cython and remove `.astype`-s
-        if self.backend.name in ('Numba',):
-            out = self.src_interp1d(
-                self.y,
-                self.x.astype(np.float64),
-                x_new.astype(np.float64),
-                self.bounds_error,
-                0.0 if extrapolate else self.fill_value,
-                extrapolate,
-                self.assume_sorted,
-            )
-            if self.backend.name == 'Numba':
-                set_num_threads(old_num_threads)
-        else:
-            out = self.src_interp1d(
-                self.y,
-                self.x.astype(np.float64),
-                x_new.astype(np.float64),
-                self.bounds_error,
-                0.0 if extrapolate else self.fill_value,
-                extrapolate,
-                self.assume_sorted,
-                num_threads,
-            )
+        out = self.src_interp1d(
+            self.y,
+            self.x.astype(np.float64),
+            x_new.astype(np.float64),
+            self.bounds_error,
+            0.0 if extrapolate else self.fill_value,
+            extrapolate,
+            self.assume_sorted,
+            *args,
+        )
+
+        if self.backend.name == 'Numba':
+            set_num_threads(old_num_threads)
+
         out = out.astype(max(self.y.dtype, self.x.dtype, x_new.dtype, key=lambda x: x.type(0).itemsize))
 
         if self.n_dummy:

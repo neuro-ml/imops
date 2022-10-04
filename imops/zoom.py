@@ -196,34 +196,22 @@ def _zoom(
 
     is_contiguous = input.data.c_contiguous
     c_contiguous_permutaion = None
+    args = () if backend.name in ('Numba',) else (num_threads,)
 
     if not is_contiguous:
         c_contiguous_permutaion = get_c_contiguous_permutaion(input)
         if c_contiguous_permutaion is not None:
-            if backend.name in ('Numba',):
-                out = src_zoom(
-                    np.transpose(input, c_contiguous_permutaion),
-                    zoom[c_contiguous_permutaion],
-                    cval,
-                )
-            else:
-                out = src_zoom(
-                    np.transpose(input, c_contiguous_permutaion),
-                    zoom[c_contiguous_permutaion],
-                    cval,
-                    num_threads,
-                )
+            out = src_zoom(
+                np.transpose(input, c_contiguous_permutaion),
+                zoom[c_contiguous_permutaion],
+                cval,
+                *args,
+            )
         else:
             warn("Input array can't be represented as C-contiguous, performance can drop a lot.")
-            if backend.name in ('Numba',):
-                out = src_zoom(input, zoom, cval)
-            else:
-                out = src_zoom(input, zoom, cval, num_threads)
+            out = src_zoom(input, zoom, cval, *args)
     else:
-        if backend.name in ('Numba',):
-            out = src_zoom(input, zoom, cval)
-        else:
-            out = src_zoom(input, zoom, cval, num_threads)
+        out = src_zoom(input, zoom, cval, *args)
 
     if c_contiguous_permutaion is not None:
         out = np.transpose(out, inverse_permutation(c_contiguous_permutaion))
