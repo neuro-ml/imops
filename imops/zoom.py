@@ -143,6 +143,7 @@ def _zoom(
     ndim = input.ndim
     dtype = input.dtype
     zoom = fill_by_indices(np.ones(input.ndim, 'float64'), zoom, range(input.ndim))
+    num_threads = normalize_num_threads(num_threads, backend)
 
     if backend.name == 'Scipy':
         return scipy_zoom(
@@ -165,8 +166,6 @@ def _zoom(
         return scipy_zoom(
             input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
-
-    num_threads = normalize_num_threads(num_threads, backend)
 
     if backend.name == 'Cython':
         if backend.fast:
@@ -193,7 +192,6 @@ def _zoom(
         zoom = [*(1,) * n_dummy, *zoom]
 
     zoom = np.array(zoom, dtype=np.float64)
-
     is_contiguous = input.data.c_contiguous
     c_contiguous_permutaion = None
     args = () if backend.name in ('Numba',) else (num_threads,)
@@ -215,7 +213,6 @@ def _zoom(
 
     if c_contiguous_permutaion is not None:
         out = np.transpose(out, inverse_permutation(c_contiguous_permutaion))
-
     if n_dummy:
         out = out[(0,) * n_dummy]
     if backend.name == 'Numba':

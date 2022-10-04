@@ -49,9 +49,10 @@ def test_existing_backend():
 
 
 def test_without_numba():
-    sys.modules['numba'] = None
+    numba = sys.modules.pop('numba', None)
 
     with pytest.raises(ModuleNotFoundError):
         Numba()
 
-    sys.modules.pop('numba')
+    if numba is not None:
+        sys.modules['numba'] = numba

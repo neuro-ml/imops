@@ -19,7 +19,8 @@ FAST_MATH_WARNING = (
 
 def normalize_num_threads(num_threads: int, backend: Backend):
     if backend.name in SINGLE_THREADED_BACKENDS:
-        warn(f'`{backend}` backend is single-threaded.')
+        if num_threads != -1:
+            warn(f'"{backend.name}" backend is single-threaded. Setting `num_threads` has no effect.')
         return 1
     if num_threads >= 0:
         # FIXME

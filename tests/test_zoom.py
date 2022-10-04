@@ -45,6 +45,20 @@ def test_alien_backend(alien_backend):
         zoom(inp, 2, backend=alien_backend)
 
 
+def test_single_threaded_warning():
+    inp = np.random.randn(32, 32, 32)
+
+    with pytest.warns(UserWarning):
+        zoom(inp, 2, num_threads=2, backend='Scipy')
+
+
+def test_numba_num_threads():
+    inp = np.random.randn(32, 32, 32)
+
+    with pytest.warns(UserWarning):
+        zoom(inp, 2, num_threads=2, backend='Numba')
+
+
 def test_shape(backend):
     inp = np.random.rand(3, 10, 10) * 2 + 3
     shape = inp.shape

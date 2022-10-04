@@ -31,8 +31,25 @@ def backend(request):
 def test_alien_backend(alien_backend):
     x = np.array([1.0, 2.0, 3.0])
     y = np.array([1.0, 2.0, 3.0])
+
     with pytest.raises(ValueError):
         interp1d(x, y, axis=0, fill_value=0, backend=alien_backend)
+
+
+def test_single_threaded_warning():
+    x = np.array([1.0, 2.0, 3.0])
+    y = np.array([1.0, 2.0, 3.0])
+
+    with pytest.warns(UserWarning):
+        interp1d(x, y, axis=0, fill_value=0, num_threads=2, backend='Scipy')(x)
+
+
+def test_numba_num_threads():
+    x = np.array([1.0, 2.0, 3.0])
+    y = np.array([1.0, 2.0, 3.0])
+
+    with pytest.warns(UserWarning):
+        interp1d(x, y, axis=0, fill_value=0, num_threads=2, backend='Numba')(x)
 
 
 def test_extrapolation_exception(backend):

@@ -41,6 +41,7 @@ class interp1d:
 
         self.backend = backend
         self.dtype = y.dtype
+        self.num_threads = num_threads
 
         if backend.name == 'Scipy':
             self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
@@ -53,6 +54,7 @@ class interp1d:
         else:
             if bounds_error and fill_value == 'extrapolate':
                 raise ValueError('Cannot extrapolate and raise at the same time.')
+
             if fill_value == 'extrapolate' and len(x) < 2 or len(y) < 2:
                 raise ValueError('x and y arrays must have at least 2 entries.')
 
@@ -65,20 +67,20 @@ class interp1d:
                 raise ValueError('x and y arrays must be equal in length along interpolation axis.')
 
             self.axis = axis
+
             if axis not in (-1, y.ndim - 1):
                 y = np.swapaxes(y, -1, axis)
 
             self.fill_value = fill_value
             self.scipy_interp1d = None
             self.x = np.copy(x) if copy else x
-
             self.n_dummy = 3 - y.ndim
             self.y = y[(None,) * self.n_dummy] if self.n_dummy else y
+
             if copy:
                 self.y = np.copy(self.y)
 
             self.assume_sorted = assume_sorted
-            self.num_threads = num_threads
 
             if backend.name == 'Cython':
                 if backend.fast:
@@ -86,6 +88,7 @@ class interp1d:
                     self.src_interp1d = cython_fast_interp1d
                 else:
                     self.src_interp1d = cython_interp1d
+
             if backend.name == 'Numba':
                 from numba import njit
 
@@ -95,10 +98,11 @@ class interp1d:
                 self.src_interp1d = njit(**njit_kwargs)(numba_interp1d)
 
     def __call__(self, x_new: np.ndarray) -> np.ndarray:
+        num_threads = normalize_num_threads(self.num_threads, self.backend)
+
         if self.scipy_interp1d is not None:
             return self.scipy_interp1d(x_new)
 
-        num_threads = normalize_num_threads(self.num_threads, self.backend)
         extrapolate = self.fill_value == 'extrapolate'
         args = () if self.backend.name in ('Numba',) else (num_threads,)
 
@@ -126,10 +130,8 @@ class interp1d:
 
         if self.n_dummy:
             out = out[(0,) * self.n_dummy]
-
         if self.axis not in (-1, out.ndim - 1):
             out = np.swapaxes(out, -1, self.axis)
-
         # FIXME: fix behaviour with np.inf-s
         if np.isnan(out).any():
             if not np.isinf(out).any():
@@ -137,6 +139,7 @@ class interp1d:
 
             have_neg = np.isneginf(out).any()
             have_pos = np.isposinf(out).any()
+
             if have_pos and have_neg:
                 raise RuntimeError("Can't decide how to handle nans in the output.")
 
