@@ -1,8 +1,11 @@
 import os
 from itertools import permutations
 from typing import Optional, Sequence, Union
+from warnings import warn
 
 import numpy as np
+
+from .backend import BACKEND2NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Backend
 
 
 AxesLike = Union[int, Sequence[int]]
@@ -14,13 +17,25 @@ FAST_MATH_WARNING = (
 )
 
 
-def normalize_num_threads(num_threads: int):
+def normalize_num_threads(num_threads: int, backend: Backend):
+    if backend.name in SINGLE_THREADED_BACKENDS:
+        if num_threads != -1:
+            warn(f'"{backend.name}" backend is single-threaded. Setting `num_threads` has no effect.')
+        return 1
     if num_threads >= 0:
+        # FIXME
+        if backend.name == 'Numba':
+            warn(
+                'Setting `num_threads` has no effect with "Numba" backend. '
+                'Use `NUMBA_NUM_THREADS` environment variable.'
+            )
         return num_threads
 
-    omp_num_threads = os.environ.get('OMP_NUM_THREADS')
-    # here we also handle the case OMP_NUM_THREADS="" gracefully
-    max_threads = int(omp_num_threads) if omp_num_threads else len(os.sched_getaffinity(0))
+    num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend.name]
+    # here we also handle the case `num_threads_var`=" " gracefully
+    env_num_threads = os.environ.get(num_threads_var_name, '').strip()
+    max_threads = int(env_num_threads) if env_num_threads else len(os.sched_getaffinity(0))
+
     return max_threads + num_threads + 1
 
 
@@ -75,7 +90,7 @@ def broadcast_axis(axis: Union[AxesLike, None], dim: int, *values: Union[AxesLik
     values = [to_axis(axis, x) for x in values]
     sizes = set(map(len, values))
     if not sizes <= {len(axis)}:
-        raise ValueError(f"Params sizes don't match with the axes: {axis} vs {sizes}")
+        raise ValueError(f"Params sizes don't match with the axes: {axis} vs {sizes}.")
 
     return (axis, *values)
 
@@ -102,7 +117,7 @@ def broadcast_to_axis(axis: AxesLike, *arrays: AxesParams):
     arrays = list(map(np.atleast_1d, arrays))
     lengths = list(map(len, arrays))
     if axis is None:
-        raise ValueError('`axis` cannot be None')
+        raise ValueError('`axis` cannot be None.')
 
     if not all(len(axis) == x or x == 1 for x in lengths):
         raise ValueError(f'Axes and arrays are not broadcastable: {len(axis)} vs {", ".join(map(str, lengths))}.')

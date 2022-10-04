@@ -80,7 +80,7 @@ def pad_to_shape(
     old_shape = np.array(x.shape)[list(axis)]
     if (old_shape > shape).any():
         shape = fill_by_indices(x.shape, shape, axis)
-        raise ValueError(f'The resulting shape cannot be smaller than the original: {x.shape} vs {shape}')
+        raise ValueError(f'The resulting shape cannot be smaller than the original: {x.shape} vs {shape}.')
 
     delta = shape - old_shape
     start = (delta * ratio).astype(int)

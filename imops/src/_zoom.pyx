@@ -130,7 +130,7 @@ cdef inline double adjusted_coef(Py_ssize_t old_n, Py_ssize_t new_n) nogil:
     return  (<double>old_n - 1) / (<double>new_n - 1)
 
 
-cdef inline double interpolate3d(FLOAT* input,
+cdef inline FLOAT interpolate3d(FLOAT* input,
                                  Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
                                  double r, double c, double d,
                                  double cval) nogil:
@@ -179,7 +179,7 @@ def _zoom(FLOAT[:, :, :] input, double[:] zoom, double cval, Py_ssize_t num_thre
     new_shape = (round(old_rows * row_coef), round(old_cols * col_coef), round(old_dims * dim_coef))
     cdef Py_ssize_t new_rows = new_shape[0], new_cols = new_shape[1], new_dims = new_shape[2]
 
-    cdef double[:, :, ::1] zoomed = np.zeros(new_shape)
+    cdef FLOAT[:, :, ::1] zoomed = np.zeros(new_shape, dtype=np.float32 if input.itemsize == 4 else np.float64)
 
     cdef Py_ssize_t i, j, k
     cdef double adjusted_row_coef, adjusted_col_coef, adjusted_dim_coef
