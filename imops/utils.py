@@ -32,9 +32,9 @@ def normalize_num_threads(num_threads: int, backend: Backend):
         return num_threads
 
     num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend.name]
-    env_num_threads = os.environ.get(num_threads_var_name)
-    # here we also handle the case `num_threads_var`="" gracefully
-    max_threads = int(env_num_threads.strip()) if env_num_threads else len(os.sched_getaffinity(0))
+    # here we also handle the case `num_threads_var`=" " gracefully
+    env_num_threads = os.environ.get(num_threads_var_name, '').strip()
+    max_threads = int(env_num_threads) if env_num_threads else len(os.sched_getaffinity(0))
 
     return max_threads + num_threads + 1
 
