@@ -31,7 +31,7 @@ for module in modules:
     src_dir = Path(__file__).parent / 'imops' / 'src'
     shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
 
-args = ['-Xpreprocessor', '-fopenmp']
+args = ['-fopenmp']
 ext_modules = [
     Extension(
         f'{name}.src._{prefix}{module}',
