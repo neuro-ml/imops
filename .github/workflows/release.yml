@@ -37,7 +37,6 @@ jobs:
           path: ./wheelhouse/*.whl
 
   build_sdist:
-    needs: [ check_version ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
