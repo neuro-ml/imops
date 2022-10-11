@@ -7,6 +7,13 @@ from setuptools import Extension, find_packages, setup
 
 name = 'imops'
 root = Path(__file__).parent
+classifiers = """Development Status :: 5 - Production/Stable
+License :: OSI Approved :: MIT License
+Programming Language :: Python :: 3.6
+Programming Language :: Python :: 3.7
+Programming Language :: Python :: 3.8
+Programming Language :: Python :: 3.9
+Programming Language :: Python :: 3.10"""
 
 
 class NumpyImport:
@@ -50,8 +57,21 @@ setup(
     packages=find_packages(include=(name,)),
     include_package_data=True,
     version=version,
+    description='Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines',
     long_description=long_description,
     long_description_content_type='text/markdown',
+    author='maxme1, vovaf709, talgat',
+    author_email='maxs987@gmail.com, vovaf709@yandex.ru, saparov2130@gmail.com',
+    license='MIT',
+    url='https://github.com/neuro-ml/imops',
+    download_url='https://github.com/neuro-ml/imops/archive/v%s.tar.gz' % version,
+    keywords=[
+        'image processing',
+        'fast',
+        'ndarray',
+        'data pipelines',
+    ],
+    classifiers=classifiers.splitlines(),
     install_requires=requirements,
     extras_require={'numba': ['numba'], 'all': ['numba']},
     setup_requires=[
