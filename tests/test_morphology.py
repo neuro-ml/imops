@@ -1,18 +1,18 @@
 from dataclasses import dataclass
-from functools import partial
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose as allclose
+from numpy.testing import assert_array_equal
 from scipy.ndimage import generate_binary_structure
 from skimage.morphology import binary_dilation as sk_binary_dilation
 
 from imops import binary_dilation
-from imops.backend import Backend, Cython
+from imops.backend import Backend, Cython, Scipy
 
 
-allclose = partial(allclose, rtol=1e-6)
+scipy_configurations = [Scipy()]
 cython_configurations = [Cython(fast) for fast in [False, True]]
+all_configurations = scipy_configurations + cython_configurations
 
 names = list(map(str, cython_configurations))
 
@@ -43,7 +43,7 @@ def test_stress(backend):
 
         desired_out = sk_binary_dilation(inp, footprint)
 
-        allclose(
+        assert_array_equal(
             binary_dilation(inp, footprint, backend=backend),
             desired_out,
             err_msg=f'{i, shape, footprint}',

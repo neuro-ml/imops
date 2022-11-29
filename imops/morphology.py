@@ -24,7 +24,7 @@ def binary_dilation(
     num_threads
         the number of threads to use for computation. Default = the cpu count.
     backend
-        which backend to use. For now only `cython` is available.
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default.
     """
     backend = resolve_backend(backend)
     if backend.name not in ('Cython', 'Scipy'):
