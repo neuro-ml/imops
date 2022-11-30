@@ -14,7 +14,6 @@ scipy_configurations = [Scipy()]
 cython_configurations = [Cython(fast) for fast in [False, True]]
 numba_configurations = [Numba(*flags) for flags in product([False, True], repeat=3)]
 all_configurations = scipy_configurations + cython_configurations + numba_configurations
-names = list(map(str, all_configurations))
 
 
 @dataclass
@@ -22,7 +21,7 @@ class Alien3(Backend):
     pass
 
 
-@pytest.fixture(params=all_configurations, ids=names)
+@pytest.fixture(params=all_configurations, ids=map(str, all_configurations))
 def backend(request):
     return request.param
 

@@ -36,12 +36,16 @@ cdef inline np.uint8_t max_in_footprint(np.uint8_t* input, np.uint8_t* footprint
     cdef Py_ssize_t i, j, k
     cdef Py_ssize_t i_r, i_c, i_d
 
+    cdef int rows_shift = r + f_rows // 2
+    cdef int cols_shift = c + f_cols // 2
+    cdef int dims_shift = d + f_dims // 2
+
     for i in range(f_rows):
         for j in range(f_cols):
             for k in range(f_dims):
-                i_r = r - f_rows // 2 + i
-                i_c = c - f_cols // 2 + j
-                i_d = d - f_dims // 2 + k
+                i_r = rows_shift - i
+                i_c = cols_shift - j
+                i_d = dims_shift - k
 
                 if (
                     get_pixel3d(
@@ -69,12 +73,16 @@ cdef inline np.uint8_t min_in_footprint(np.uint8_t* input, np.uint8_t* footprint
     cdef Py_ssize_t i, j, k
     cdef Py_ssize_t i_r, i_c, i_d
 
+    cdef int rows_shift = r - f_rows // 2
+    cdef int cols_shift = c - f_cols // 2
+    cdef int dims_shift = d - f_dims // 2
+
     for i in range(f_rows):
         for j in range(f_cols):
             for k in range(f_dims):
-                i_r = r - f_rows // 2 + i
-                i_c = c - f_cols // 2 + j
-                i_d = d - f_dims // 2 + k
+                i_r = rows_shift + i
+                i_c = cols_shift + j
+                i_d = dims_shift + k
 
                 if (
                     get_pixel3d(

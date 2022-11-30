@@ -59,13 +59,13 @@ def morphology_op_wrapper(
         if backend.fast:
             warn(FAST_MATH_WARNING)
 
+        if footprint is None:
+            footprint = generate_binary_structure(ndim, 1)
+
         if footprint.ndim != ndim:
             raise ValueError('Input image and footprint number of dimensions must be the same.')
 
         n_dummy = 3 - ndim
-
-        if footprint is None:
-            footprint = generate_binary_structure(ndim, 1)
 
         if n_dummy:
             image = image[(None,) * n_dummy]
