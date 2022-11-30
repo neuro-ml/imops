@@ -61,14 +61,11 @@ def test_stress(pair, backend, footprint_shape_modifier):
     sk_op, imops_op = pair
 
     for i in range(32):
-        shape = np.random.randint(64, 128, size=np.random.randint(1, 3))
+        shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
         inp = np.random.binomial(1, 0.5, shape)
 
         footprint_shape = footprint_shape_modifier(np.random.randint(1, 4, size=inp.ndim))
         footprint = np.random.binomial(1, 0.5, footprint_shape) if np.random.binomial(1, 0.5, 1) else None
-
-        if footprint is not None and not footprint.any():
-            footprint[inp.ndim * (0,)] = 1
 
         desired_out = sk_op(inp, footprint)
 
