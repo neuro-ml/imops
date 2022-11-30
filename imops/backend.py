@@ -62,7 +62,7 @@ def imops_backend(backend: BackendLike):
 
 # implementations
 # TODO: Investigate whether it is safe to use -ffast-math in numba
-@dataclass
+@dataclass(frozen=True)
 class Numba(Backend):
     parallel: bool = True
     nogil: bool = True
@@ -75,12 +75,12 @@ class Numba(Backend):
             raise ModuleNotFoundError('Install `numba` package (pip install numba) to use "numba" backend.')
 
 
-@dataclass
+@dataclass(frozen=True)
 class Cython(Backend):
     fast: bool = False
 
 
-@dataclass
+@dataclass(frozen=True)
 class Scipy(Backend):
     pass
 

@@ -1,21 +1,24 @@
+from typing import Callable
 from warnings import warn
 
 import numpy as np
-from scipy.ndimage import binary_dilation as scipy_binary_dilation, generate_binary_structure
+from scipy.ndimage import generate_binary_structure
+from skimage.morphology import binary_dilation as scipy_binary_dilation, binary_erosion as scipy_binary_erosion
 
-from .backend import BackendLike, resolve_backend
-from .src._fast_morphology import _binary_dilation as cython_fast_binary_dilation
-from .src._morphology import _binary_dilation as cython_binary_dilation
-from .utils import FAST_MATH_WARNING, normalize_num_threads
+from .backend import BackendLike, Cython, Scipy, resolve_backend
+from .src._fast_morphology import (
+    _binary_dilation as cython_fast_binary_dilation,
+    _binary_erosion as cython_fast_binary_erosion,
+)
+from .src._morphology import _binary_dilation as cython_binary_dilation, _binary_erosion as cython_binary_erosion
+from .utils import FAST_MATH_WARNING, composition_args, normalize_num_threads
 
 
-def binary_dilation(
-    image: np.ndarray, footprint: np.ndarray = None, num_threads: int = -1, backend: BackendLike = None
-):
-    """
-    Fast parallelizable binary morphological dilation of an image
+def morphology_op_doc(op_name: str) -> str:
+    return f"""
+    Fast parallelizable binary morphological {op_name.split('_')[-1]} of an image
 
-    See `https://scikit-image.org/docs/stable/api/skimage.morphology#skimage.morphology.binary_dilation`
+    See `https://scikit-image.org/docs/stable/api/skimage.morphology#skimage.morphology.{op_name}`
 
     Parameters
     ----------
@@ -26,43 +29,93 @@ def binary_dilation(
     backend
         which backend to use. `cython` and `scipy` are available, `cython` is used by default.
     """
-    backend = resolve_backend(backend)
-    if backend.name not in ('Cython', 'Scipy'):
-        raise ValueError(f'Unsupported backend "{backend.name}"')
 
-    ndim = image.ndim
-    num_threads = normalize_num_threads(num_threads, backend)
 
-    if backend.name == 'Scipy':
-        return scipy_binary_dilation(image, footprint)
+def morphology_op_wrapper(
+    op_name: str, backend2src_op: Callable[[np.ndarray[bool], np.ndarray[bool], int], np.ndarray[bool]]
+) -> Callable:
+    def wrapped(
+        image: np.ndarray, footprint: np.ndarray = None, num_threads: int = -1, backend: BackendLike = None
+    ) -> np.ndarray:
+        backend = resolve_backend(backend)
+        if backend.name not in {x.name for x in backend2src_op.keys()}:
+            raise ValueError(f'Unsupported backend "{backend.name}"')
 
-    if ndim > 3:
-        warn(
-            "Fast binary dilation is only supported for ndim<=3. Falling back to scipy's implementation.",
-        )
-        scipy_binary_dilation(image, footprint)
+        ndim = image.ndim
+        num_threads = normalize_num_threads(num_threads, backend)
 
-    if backend.fast:
-        warn(FAST_MATH_WARNING)
-        src_binary_dilation = cython_fast_binary_dilation
-    else:
-        src_binary_dilation = cython_binary_dilation
+        src_op = backend2src_op[backend]
 
-    if footprint.ndim != ndim:
-        raise ValueError('Input image and footprint number of dimensions must be the same.')
+        if backend.name == 'Scipy':
+            return src_op(image, footprint)
 
-    n_dummy = 3 - ndim
+        if ndim > 3:
+            warn(
+                f"Fast {' '.join(op_name.split('_'))} is only supported for ndim<=3. "
+                "Falling back to scipy's implementation."
+            )
+            src_op(image, footprint)
 
-    if footprint is None:
-        footprint = generate_binary_structure(ndim, 1)
+        if backend.fast:
+            warn(FAST_MATH_WARNING)
 
-    if n_dummy:
-        image = image[(None,) * n_dummy]
-        footprint = footprint[(None,) * n_dummy]
+        if footprint.ndim != ndim:
+            raise ValueError('Input image and footprint number of dimensions must be the same.')
 
-    out = src_binary_dilation(image.astype(bool), footprint.astype(bool), num_threads)
+        n_dummy = 3 - ndim
 
-    if n_dummy:
-        out = out[(0,) * n_dummy]
+        if footprint is None:
+            footprint = generate_binary_structure(ndim, 1)
 
-    return out.astype(bool)
+        if n_dummy:
+            image = image[(None,) * n_dummy]
+            footprint = footprint[(None,) * n_dummy]
+
+        out = src_op(image.astype(bool), footprint.astype(bool), num_threads)
+
+        if n_dummy:
+            out = out[(0,) * n_dummy]
+
+        return out.astype(bool)
+
+    wrapped.__name__ = op_name
+    wrapped.__doc__ = morphology_op_doc(op_name)
+
+    return wrapped
+
+
+binary_dilation = morphology_op_wrapper(
+    'binary_dilation',
+    {
+        Scipy(): scipy_binary_dilation,
+        Cython(fast=False): cython_binary_dilation,
+        Cython(fast=True): cython_fast_binary_dilation,
+    },
+)
+
+binary_erosion = morphology_op_wrapper(
+    'binary_erosion',
+    {
+        Scipy(): scipy_binary_erosion,
+        Cython(fast=False): cython_binary_erosion,
+        Cython(fast=True): cython_fast_binary_erosion,
+    },
+)
+
+binary_closing = morphology_op_wrapper(
+    'binary_closing',
+    {
+        Scipy(): composition_args(scipy_binary_erosion, scipy_binary_dilation),
+        Cython(fast=False): composition_args(cython_binary_erosion, cython_binary_dilation),
+        Cython(fast=True): composition_args(cython_fast_binary_erosion, cython_fast_binary_dilation),
+    },
+)
+
+binary_opening = morphology_op_wrapper(
+    'binary_opening',
+    {
+        Scipy(): composition_args(scipy_binary_dilation, scipy_binary_erosion),
+        Cython(fast=False): composition_args(cython_binary_dilation, cython_binary_erosion),
+        Cython(fast=True): composition_args(cython_fast_binary_dilation, cython_fast_binary_erosion),
+    },
+)
