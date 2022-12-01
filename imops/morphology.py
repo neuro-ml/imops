@@ -32,7 +32,7 @@ def morphology_op_doc(op_name: str) -> str:
 
 
 def morphology_op_wrapper(
-    op_name: str, backend2src_op: Callable[[np.ndarray[bool], np.ndarray[bool], int], np.ndarray[bool]]
+    op_name: str, backend2src_op: Callable[[np.ndarray, np.ndarray, int], np.ndarray]
 ) -> Callable:
     def wrapped(
         image: np.ndarray, footprint: np.ndarray = None, num_threads: int = -1, backend: BackendLike = None
