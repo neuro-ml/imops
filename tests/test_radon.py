@@ -13,7 +13,6 @@ almost_eq = np.testing.assert_array_almost_equal
 
 cython_configurations = [Cython(fast) for fast in [False, True]]
 all_configurations = cython_configurations
-names = list(map(str, all_configurations))
 
 
 @dataclass
@@ -21,7 +20,7 @@ class Alien5(Backend):
     pass
 
 
-@pytest.fixture(params=all_configurations, ids=names)
+@pytest.fixture(params=all_configurations, ids=map(str, all_configurations))
 def backend(request):
     return request.param
 

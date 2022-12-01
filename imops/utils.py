@@ -1,6 +1,6 @@
 import os
 from itertools import permutations
-from typing import Optional, Sequence, Union
+from typing import Callable, Optional, Sequence, Union
 from warnings import warn
 
 import numpy as np
@@ -123,3 +123,11 @@ def broadcast_to_axis(axis: AxesLike, *arrays: AxesParams):
         raise ValueError(f'Axes and arrays are not broadcastable: {len(axis)} vs {", ".join(map(str, lengths))}.')
 
     return tuple(np.repeat(x, len(axis) // len(x), 0) for x in arrays)
+
+
+# TODO: come up with a better name
+def composition_args(f: Callable, g: Callable) -> Callable:
+    def inner(*args):
+        return f(g(*args), *args[1:])
+
+    return inner
