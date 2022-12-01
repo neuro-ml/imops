@@ -40,6 +40,12 @@ Works faster only for `ndim<=3, dtype=float32 or float64, output=None, order=1, 
 from imops import interp1d  # same as `scipy.interpolate.interp1d`
 ```
 Works faster only for `ndim<=3, dtype=float32 or float64, order=1 or 'linear'`
+## Fast binary morphology
+
+```python
+from imops import binary_dilation, binary_erosion, binary_opening, binary_closing
+```
+These functions mimic `scikit-image` counterparts
 ## Padding
 
 ```python
@@ -87,16 +93,19 @@ with imops_backend('Cython'):  # sets Cython backend via context manager
 ```
 Note that for `Numba` backend setting `num_threads` argument has no effect for now and you should use `NUMBA_NUM_THREADS` environment variable.
 Available backends:
-|                 | Scipy   | Cython  | Numba   |
-|-----------------|---------|---------|---------|
-| `zoom`          | &check; | &check; | &check; |
-| `zoom_to_shape` | &check; | &check; | &check; |
-| `interp1d`      | &check; | &check; | &check; |
-| `radon`         | &cross; | &check; | &cross; |
-| `inverse_radon` | &cross; | &check; | &cross; |
+|                   | Scipy   | Cython  | Numba   |
+|-------------------|---------|---------|---------|
+| `zoom`            | &check; | &check; | &check; |
+| `zoom_to_shape`   | &check; | &check; | &check; |
+| `interp1d`        | &check; | &check; | &check; |
+| `radon`           | &cross; | &check; | &cross; |
+| `inverse_radon`   | &cross; | &check; | &cross; |
+| `binary_dilation` | &check; | &check; | &cross; |
+| `binary_erosion`  | &check; | &check; | &cross; |
+| `binary_closing`  | &check; | &check; | &cross; |
+| `binary_opening`  | &check; | &check; | &cross; |
 
 # Acknowledgements
 
 Some parts of our code for radon/inverse radon transform as well as the code for linear interpolation are inspired by
-the implementations from [scikit-image](https://github.com/scikit-image/scikit-image)
-and [scipy](https://github.com/scipy/scipy).
+the implementations from [`scikit-image`](https://github.com/scikit-image/scikit-image) and [`scipy`](https://github.com/scipy/scipy).
