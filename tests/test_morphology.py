@@ -57,6 +57,18 @@ def test_alien_backend(alien_backend):
         binary_dilation(inp, backend=alien_backend)
 
 
+def test_single_threaded_warning(pair):
+    _, imops_op = pair
+    with pytest.warns(UserWarning):
+        imops_op(np.ones(1), num_threads=2, backend='Scipy')
+
+
+def test_empty(pair, backend):
+    _, imops_op = pair
+    with pytest.raises(RuntimeError):
+        imops_op(np.ones(1), np.array([]))
+
+
 def test_stress(pair, backend, footprint_shape_modifier):
     sk_op, imops_op = pair
 

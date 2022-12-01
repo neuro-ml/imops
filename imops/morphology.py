@@ -44,6 +44,11 @@ def morphology_op_wrapper(
         ndim = image.ndim
         num_threads = normalize_num_threads(num_threads, backend)
 
+        if footprint is None:
+            footprint = generate_binary_structure(ndim, 1)
+        elif not footprint.size:
+            raise RuntimeError('Footprint must not be empty')
+
         src_op = backend2src_op[backend]
 
         if backend.name == 'Scipy':
@@ -58,9 +63,6 @@ def morphology_op_wrapper(
 
         if backend.fast:
             warn(FAST_MATH_WARNING)
-
-        if footprint is None:
-            footprint = generate_binary_structure(ndim, 1)
 
         if footprint.ndim != ndim:
             raise ValueError('Input image and footprint number of dimensions must be the same.')
