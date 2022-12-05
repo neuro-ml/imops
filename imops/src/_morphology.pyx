@@ -28,10 +28,10 @@ cdef inline BOOL max_in_footprint(BOOL* input, BOOL* footprint,
     cdef int dims_shift = d + f_dims // 2
 
     for i in range(f_rows):
+        i_r = rows_shift - i
         for j in range(f_cols):
+            i_c = cols_shift - j
             for k in range(f_dims):
-                i_r = rows_shift - i
-                i_c = cols_shift - j
                 i_d = dims_shift - k
 
                 if (
@@ -65,10 +65,10 @@ cdef inline BOOL min_in_footprint(BOOL* input, BOOL* footprint,
     cdef int dims_shift = d - f_dims // 2
 
     for i in range(f_rows):
+        i_r = rows_shift + i
         for j in range(f_cols):
+            i_c = cols_shift + j
             for k in range(f_dims):
-                i_r = rows_shift + i
-                i_c = cols_shift + j
                 i_d = dims_shift + k
 
                 if (
