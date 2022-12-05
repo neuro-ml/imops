@@ -13,13 +13,13 @@ cimport numpy as np
 from cython import nogil
 from cython.parallel import prange
 
-from ._utils cimport get_pixel3d
+from ._utils cimport BOOL, get_pixel3d
 
 
-cdef inline np.uint8_t max_in_footprint(np.uint8_t* input, np.uint8_t* footprint,
-                                        Py_ssize_t r, Py_ssize_t c, Py_ssize_t d,
-                                        Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
-                                        Py_ssize_t f_rows, Py_ssize_t f_cols, Py_ssize_t f_dims) nogil:
+cdef inline BOOL max_in_footprint(BOOL* input, BOOL* footprint,
+                                  Py_ssize_t r, Py_ssize_t c, Py_ssize_t d,
+                                  Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
+                                  Py_ssize_t f_rows, Py_ssize_t f_cols, Py_ssize_t f_dims) nogil:
     cdef Py_ssize_t i, j, k
     cdef Py_ssize_t i_r, i_c, i_d
 
@@ -53,10 +53,10 @@ cdef inline np.uint8_t max_in_footprint(np.uint8_t* input, np.uint8_t* footprint
     return False
 
 
-cdef inline np.uint8_t min_in_footprint(np.uint8_t* input, np.uint8_t* footprint,
-                     Py_ssize_t r, Py_ssize_t c, Py_ssize_t d,
-                     Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
-                     Py_ssize_t f_rows, Py_ssize_t f_cols, Py_ssize_t f_dims) nogil:
+cdef inline BOOL min_in_footprint(BOOL* input, BOOL* footprint,
+                                  Py_ssize_t r, Py_ssize_t c, Py_ssize_t d,
+                                  Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
+                                  Py_ssize_t f_rows, Py_ssize_t f_cols, Py_ssize_t f_dims) nogil:
     cdef Py_ssize_t i, j, k
     cdef Py_ssize_t i_r, i_c, i_d
 
@@ -90,11 +90,11 @@ cdef inline np.uint8_t min_in_footprint(np.uint8_t* input, np.uint8_t* footprint
     return True
 
 
-def _binary_dilation(np.uint8_t[:, :, :] input, np.uint8_t[:, :, :] footprint, Py_ssize_t num_threads):
-    cdef np.uint8_t[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
-    cdef np.uint8_t[:, :, ::1] contiguous_footprint = np.ascontiguousarray(footprint)
+def _binary_dilation(BOOL[:, :, :] input, BOOL[:, :, :] footprint, Py_ssize_t num_threads):
+    cdef BOOL[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
+    cdef BOOL[:, :, ::1] contiguous_footprint = np.ascontiguousarray(footprint)
 
-    cdef np.uint8_t[:, :, ::1] dilated = np.zeros_like(input, dtype=np.uint8)
+    cdef BOOL[:, :, ::1] dilated = np.zeros_like(input, dtype=np.uint8)
 
     cdef Py_ssize_t rows = input.shape[0], cols = input.shape[1], dims = input.shape[2]
     cdef Py_ssize_t f_rows = footprint.shape[0], f_cols = footprint.shape[1], f_dims = footprint.shape[2]
@@ -112,11 +112,11 @@ def _binary_dilation(np.uint8_t[:, :, :] input, np.uint8_t[:, :, :] footprint, P
     return np.asarray(dilated)
 
 
-def _binary_erosion(np.uint8_t[:, :, :] input, np.uint8_t[:, :, :] footprint, Py_ssize_t num_threads):
-    cdef np.uint8_t[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
-    cdef np.uint8_t[:, :, ::1] contiguous_footprint = np.ascontiguousarray(footprint)
+def _binary_erosion(BOOL[:, :, :] input, BOOL[:, :, :] footprint, Py_ssize_t num_threads):
+    cdef BOOL[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
+    cdef BOOL[:, :, ::1] contiguous_footprint = np.ascontiguousarray(footprint)
 
-    cdef np.uint8_t[:, :, ::1] eroded = np.zeros_like(input, dtype=np.uint8)
+    cdef BOOL[:, :, ::1] eroded = np.zeros_like(input, dtype=np.uint8)
 
     cdef Py_ssize_t rows = input.shape[0], cols = input.shape[1], dims = input.shape[2]
     cdef Py_ssize_t f_rows = footprint.shape[0], f_cols = footprint.shape[1], f_dims = footprint.shape[2]
