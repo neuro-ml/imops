@@ -12,15 +12,12 @@ cimport cython
 cimport numpy as np
 from libc.math cimport floor
 
+from ._utils cimport BOOL, FP32_FP64
 
-ctypedef cython.floating FLOAT
-ctypedef np.uint8_t uint8
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cdef inline FLOAT interpolate(FLOAT x, FLOAT* ys, FLOAT radius, FLOAT right_limit) nogil:
+cdef inline FP32_FP64 interpolate(FP32_FP64 x, FP32_FP64* ys, FP32_FP64 radius, FP32_FP64 right_limit) nogil:
     cdef Py_ssize_t idx
-    cdef FLOAT val, value
+    cdef FP32_FP64 val, value
 
     value = x + radius
     if value < 0 or value > right_limit:
@@ -36,28 +33,26 @@ cdef inline FLOAT interpolate(FLOAT x, FLOAT* ys, FLOAT radius, FLOAT right_limi
 
     return val
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cdef FLOAT accumulate(FLOAT x, FLOAT y, FLOAT* sinuses, FLOAT* cosinuses, FLOAT* ys,
-                      Py_ssize_t size, Py_ssize_t image_size, FLOAT radius, FLOAT right_limit) nogil:
-    cdef FLOAT accumulator = 0
+
+cdef FP32_FP64 accumulate(FP32_FP64 x, FP32_FP64 y, FP32_FP64* sinuses, FP32_FP64* cosinuses, FP32_FP64* ys,
+                          Py_ssize_t size, Py_ssize_t image_size, FP32_FP64 radius, FP32_FP64 right_limit) nogil:
+    cdef FP32_FP64 accumulator = 0
     cdef Py_ssize_t k
 
     for k in range(0, size):
         accumulator += interpolate(y * cosinuses[k] - x * sinuses[k], ys + k * image_size, radius, right_limit)
     return accumulator
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cpdef FLOAT[:, :, :] backprojection3d(FLOAT[:, :, :] sinogram, FLOAT[:] theta, FLOAT[:] xs,
-                                      uint8[:, :] inside_circle, FLOAT fill_value, int image_size, int output_size,
-                                      Py_ssize_t num_threads):
-    cdef FLOAT[:, :, :] result = np.zeros_like(sinogram, shape=(len(sinogram), output_size, output_size))
+
+cpdef FP32_FP64[:, :, :] backprojection3d(FP32_FP64[:, :, :] sinogram, FP32_FP64[:] theta, FP32_FP64[:] xs,
+                                          BOOL[:, :] inside_circle, FP32_FP64 fill_value, int image_size, int output_size,
+                                          Py_ssize_t num_threads):
+    cdef FP32_FP64[:, :, :] result = np.zeros_like(sinogram, shape=(len(sinogram), output_size, output_size))
     cdef Py_ssize_t slc, i, j, n_angles = len(theta), n_slices = len(sinogram)
-    cdef FLOAT min_val = image_size // 2, right_lim = image_size - 1
-    cdef FLOAT[:] sinuses = np.sin(theta)
-    cdef FLOAT[:] cosinuses = np.cos(theta)
-    cdef FLOAT multiplier = np.pi / (2 * n_angles)
+    cdef FP32_FP64 min_val = image_size // 2, right_lim = image_size - 1
+    cdef FP32_FP64[:] sinuses = np.sin(theta)
+    cdef FP32_FP64[:] cosinuses = np.cos(theta)
+    cdef FP32_FP64 multiplier = np.pi / (2 * n_angles)
 
     sinogram = np.ascontiguousarray(np.moveaxis(sinogram, -1, -2))
 
