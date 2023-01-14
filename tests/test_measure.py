@@ -8,7 +8,7 @@ from imops.measure import label
 
 @pytest.fixture(params=[1, 2, 3, 4])
 def connectivity(request):
-    return request.param
+    return request.param 
 
 
 @pytest.fixture(params=[1, 2, 3, 4])
