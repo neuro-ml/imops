@@ -32,11 +32,9 @@ def test_dtype(connectivity, ndim):
         np.float32,
         np.float64,
     ):
-        inp_dtype = np.random.randint(
-            0,
-            5,
-            size=np.random.randint(32, 64, size=ndim),
-        ).astype(dtype)[0 if ndim == 4 and dtype != bool else ...]
+        inp_dtype = np.random.randint(0, 5, size=np.random.randint(32, 64, size=ndim),).astype(
+            dtype
+        )[0 if ndim == 4 and dtype != bool else ...]
         connectivity = min(connectivity, inp_dtype.ndim)
 
         assert_array_equal(
@@ -110,9 +108,12 @@ def test_stress(connectivity, ndim):
             if ndim == 4 or np.random.binomial(1, 0.2)
             else np.random.randint(0, 5, size=np.random.randint(32, 64, size=ndim))
         )
+        sk_labeled, sk_num_components = sk_label(inp, connectivity=connectivity, return_num=True)
+        labeled, num_components = label(inp, connectivity=connectivity, return_num=True)
 
         assert_array_equal(
-            sk_label(inp, connectivity=connectivity),
-            label(inp, connectivity=connectivity),
+            sk_labeled,
+            labeled,
             err_msg=f'{connectivity, ndim, inp.shape}',
         )
+        assert sk_num_components == num_components, f'{connectivity, ndim, inp.shape}'
