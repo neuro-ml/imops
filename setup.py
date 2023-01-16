@@ -40,16 +40,6 @@ for module in modules:
 
 args = ['-fopenmp']
 ext_modules = [
-    # FIXME: Figure out how to use _utils.pyx without generating an extension
-    Extension(
-        f'{name}.src._utils',
-        [f'{name}/src/_utils.pyx'],
-        include_dirs=[NumpyImport()],
-        extra_compile_args=args,
-        extra_link_args=args,
-        define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
-    )
-] + [
     Extension(
         f'{name}.src._{prefix}{module}',
         [f'{name}/src/_{prefix}{module}.pyx'],

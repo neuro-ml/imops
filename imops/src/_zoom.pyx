@@ -14,18 +14,19 @@ from cython.parallel import prange
 
 from libc.math cimport floor
 
-from ._utils cimport FP32_FP64, get_pixel3d
+
+ctypedef cython.floating FLOAT
 
 
-def _interp1d(FP32_FP64[:, :, :] input,
+def _interp1d(FLOAT[:, :, :] input,
               double[:] old_locations, double[:] new_locations,
               np.uint8_t bounds_error, double fill_value, np.uint8_t extrapolate, np.uint8_t assume_sorted,
               Py_ssize_t num_threads) -> np.ndarray:
     cdef Py_ssize_t rows = input.shape[0], cols = input.shape[1], dims = len(new_locations)
-    cdef FP32_FP64[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
+    cdef FLOAT[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
 
     dtype = np.float32 if input.itemsize == 4 else np.float64
-    cdef FP32_FP64[:, :, ::1] interpolated = np.zeros((rows, cols, dims), dtype=dtype)
+    cdef FLOAT[:, :, ::1] interpolated = np.zeros((rows, cols, dims), dtype=dtype)
     cdef double[:] dd = np.zeros(dims)
 
     cdef Py_ssize_t old_dims = len(old_locations)
@@ -109,16 +110,30 @@ cdef inline double get_slope(double x1, double y1, double x2, double y2) nogil:
     return (y2 - y1) / (x2 - x1)
 
 
+cdef inline FLOAT get_pixel3d(FLOAT* input,
+                              Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
+                              Py_ssize_t r, Py_ssize_t c, Py_ssize_t d,
+                              FLOAT cval, layout = b'C') nogil:
+        if (r < 0) or (r >= rows) or (c < 0) or (c >= cols) or (d < 0) or (d >= dims):
+            return cval
+
+        if layout == b'C':
+            return input[r * cols * dims + c * dims + d]
+
+        if layout == b'F':
+            return input[rows * cols * d + rows * c + r]
+
+
 cdef inline double adjusted_coef(Py_ssize_t old_n, Py_ssize_t new_n) nogil:
     if new_n == 1:
         return old_n
     return  (<double>old_n - 1) / (<double>new_n - 1)
 
 
-cdef inline FP32_FP64 interpolate3d(FP32_FP64* input,
-                                    Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
-                                    double r, double c, double d,
-                                    double cval) nogil:
+cdef inline FLOAT interpolate3d(FLOAT* input,
+                                 Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
+                                 double r, double c, double d,
+                                 double cval) nogil:
     cdef double dr, dc, dd
     cdef long minr, minc, mind, maxr, maxc, maxd
 
@@ -155,8 +170,8 @@ cdef inline FP32_FP64 interpolate3d(FP32_FP64* input,
     return c0 * (1 - dd) + c1 * dd
 
 
-def _zoom(FP32_FP64[:, :, :] input, double[:] zoom, double cval, Py_ssize_t num_threads):
-    cdef FP32_FP64[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
+def _zoom(FLOAT[:, :, :] input, double[:] zoom, double cval, Py_ssize_t num_threads):
+    cdef FLOAT[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
 
     cdef Py_ssize_t old_rows = input.shape[0], old_cols = input.shape[1], old_dims = input.shape[2]
     cdef double row_coef = zoom[0], col_coef = zoom[1], dim_coef = zoom[2]
@@ -164,7 +179,7 @@ def _zoom(FP32_FP64[:, :, :] input, double[:] zoom, double cval, Py_ssize_t num_
     new_shape = (round(old_rows * row_coef), round(old_cols * col_coef), round(old_dims * dim_coef))
     cdef Py_ssize_t new_rows = new_shape[0], new_cols = new_shape[1], new_dims = new_shape[2]
 
-    cdef FP32_FP64[:, :, ::1] zoomed = np.zeros(new_shape, dtype=np.float32 if input.itemsize == 4 else np.float64)
+    cdef FLOAT[:, :, ::1] zoomed = np.zeros(new_shape, dtype=np.float32 if input.itemsize == 4 else np.float64)
 
     cdef Py_ssize_t i, j, k
     cdef double adjusted_row_coef, adjusted_col_coef, adjusted_dim_coef
