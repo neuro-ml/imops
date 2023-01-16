@@ -71,6 +71,15 @@ from imops import crop_to_shape
 z = crop_to_shape(x, (4, 120, 67), ratio=0.25)
 ```
 
+## Labeling
+
+```python
+from imops import label
+
+# same as `skimage.measure.label`
+labeled, num_components = label(x, background=1, return_num=True)
+```
+
 # Backends
 For `zoom`, `zoom_to_shape`, `interp1d`, `radon`, `inverse_radon` you can specify which backend to use. Backend can be specified by a string or by an instance of `Backend` class. The latter allows you to customize some backend options:
 ```python
@@ -109,3 +118,4 @@ Available backends:
 
 Some parts of our code for radon/inverse radon transform as well as the code for linear interpolation are inspired by
 the implementations from [`scikit-image`](https://github.com/scikit-image/scikit-image) and [`scipy`](https://github.com/scipy/scipy).
+Also we used [`fastremap`](https://github.com/seung-lab/fastremap) and [`cc3d`](https://github.com/seung-lab/connected-components-3d) out of the box.
