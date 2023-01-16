@@ -1,9 +1,10 @@
-from typing import Tuple, Union
+from collections import namedtuple
+from typing import NamedTuple, Tuple, Union
 from warnings import warn
 
 import numpy as np
 from cc3d import connected_components
-from fastremap import remap
+from fastremap import remap, unique
 from skimage.measure import label as skimage_label
 
 
@@ -21,6 +22,11 @@ skimage2cc3d = {
 def label(
     label_image: np.ndarray, background: int = None, return_num: bool = False, connectivity: int = None
 ) -> Union[np.ndarray, Tuple[np.ndarray, int]]:
+    """
+    Fast version of `skimage.measure.label`
+
+    See `https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.label`
+    """
     ndim = label_image.ndim
     connectivity = connectivity or ndim
 
@@ -50,3 +56,32 @@ def label(
         return labeled, num_components
 
     return labeled
+
+
+def label_components(
+    label_image: np.ndarray,
+    return_sizes: bool = False,
+    **label_kwargs,
+) -> NamedTuple:
+    """
+    Label connected regions of an array and optionally return their sizes
+
+    Parameters
+    ----------
+    label_image
+        image to label
+    return_sizes
+        whether to return sizes of connected regions. Sizes are returned in labels order
+    """
+    if 'return_num' in label_kwargs:
+        warn('Passing `return_num` has no effect in `label_components`.')
+        label_kwargs.pop('return_num')
+
+    labeled_image = label(label_image, **label_kwargs)
+
+    if not return_sizes:
+        return namedtuple('Labeling', 'labeled_image')(labeled_image=labeled_image)
+
+    _, sizes = unique(labeled_image, return_counts=True)
+
+    return namedtuple('Labeling', ['labeled_image', 'sizes'])(labeled_image=labeled_image, sizes=sizes)
