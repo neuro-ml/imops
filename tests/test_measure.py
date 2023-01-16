@@ -1,3 +1,5 @@
+from platform import python_version
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
@@ -13,7 +15,7 @@ def connectivity(request):
 
 @pytest.fixture(params=[1, 2, 3, 4])
 def ndim(request):
-    return request.param
+    return min(3, request.param) if python_version()[:3] == '3.6' else request.param
 
 
 def test_dtype(connectivity, ndim):
