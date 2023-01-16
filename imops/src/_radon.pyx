@@ -19,6 +19,7 @@ from ._utils cimport FP32_FP64, get_pixel2d
 # TODO: move interpolateNd-s to _utils.pyx
 cdef inline FP32_FP64 interpolate2d(FP32_FP64* input,
                                     Py_ssize_t rows, Py_ssize_t cols,
+                                    Py_ssize_t stride_r, Py_ssize_t stride_c,
                                     double r, double c,
                                     double cval) nogil:
     cdef double dr, dc
@@ -34,10 +35,10 @@ cdef inline FP32_FP64 interpolate2d(FP32_FP64* input,
 
     cdef double c0, c1
 
-    cdef double c00 = get_pixel2d(input, rows, cols, minr, minc, cval)
-    cdef double c01 = get_pixel2d(input, rows, cols, minr, maxc, cval)
-    cdef double c10 = get_pixel2d(input, rows, cols, maxr, minc, cval)
-    cdef double c11 = get_pixel2d(input, rows, cols, maxr, maxc, cval)
+    cdef double c00 = get_pixel2d(input, rows, cols, stride_r, stride_c, minr, minc, cval)
+    cdef double c01 = get_pixel2d(input, rows, cols, stride_r, stride_c, minr, maxc, cval)
+    cdef double c10 = get_pixel2d(input, rows, cols, stride_r, stride_c, maxr, minc, cval)
+    cdef double c11 = get_pixel2d(input, rows, cols, stride_r, stride_c, maxr, maxc, cval)
 
     c0 = c00 * (1 - dc) + c01 * dc
     c1 = c10 * (1 - dc) + c11 * dc
@@ -45,14 +46,20 @@ cdef inline FP32_FP64 interpolate2d(FP32_FP64* input,
     return c0 * (1 - dr) + c1 * dr
 
 
-cdef inline FP32_FP64 accumulate(FP32_FP64* image, Py_ssize_t* size, FP32_FP64* sin, FP32_FP64* cos,
-                                 FP32_FP64* r_shift, FP32_FP64* c_shift, Py_ssize_t j, Py_ssize_t* limit) nogil:
+cdef inline FP32_FP64 accumulate(FP32_FP64* image,
+                                 Py_ssize_t stride_r, Py_ssize_t stride_c,
+                                 Py_ssize_t* size, FP32_FP64* sin, FP32_FP64* cos,
+                                 FP32_FP64* r_shift, FP32_FP64* c_shift,
+                                 Py_ssize_t j,
+                                 Py_ssize_t* limit) nogil:
     cdef FP32_FP64 result = 0
     cdef Py_ssize_t i
 
     for i in range(limit[0], size[0] - limit[0]):
         result += interpolate2d(
-            image, size[0], size[0],
+            image,
+            size[0], size[0],
+            stride_r, stride_c,
             j * (-sin[0]) + i * cos[0] - c_shift[0],
             j * cos[0] + i * sin[0] - r_shift[0],
             0,
@@ -75,14 +82,18 @@ def radon3d(FP32_FP64[:, :, :] image, FP32_FP64[:] theta, Py_ssize_t[:] limits, 
     cdef FP32_FP64[:] c_shift = center * (coss - sins - 1)
 
     cdef Py_ssize_t i, j, alpha, slc
+    cdef Py_ssize_t stride_r = img.shape[1], stride_c = 1
     cdef FP32_FP64 r, c
 
     for slc in prange(n_slices, nogil=True, num_threads=num_threads):
         for alpha in prange(n_angles):
             for j in prange(size):
                 out[slc, j, alpha] = accumulate(
-                    &img[slc, 0, 0], &size,
-                    &sinuses[alpha], &cosinuses[alpha], &r_shift[alpha], &c_shift[alpha],
+                    &img[slc, 0, 0],
+                    stride_r, stride_c,
+                    &size,
+                    &sinuses[alpha], &cosinuses[alpha],
+                    &r_shift[alpha], &c_shift[alpha],
                     j, &limits[j],
                 )
 

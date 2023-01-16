@@ -33,6 +33,7 @@ def _interp1d(FP32_FP64[:, :, :] input,
     cdef long[:] max_idxs = np.searchsorted(old_locations, new_locations, sorter=sort_permutation)
 
     cdef Py_ssize_t i, j, k
+    cdef Py_ssize_t stride_r, stride_c, stride_d
     cdef char[:] extr = np.zeros(dims, dtype=np.int8)
     cdef double[:, ::1] slope_left, slope_right, bias_left, bias_right
 
@@ -52,6 +53,10 @@ def _interp1d(FP32_FP64[:, :, :] input,
 
     if bounds_error and np.any(extr):
         raise ValueError('A value in x_new is out of the interpolation range.')
+
+    stride_r = cols * dims
+    stride_c = dims
+    stride_d = 1
 
     if np.any(extr) and extrapolate:
         slope_left = np.zeros((rows, cols))
@@ -85,12 +90,14 @@ def _interp1d(FP32_FP64[:, :, :] input,
                         get_pixel3d(
                             &contiguous_input[0, 0, 0],
                             rows, cols, old_dims,
+                            stride_r, stride_c, stride_d,
                             i, j, sort_permutation[max_idxs[k] - 1],
                             0,
                         )  * (1 - dd[k]) +
                         get_pixel3d(
                             &contiguous_input[0, 0, 0],
                             rows, cols, old_dims,
+                            stride_r, stride_c, stride_d,
                             i, j, sort_permutation[max_idxs[k]],
                             0,
                         ) * dd[k])
@@ -117,6 +124,7 @@ cdef inline double adjusted_coef(Py_ssize_t old_n, Py_ssize_t new_n) nogil:
 
 cdef inline FP32_FP64 interpolate3d(FP32_FP64* input,
                                     Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
+                                    Py_ssize_t stride_r, Py_ssize_t stride_c, Py_ssize_t stride_d, 
                                     double r, double c, double d,
                                     double cval) nogil:
     cdef double dr, dc, dd
@@ -135,14 +143,14 @@ cdef inline FP32_FP64 interpolate3d(FP32_FP64* input,
 
     cdef double c00, c01, c10, c11, c0, c1
 
-    cdef double c000 = get_pixel3d(input, rows, cols, dims, minr, minc, mind, cval)
-    cdef double c001 = get_pixel3d(input, rows, cols, dims, minr, minc, maxd, cval)
-    cdef double c010 = get_pixel3d(input, rows, cols, dims, minr, maxc, mind, cval)
-    cdef double c011 = get_pixel3d(input, rows, cols, dims, minr, maxc, maxd, cval)
-    cdef double c100 = get_pixel3d(input, rows, cols, dims, maxr, minc, mind, cval)
-    cdef double c101 = get_pixel3d(input, rows, cols, dims, maxr, minc, maxd, cval)
-    cdef double c110 = get_pixel3d(input, rows, cols, dims, maxr, maxc, mind, cval)
-    cdef double c111 = get_pixel3d(input, rows, cols, dims, maxr, maxc, maxd, cval)
+    cdef double c000 = get_pixel3d(input, rows, cols, dims, stride_r, stride_c, stride_d, minr, minc, mind, cval)
+    cdef double c001 = get_pixel3d(input, rows, cols, dims, stride_r, stride_c, stride_d, minr, minc, maxd, cval)
+    cdef double c010 = get_pixel3d(input, rows, cols, dims, stride_r, stride_c, stride_d, minr, maxc, mind, cval)
+    cdef double c011 = get_pixel3d(input, rows, cols, dims, stride_r, stride_c, stride_d, minr, maxc, maxd, cval)
+    cdef double c100 = get_pixel3d(input, rows, cols, dims, stride_r, stride_c, stride_d, maxr, minc, mind, cval)
+    cdef double c101 = get_pixel3d(input, rows, cols, dims, stride_r, stride_c, stride_d, maxr, minc, maxd, cval)
+    cdef double c110 = get_pixel3d(input, rows, cols, dims, stride_r, stride_c, stride_d, maxr, maxc, mind, cval)
+    cdef double c111 = get_pixel3d(input, rows, cols, dims, stride_r, stride_c, stride_d, maxr, maxc, maxd, cval)
 
     c00 = c000 * (1 - dr) + c100 * dr
     c01 = c001 * (1 - dr) + c101 * dr
@@ -167,6 +175,7 @@ def _zoom(FP32_FP64[:, :, :] input, double[:] zoom, double cval, Py_ssize_t num_
     cdef FP32_FP64[:, :, ::1] zoomed = np.zeros(new_shape, dtype=np.float32 if input.itemsize == 4 else np.float64)
 
     cdef Py_ssize_t i, j, k
+    cdef Py_ssize_t stride_r = old_cols * old_dims, stride_c = old_dims, stride_d = 1
     cdef double adjusted_row_coef, adjusted_col_coef, adjusted_dim_coef
 
     adjusted_row_coef = adjusted_coef(old_rows, new_rows)
@@ -179,6 +188,7 @@ def _zoom(FP32_FP64[:, :, :] input, double[:] zoom, double cval, Py_ssize_t num_
                 zoomed[i, j, k] = interpolate3d(
                     &contiguous_input[0, 0, 0],
                     old_rows, old_cols, old_dims,
+                    stride_r, stride_c, stride_d,
                     i * adjusted_row_coef, j * adjusted_col_coef, k * adjusted_dim_coef, cval,
                 )
 
