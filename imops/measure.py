@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import NamedTuple, Tuple, Union
+from typing import NamedTuple, Union
 from warnings import warn
 
 import numpy as np
