@@ -20,10 +20,14 @@ skimage2cc3d = {
 
 
 def label(
-    label_image: np.ndarray, background: int = None, return_num: bool = False, connectivity: int = None
-) -> Union[np.ndarray, Tuple[np.ndarray, int]]:
+    label_image: np.ndarray,
+    background: int = None,
+    return_num: bool = False,
+    connectivity: int = None,
+    return_sizes: bool = False,
+) -> Union[np.ndarray, NamedTuple]:
     """
-    Fast version of `skimage.measure.label`
+    Fast version of `skimage.measure.label` which optionally returns sizes of connected components
 
     See `https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.label`
     """
@@ -35,53 +39,38 @@ def label(
 
     if ndim > 3:
         warn("Fast label is only supported for ndim<=3, Falling back to scikit-image's implementation.")
-        return skimage_label(label_image, background=background, return_num=return_num, connectivity=connectivity)
+        labeled_image, num_components = skimage_label(
+            label_image, background=background, return_num=True, connectivity=connectivity
+        )
+    else:
+        if ndim == 1:
+            label_image = label_image[None]
 
-    if ndim == 1:
-        label_image = label_image[None]
+        if background:
+            label_image = remap(
+                label_image, {background: 0, 0: background}, preserve_missing_labels=True, in_place=False
+            )
 
-    if background:
-        label_image = remap(label_image, {background: 0, 0: background}, preserve_missing_labels=True, in_place=False)
+        labeled_image, num_components = connected_components(
+            label_image,
+            connectivity=skimage2cc3d[(ndim, connectivity)],
+            return_N=True,
+        )
 
-    labeled, num_components = connected_components(
-        label_image,
-        connectivity=skimage2cc3d[(ndim, connectivity)],
-        return_N=True,
-    )
+        if ndim == 1:
+            labeled_image = labeled_image[0]
 
-    if ndim == 1:
-        labeled = labeled[0]
+    if return_sizes:
+        _, sizes = unique(labeled_image, return_counts=True)
+        if return_num:
+            return namedtuple('Labeling', ['labeled_image', 'num_components', 'sizes'])(
+                labeled_image=labeled_image, num_components=num_components, sizes=sizes
+            )
+        return namedtuple('Labeling', ['labeled_image', 'sizes'])(labeled_image=labeled_image, sizes=sizes)
 
     if return_num:
-        return labeled, num_components
+        return namedtuple('Labeling', ['labeled_image', 'num_components'])(
+            labeled_image=labeled_image, num_components=num_components
+        )
 
-    return labeled
-
-
-def label_components(
-    label_image: np.ndarray,
-    return_sizes: bool = False,
-    **label_kwargs,
-) -> NamedTuple:
-    """
-    Label connected regions of an array and optionally return their sizes
-
-    Parameters
-    ----------
-    label_image
-        image to label
-    return_sizes
-        whether to return sizes of connected regions. Sizes are returned in labels order
-    """
-    if 'return_num' in label_kwargs:
-        warn('Passing `return_num` has no effect in `label_components`.')
-        label_kwargs.pop('return_num')
-
-    labeled_image = label(label_image, **label_kwargs)
-
-    if not return_sizes:
-        return namedtuple('Labeling', 'labeled_image')(labeled_image=labeled_image)
-
-    _, sizes = unique(labeled_image, return_counts=True)
-
-    return namedtuple('Labeling', ['labeled_image', 'sizes'])(labeled_image=labeled_image, sizes=sizes)
+    return labeled_image
