@@ -3,7 +3,8 @@
 # E203: spaces around complex variables in slices are pep-right
 # F401: unused imports in __init__.py-s
 # I251: allow absolute imports in upper files
-ignore = W503,E203
+# B028: !r is not supported for python<3.8
+ignore = W503,E203,B028
 per-file-ignores =
     __init__.py:F401
     tests/*:I251

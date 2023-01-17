@@ -41,10 +41,10 @@ cdef inline np.uint8_t max_in_footprint(np.uint8_t* input, np.uint8_t* footprint
     cdef int dims_shift = d + f_dims // 2
 
     for i in range(f_rows):
+        i_r = rows_shift - i
         for j in range(f_cols):
+            i_c = cols_shift - j
             for k in range(f_dims):
-                i_r = rows_shift - i
-                i_c = cols_shift - j
                 i_d = dims_shift - k
 
                 if (
@@ -78,10 +78,10 @@ cdef inline np.uint8_t min_in_footprint(np.uint8_t* input, np.uint8_t* footprint
     cdef int dims_shift = d - f_dims // 2
 
     for i in range(f_rows):
+        i_r = rows_shift + i
         for j in range(f_cols):
+            i_c = cols_shift + j
             for k in range(f_dims):
-                i_r = rows_shift + i
-                i_c = cols_shift + j
                 i_d = dims_shift + k
 
                 if (
