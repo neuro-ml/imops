@@ -22,8 +22,8 @@ skimage2cc3d = {
 def label(
     label_image: np.ndarray,
     background: int = None,
-    return_num: bool = False,
     connectivity: int = None,
+    return_num: bool = False,
     return_labels: bool = False,
     return_sizes: bool = False,
 ) -> Union[np.ndarray, NamedTuple]:
