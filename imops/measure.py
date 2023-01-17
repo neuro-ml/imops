@@ -24,6 +24,7 @@ def label(
     background: int = None,
     return_num: bool = False,
     connectivity: int = None,
+    return_labels: bool = False,
     return_sizes: bool = False,
 ) -> Union[np.ndarray, NamedTuple]:
     """
@@ -60,17 +61,17 @@ def label(
         if ndim == 1:
             labeled_image = labeled_image[0]
 
-    if return_sizes:
-        _, sizes = unique(labeled_image, return_counts=True)
-        if return_num:
-            return namedtuple('Labeling', ['labeled_image', 'num_components', 'sizes'])(
-                labeled_image=labeled_image, num_components=num_components, sizes=sizes
-            )
-        return namedtuple('Labeling', ['labeled_image', 'sizes'])(labeled_image=labeled_image, sizes=sizes)
+    res = [('labeled_image', labeled_image)]
 
     if return_num:
-        return namedtuple('Labeling', ['labeled_image', 'num_components'])(
-            labeled_image=labeled_image, num_components=num_components
-        )
+        res.append(('num_components', num_components))
+    if return_labels:
+        res.append(('labels', np.array(range(1, num_components + 1))))
+    if return_sizes:
+        _, sizes = unique(labeled_image, return_counts=True)
+        res.append(('sizes', sizes[1:]))
 
-    return labeled_image
+    if len(res) == 1:
+        return labeled_image
+
+    return namedtuple('Labeling', [subres[0] for subres in res])(*[subres[1] for subres in res])

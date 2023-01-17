@@ -101,6 +101,39 @@ def test_zeros(connectivity, ndim):
     )
 
 
+def test_multiple_output():
+    inp = np.array(
+        [
+            [1, 0, 0, 1],
+            [2, 2, 1, 1],
+            [2, 2, 2, 1],
+            [1, 1, 0, 0],
+        ]
+    )
+
+    labeled, num_components = label(inp, return_num=True)
+    assert num_components == 4, labeled
+
+    labeled, num_components, labels = label(inp, return_num=True, return_labels=True)
+    assert num_components == 4
+    assert (labels == np.array([1, 2, 3, 4])).all()
+
+    labeled, num_components, labels, sizes = label(inp, return_num=True, return_labels=True, return_sizes=True)
+    assert num_components == 4
+    assert (labels == np.array([1, 2, 3, 4])).all()
+    assert (sorted(sizes) == np.array([1, 2, 4, 5])).all()
+
+    labeled, num_components, sizes = label(inp, return_num=True, return_sizes=True)
+    assert num_components == 4
+    assert (sorted(sizes) == np.array([1, 2, 4, 5])).all()
+
+    labeled, sizes = label(inp, return_sizes=True)
+    assert (sorted(sizes) == np.array([1, 2, 4, 5])).all()
+
+    labeled, labels = label(inp, return_labels=True)
+    assert (labels == np.array([1, 2, 3, 4])).all()
+
+
 def test_stress(connectivity, ndim):
     connectivity = min(connectivity, ndim)
 
