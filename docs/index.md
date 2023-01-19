@@ -1,0 +1,16 @@
+# Imops
+
+Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines
+
+## Install
+
+```shell
+pip install imops  # default install with Cython backend
+pip install imops[numba]  # additionally install Numba backend
+```
+
+## Functions
+
+::: imops.radon.radon
+
+::: imops.radon.inverse_radon
