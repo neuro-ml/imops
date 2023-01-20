@@ -7,13 +7,16 @@ from setuptools import Extension, find_packages, setup
 
 name = 'imops'
 root = Path(__file__).parent
-classifiers = """Development Status :: 5 - Production/Stable
-License :: OSI Approved :: MIT License
-Programming Language :: Python :: 3.6
-Programming Language :: Python :: 3.7
-Programming Language :: Python :: 3.8
-Programming Language :: Python :: 3.9
-Programming Language :: Python :: 3.10"""
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+]
 
 
 class NumpyImport:
@@ -71,7 +74,7 @@ setup(
         'ndarray',
         'data pipelines',
     ],
-    classifiers=classifiers.splitlines(),
+    classifiers=classifiers,
     install_requires=requirements,
     extras_require={'numba': ['numba'], 'all': ['numba']},
     setup_requires=[

@@ -7,6 +7,7 @@ import numpy as np
 
 from .backend import BACKEND2NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Backend
 
+
 AxesLike = Union[int, Sequence[int]]
 AxesParams = Union[float, Sequence[float]]
 

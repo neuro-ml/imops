@@ -69,8 +69,8 @@ def radon(
     size = image.shape[1]
     radius = size // 2
     xs = np.arange(-radius, size - radius)
-    squared = xs ** 2
-    outside_circle = (squared[:, None] + squared[None, :]) > radius ** 2
+    squared = xs**2
+    outside_circle = (squared[:, None] + squared[None, :]) > radius**2
     values = image[:, outside_circle]
     min_, max_ = values.min(), values.max()
     if max_ - min_ > 0.1:
@@ -181,8 +181,8 @@ def inverse_radon(
 
     radius = output_size // 2
     xs = np.arange(-radius, output_size - radius)
-    squared = xs ** 2
-    inside_circle = (squared[:, None] + squared[None, :]) <= radius ** 2
+    squared = xs**2
+    inside_circle = (squared[:, None] + squared[None, :]) <= radius**2
 
     dtype = sinogram.dtype
     filtered_sinogram = filtered_sinogram.astype(dtype)
@@ -196,8 +196,8 @@ def inverse_radon(
     else:
         backprojection3d_ = backprojection3d
 
-    reconstructed = backprojection3d_(
-        filtered_sinogram, theta, xs, inside_circle, fill_value, img_shape, output_size, num_threads
+    reconstructed = np.asarray(
+        backprojection3d_(filtered_sinogram, theta, xs, inside_circle, fill_value, img_shape, output_size, num_threads)
     )
 
     return restore_axes(reconstructed, axes, extra)
@@ -212,9 +212,6 @@ def normalize_axes(x: np.ndarray, axes):
         axes = [0, 1]
 
     axes = np.core.numeric.normalize_axis_tuple(axes, x.ndim, 'axes')
-    if x.shape[axes[0]] != x.shape[axes[1]]:
-        raise ValueError(f'The image must be square along the provided axes ({axes}). Shape: {x.shape}')
-
     x = np.moveaxis(x, axes, (-2, -1))
     extra = x.shape[:-2]
     x = x.reshape(-1, *x.shape[-2:])
@@ -222,7 +219,7 @@ def normalize_axes(x: np.ndarray, axes):
 
 
 def restore_axes(x: np.ndarray, axes: tuple, extra: tuple) -> np.ndarray:
-    x = x.reshape(*extra, x.shape[-2:])
+    x = x.reshape(*extra, *x.shape[-2:])
     x = np.moveaxis(x, (-2, -1), axes)
     return x
 
@@ -239,7 +236,7 @@ def _ramp_filter(size: int) -> np.ndarray:
 
 def _smooth_sharpen_filter(size: int, a: float, b: float) -> np.ndarray:
     ramp = _ramp_filter(size)
-    return ramp * (1 + a * (ramp ** b))
+    return ramp * (1 + a * (ramp**b))
 
 
 def _sinogram_circle_to_square(sinogram: np.ndarray) -> np.ndarray:
