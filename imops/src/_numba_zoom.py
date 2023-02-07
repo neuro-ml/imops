@@ -11,7 +11,6 @@ def _interp1d(
     extrapolate: bool,
     assume_sorted: bool,
 ) -> np.ndarray:
-
     rows, cols, dims = input.shape[0], input.shape[1], len(new_locations)
     contiguous_input = np.ascontiguousarray(input)
 
