@@ -49,9 +49,9 @@ def radon(
 
     Examples
     --------
-    >>> sinogram = radon(image) # 2d image
-    >>> sinogram, fill_value = radon(image, return_fill=True) # 2d image with fill value
-    >>> sinogram = radon(image, axes=(-2, -1)) # nd image
+    >>> sinogram = radon(image)  # 2d image
+    >>> sinogram, fill_value = radon(image, return_fill=True)  # 2d image with fill value
+    >>> sinogram = radon(image, axes=(-2, -1))  # nd image
     """
     backend = resolve_backend(backend)
     if backend.name not in ('Cython',):
@@ -120,10 +120,10 @@ def inverse_radon(
     sinogram: np.ndarray
         an array with at least 2 axes
     axes: tuple[int, int]
-        the axes in the `image` along which the Radon transform will be applied.
+        the axes in the `image` along which the inverse Radon transform will be applied.
         The `image` shape along the `axes` must be of the same length
     theta: int | Sequence[float]
-        the angles for which the Radon transform will be computed. If it is an integer - the angles will
+        the angles for which the inverse Radon transform will be computed. If it is an integer - the angles will
         be evenly distributed between 0 and 180, `theta` values in total
     fill_value: float
         the value that fills the image outside the circle working area. Can be returned by `radon`
@@ -143,9 +143,9 @@ def inverse_radon(
 
     Examples
     --------
-    >>> image = radon(sinogram) # 2d image
-    >>> image = radon(sinogram, fill_value=-1000) # 2d image with fill value
-    >>> image = radon(sinogram, axes=(-2, -1)) # nd image
+    >>> image = inverse_radon(sinogram)  # 2d image
+    >>> image = inverse_radon(sinogram, fill_value=-1000)  # 2d image with fill value
+    >>> image = inverse_radon(sinogram, axes=(-2, -1))  # nd image
     """
     backend = resolve_backend(backend)
     if backend.name not in ('Cython',):
@@ -205,7 +205,7 @@ def inverse_radon(
 
 def normalize_axes(x: np.ndarray, axes):
     if x.ndim < 2:
-        raise ValueError(f'Radon transform requires an array with at least 2 dimensions. {x.ndim}dim array provided')
+        raise ValueError(f'Radon transform requires an array with at least 2 dimensions. {x.ndim}-dim array provided')
     if axes is None:
         if x.ndim > 2:
             raise ValueError('For arrays of higher dimensionality the `axis` arguments is required')

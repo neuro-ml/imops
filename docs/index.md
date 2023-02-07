@@ -14,3 +14,13 @@ pip install imops[numba]  # additionally install Numba backend
 ::: imops.radon.radon
 
 ::: imops.radon.inverse_radon
+
+::: imops.zoom.zoom
+
+::: imops.zoom.zoom_to_shape
+
+::: imops.pad.pad
+
+::: imops.pad.pad_to_shape
+
+::: imops.pad.pad_to_divisible
