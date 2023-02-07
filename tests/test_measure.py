@@ -34,11 +34,7 @@ def test_dtype(connectivity, ndim):
         np.float32,
         np.float64,
     ):
-        inp_dtype = np.random.randint(
-            0,
-            5,
-            size=np.random.randint(32, 64, size=ndim),
-        ).astype(
+        inp_dtype = np.random.randint(0, 5, size=np.random.randint(32, 64, size=ndim),).astype(
             dtype
         )[0 if ndim == 4 and dtype != bool else ...]
         connectivity = min(connectivity, inp_dtype.ndim)
