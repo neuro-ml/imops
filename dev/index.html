@@ -300,6 +300,41 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#imops.zoom.zoom" class="md-nav__link">
+    zoom()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.zoom.zoom_to_shape" class="md-nav__link">
+    zoom_to_shape()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.pad.pad" class="md-nav__link">
+    pad()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.pad.pad_to_shape" class="md-nav__link">
+    pad_to_shape()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.pad.pad_to_divisible" class="md-nav__link">
+    pad_to_divisible()
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -364,6 +399,41 @@
           <li class="md-nav__item">
   <a href="#imops.radon.inverse_radon" class="md-nav__link">
     inverse_radon()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.zoom.zoom" class="md-nav__link">
+    zoom()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.zoom.zoom_to_shape" class="md-nav__link">
+    zoom_to_shape()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.pad.pad" class="md-nav__link">
+    pad()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.pad.pad_to_shape" class="md-nav__link">
+    pad_to_shape()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.pad.pad_to_divisible" class="md-nav__link">
+    pad_to_divisible()
   </a>
   
 </li>
@@ -516,9 +586,9 @@ be evenly distributed between 0 and 180, <code>theta</code> values in total</p><
   </table>
 
 <p><strong>Examples:</strong></p>
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">sinogram</span> <span class="o">=</span> <span class="n">radon</span><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="c1"># 2d image</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">sinogram</span><span class="p">,</span> <span class="n">fill_value</span> <span class="o">=</span> <span class="n">radon</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">return_fill</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># 2d image with fill value</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">sinogram</span> <span class="o">=</span> <span class="n">radon</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="c1"># nd image</span>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">sinogram</span> <span class="o">=</span> <span class="n">radon</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>  <span class="c1"># 2d image</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">sinogram</span><span class="p">,</span> <span class="n">fill_value</span> <span class="o">=</span> <span class="n">radon</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">return_fill</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># 2d image with fill value</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">sinogram</span> <span class="o">=</span> <span class="n">radon</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>  <span class="c1"># nd image</span>
 </code></pre></div>
 
   </div>
@@ -565,7 +635,7 @@ be evenly distributed between 0 and 180, <code>theta</code> values in total</p><
           <td>
                 <code><span title="typing.Tuple">Tuple</span>[int, int]</code>
           </td>
-          <td><p>the axes in the <code>image</code> along which the Radon transform will be applied.
+          <td><p>the axes in the <code>image</code> along which the inverse Radon transform will be applied.
 The <code>image</code> shape along the <code>axes</code> must be of the same length</p></td>
           <td>
                 <code>None</code>
@@ -576,7 +646,7 @@ The <code>image</code> shape along the <code>axes</code> must be of the same len
           <td>
                 <code><span title="typing.Union">Union</span>[int, <span title="typing.Sequence">Sequence</span>[float]]</code>
           </td>
-          <td><p>the angles for which the Radon transform will be computed. If it is an integer - the angles will
+          <td><p>the angles for which the inverse Radon transform will be computed. If it is an integer - the angles will
 be evenly distributed between 0 and 180, <code>theta</code> values in total</p></td>
           <td>
                 <code>180</code>
@@ -654,9 +724,589 @@ be evenly distributed between 0 and 180, <code>theta</code> values in total</p><
   </table>
 
 <p><strong>Examples:</strong></p>
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">image</span> <span class="o">=</span> <span class="n">radon</span><span class="p">(</span><span class="n">sinogram</span><span class="p">)</span> <span class="c1"># 2d image</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">image</span> <span class="o">=</span> <span class="n">radon</span><span class="p">(</span><span class="n">sinogram</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=-</span><span class="mi">1000</span><span class="p">)</span> <span class="c1"># 2d image with fill value</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">image</span> <span class="o">=</span> <span class="n">radon</span><span class="p">(</span><span class="n">sinogram</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="c1"># nd image</span>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">image</span> <span class="o">=</span> <span class="n">inverse_radon</span><span class="p">(</span><span class="n">sinogram</span><span class="p">)</span>  <span class="c1"># 2d image</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">image</span> <span class="o">=</span> <span class="n">inverse_radon</span><span class="p">(</span><span class="n">sinogram</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=-</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># 2d image with fill value</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">image</span> <span class="o">=</span> <span class="n">inverse_radon</span><span class="p">(</span><span class="n">sinogram</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>  <span class="c1"># nd image</span>
+</code></pre></div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="imops.zoom.zoom" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">imops</span><span class="o">.</span><span class="n">zoom</span><span class="o">.</span><span class="n">zoom</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  
+      <p>Rescale <code>x</code> according to <code>scale_factor</code> along the <code>axis</code>.</p>
+<p>Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim &lt;= 3 and order = 1.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>n-dimensional array</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>scale_factor</code></td>
+          <td>
+                <code><span title="imops.utils.AxesParams">AxesParams</span></code>
+          </td>
+          <td><p>float or sequence of floats describing how to scale along axes</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>axis</code></td>
+          <td>
+                <code><span title="imops.utils.AxesLike">AxesLike</span></code>
+          </td>
+          <td><p>axis along which array will be scaled</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>order</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>order of interpolation</p></td>
+          <td>
+                <code>1</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>fill_value</code></td>
+          <td>
+                <code><span title="typing.Union">Union</span>[float, <span title="typing.Callable">Callable</span>]</code>
+          </td>
+          <td><p>value to fill past edges. If Callable (e.g. <code>numpy.min</code>) - <code>fill_value(x)</code> will be used</p></td>
+          <td>
+                <code>0</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>num_threads</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>the number of threads to use for computation. Default = the cpu count. If negative value passed
+cpu count + num_threads + 1 threads will be used</p></td>
+          <td>
+                <code>-1</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>backend</code></td>
+          <td>
+                <code><span title="imops.backend.BackendLike">BackendLike</span></code>
+          </td>
+          <td><p>which backend to use. <code>numba</code>, <code>cython</code> and <code>scipy</code> are available, <code>cython</code> is used by default</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>zoomed</code></td>          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>zoomed array</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">zoomed</span> <span class="o">=</span> <span class="n">zoom</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># 3d array</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">zoomed</span> <span class="o">=</span> <span class="n">zoom</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>  <span class="c1"># different scales along each axes</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">zoomed</span> <span class="o">=</span> <span class="n">zoom</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>  <span class="c1"># will fall back to scipy&#39;s implementation because of int dtype</span>
+</code></pre></div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="imops.zoom.zoom_to_shape" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">imops</span><span class="o">.</span><span class="n">zoom</span><span class="o">.</span><span class="n">zoom_to_shape</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  
+      <p>Rescale <code>x</code> to match <code>shape</code> along the <code>axis</code>.</p>
+<p>Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim &lt;= 3 and order = 1.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>n-dimensional array</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>shape</code></td>
+          <td>
+                <code><span title="imops.utils.AxesLike">AxesLike</span></code>
+          </td>
+          <td><p>float or sequence of floats describing desired lengths along axes</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>axis</code></td>
+          <td>
+                <code><span title="imops.utils.AxesLike">AxesLike</span></code>
+          </td>
+          <td><p>axis along which array will be scaled</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>order</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>order of interpolation</p></td>
+          <td>
+                <code>1</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>fill_value</code></td>
+          <td>
+                <code><span title="typing.Union">Union</span>[float, <span title="typing.Callable">Callable</span>]</code>
+          </td>
+          <td><p>value to fill past edges. If Callable (e.g. <code>numpy.min</code>) - <code>fill_value(x)</code> will be used</p></td>
+          <td>
+                <code>0</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>num_threads</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>the number of threads to use for computation. Default = the cpu count. If negative value passed
+cpu count + num_threads + 1 threads will be used</p></td>
+          <td>
+                <code>-1</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>backend</code></td>
+          <td>
+                <code><span title="imops.backend.BackendLike">BackendLike</span></code>
+          </td>
+          <td><p>which backend to use. <code>numba</code>, <code>cython</code> and <code>scipy</code> are available, <code>cython</code> is used by default</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>zoomed</code></td>          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>zoomed array</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">zoomed</span> <span class="o">=</span> <span class="n">zoom_to_shape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>  <span class="c1"># 3d array</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">zoomed</span> <span class="o">=</span> <span class="n">zoom_to_shape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># zoom to shape along specified axes</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">zoomed</span> <span class="o">=</span> <span class="n">zoom_to_shape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>  <span class="c1"># will fall back to scipy&#39;s implementation because of int dtype</span>
+</code></pre></div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="imops.pad.pad" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">imops</span><span class="o">.</span><span class="n">pad</span><span class="o">.</span><span class="n">pad</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  
+      <p>Pad <code>x</code> according to <code>padding</code> along the <code>axis</code>.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>array to pad</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>padding</code></td>
+          <td>
+                <code><span title="typing.Union">Union</span>[<span title="imops.utils.AxesLike">AxesLike</span>, <span title="typing.Sequence">Sequence</span>[<span title="typing.Sequence">Sequence</span>[int]]]</code>
+          </td>
+          <td><p>if 2D array [[start_1, stop_1], ..., [start_n, stop_n]] - specifies individual padding
+for each axis from <code>axis</code>. The length of the array must either be equal to 1 or match the length of <code>axis</code>.
+If 1D array [val_1, ..., val_n] - same as [[val_1, val_1], ..., [val_n, val_n]].
+If scalar (val) - same as [[val, val]]</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>axis</code></td>
+          <td>
+                <code><span title="imops.utils.AxesLike">AxesLike</span></code>
+          </td>
+          <td><p>axis along which <code>x</code> will be padded</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>padding_values</code></td>
+          <td>
+                <code><span title="typing.Union">Union</span>[<span title="imops.utils.AxesParams">AxesParams</span>, <span title="typing.Callable">Callable</span>]</code>
+          </td>
+          <td><p>values to pad with, must be broadcastable to the resulting array.
+If Callable (e.g. <code>numpy.min</code>) - <code>padding_values(x)</code> will be used</p></td>
+          <td>
+                <code>0</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>padded</code></td>          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>padded array</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">padded</span> <span class="o">=</span> <span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># pad 2 zeros on each side of each axes</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">padded</span> <span class="o">=</span> <span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>  <span class="c1"># pad 1 zero on each side of last 2 axes</span>
+</code></pre></div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="imops.pad.pad_to_shape" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">imops</span><span class="o">.</span><span class="n">pad</span><span class="o">.</span><span class="n">pad_to_shape</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  
+      <p>Pad <code>x</code> to match <code>shape</code> along the <code>axis</code>.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>array to pad</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>shape</code></td>
+          <td>
+                <code><span title="imops.utils.AxesLike">AxesLike</span></code>
+          </td>
+          <td><p>final shape</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>axis</code></td>
+          <td>
+                <code><span title="imops.utils.AxesLike">AxesLike</span></code>
+          </td>
+          <td><p>axis along which <code>x</code> will be padded</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>padding_values</code></td>
+          <td>
+                <code><span title="typing.Union">Union</span>[<span title="imops.utils.AxesParams">AxesParams</span>, <span title="typing.Callable">Callable</span>]</code>
+          </td>
+          <td><p>values to pad with, must be broadcastable to the resulting array.
+If Callable (e.g. <code>numpy.min</code>) - <code>padding_values(x)</code> will be used</p></td>
+          <td>
+                <code>0</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>ratio</code></td>
+          <td>
+                <code><span title="imops.utils.AxesParams">AxesParams</span></code>
+          </td>
+          <td><p>float or sequence of floats describing what proportion of padding to apply on the left sides of padding axes.
+Remaining ratio of padding will be applied on the right sides</p></td>
+          <td>
+                <code>0.5</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>padded</code></td>          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>padded array</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">padded</span> <span class="o">=</span> <span class="n">pad_to_shape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>  <span class="c1"># pad 3d array</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">padded</span> <span class="o">=</span> <span class="n">pad_to_shape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># pad first 2 axes on the right</span>
+</code></pre></div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="imops.pad.pad_to_divisible" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">imops</span><span class="o">.</span><span class="n">pad</span><span class="o">.</span><span class="n">pad_to_divisible</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  
+      <p>Pad <code>x</code> to be divisible by <code>divisor</code> along the <code>axis</code>.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>divisor</code></td>
+          <td>
+                <code><span title="imops.utils.AxesLike">AxesLike</span></code>
+          </td>
+          <td><p>float or sequence of floats an incoming array shape will be divisible by</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>axis</code></td>
+          <td>
+                <code><span title="imops.utils.AxesLike">AxesLike</span></code>
+          </td>
+          <td><p>axis along which the array will be padded. If None - the last <code>len(divisor)</code> axes are used</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>padding_values</code></td>
+          <td>
+                <code><span title="typing.Union">Union</span>[<span title="imops.utils.AxesParams">AxesParams</span>, <span title="typing.Callable">Callable</span>]</code>
+          </td>
+          <td><p>values to pad with. If Callable (e.g. <code>numpy.min</code>) - <code>padding_values(x)</code> will be used</p></td>
+          <td>
+                <code>0</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>ratio</code></td>
+          <td>
+                <code><span title="imops.utils.AxesParams">AxesParams</span></code>
+          </td>
+          <td><p>float or sequence of floats describing what proportion of padding to apply on the left sides of padding axes.
+Remaining ratio of padding will be applied on the right sides</p></td>
+          <td>
+                <code>0.5</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>remainder</code></td>
+          <td>
+                <code><span title="imops.utils.AxesLike">AxesLike</span></code>
+          </td>
+          <td><p><code>x</code> will be padded such that its shape gives the remainder <code>remainder</code> when divided by <code>divisor</code></p></td>
+          <td>
+                <code>0</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>padded</code></td>          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>padded array</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>  <span class="c1"># array of shape [2, 3, 4]</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">padded</span> <span class="o">=</span> <span class="n">pad_to_divisible</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>  <span class="c1"># pad to shape [6, 6, 6]</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">padded</span> <span class="o">=</span> <span class="n">pad_to_divisible</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># pad first 2 axes on the left, shape - [4, 3, 4]</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">padded</span> <span class="o">=</span> <span class="n">pad_to_divisible</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">remainder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># pad to shape [4, 4, 4]</span>
 </code></pre></div>
 
   </div>
