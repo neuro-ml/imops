@@ -26,11 +26,3 @@ pip install imops[numba]  # additionally install Numba backend
 ::: imops.pad.pad_to_divisible
 
 ::: imops.pad.restore_crop
-
-::: imops.morphology.binary_dilation
-
-::: imops.morphology.binary_erosion
-
-::: imops.morphology.binary_closing
-
-::: imops.morphology.binary_opening
