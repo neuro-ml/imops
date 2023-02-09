@@ -125,6 +125,7 @@ def pad_to_divisible(
     Parameters
     ----------
     x: np.ndarray
+        array to pad
     divisor: AxesLike
         float or sequence of floats an incoming array shape will be divisible by
     axis: AxesLike
@@ -159,13 +160,41 @@ def pad_to_divisible(
     return pad_to_shape(x, shape + (remainder - shape) % divisor, axis, padding_values, ratio)
 
 
-def restore_crop(x: np.ndarray, box: np.ndarray, shape: AxesLike, padding_values: AxesParams = 0) -> np.ndarray:
+def restore_crop(
+    x: np.ndarray, box: np.ndarray, shape: AxesLike, padding_values: Union[AxesParams, Callable] = 0
+) -> np.ndarray:
     """
     Pad `x` to match `shape`. The left padding is taken equal to `box`'s start.
+
+    Parameters
+    ----------
+    x: np.ndarray
+        array to pad
+    box: np.ndarray
+        array of shape (2, x.ndim) describing crop boundaries
+    shape: AxesLike
+        shape to restore crop to
+    padding_values: Union[AxesParams, Callable]
+        values to pad with. If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used
+
+    Returns
+    -------
+    padded: np.ndarray
+        padded array
+
+    Examples
+    --------
+    >>> x  # array of shape [2, 3, 4]
+    >>> padded = restore_crop(x, np.array([[0, 0, 0], [2, 3, 4]]), [4, 4, 4])  # pad to shape [4, 4, 4]
+    >>> padded = restore_crop(x, np.array([[0, 0, 0], [1, 1, 1]]), [4, 4, 4])  # fail, box is inconsistent with an array
+    >>> padded = restore_crop(x, np.array([[1, 2, 3], [3, 5, 7]]), [3, 5, 7])  # pad to shape [3, 5, 7]
     """
-    x = np.asarray(x)
-    assert len(shape) == x.ndim
     start, stop = np.asarray(box)
+
+    assert len(shape) == x.ndim
+    assert len(start) == len(stop) == x.ndim
+
+    x = np.asarray(x)
 
     if (stop > shape).any() or (stop - start != x.shape).any():
         raise ValueError(

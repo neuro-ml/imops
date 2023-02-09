@@ -22,12 +22,15 @@ def morphology_op_doc(op_name: str) -> str:
 
     Parameters
     ----------
-    image
-    footprint
-    num_threads
-        the number of threads to use for computation. Default = the cpu count.
-    backend
-        which backend to use. `cython` and `scipy` are available, `cython` is used by default.
+    image: np.ndarray
+        input image
+    footprint: np.ndarray
+        the neighborhood expressed as a 2-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
     """
 
 
