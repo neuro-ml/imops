@@ -335,6 +335,41 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#imops.pad.restore_crop" class="md-nav__link">
+    restore_crop()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.morphology.binary_dilation" class="md-nav__link">
+    binary_dilation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.morphology.binary_erosion" class="md-nav__link">
+    binary_erosion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.morphology.binary_closing" class="md-nav__link">
+    binary_closing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.morphology.binary_opening" class="md-nav__link">
+    binary_opening
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -434,6 +469,41 @@
           <li class="md-nav__item">
   <a href="#imops.pad.pad_to_divisible" class="md-nav__link">
     pad_to_divisible()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.pad.restore_crop" class="md-nav__link">
+    restore_crop()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.morphology.binary_dilation" class="md-nav__link">
+    binary_dilation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.morphology.binary_erosion" class="md-nav__link">
+    binary_erosion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.morphology.binary_closing" class="md-nav__link">
+    binary_closing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.morphology.binary_opening" class="md-nav__link">
+    binary_opening
   </a>
   
 </li>
@@ -1225,7 +1295,7 @@ Remaining ratio of padding will be applied on the right sides</p></td>
           <td>
                 <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
           </td>
-          <td></td>
+          <td><p>array to pad</p></td>
           <td>
               <em>required</em>
           </td>
@@ -1309,6 +1379,179 @@ Remaining ratio of padding will be applied on the right sides</p></td>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">padded</span> <span class="o">=</span> <span class="n">pad_to_divisible</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">remainder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># pad to shape [4, 4, 4]</span>
 </code></pre></div>
 
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="imops.pad.restore_crop" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">imops</span><span class="o">.</span><span class="n">pad</span><span class="o">.</span><span class="n">restore_crop</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  
+      <p>Pad <code>x</code> to match <code>shape</code>. The left padding is taken equal to <code>box</code>'s start.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>array to pad</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>box</code></td>
+          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>array of shape (2, x.ndim) describing crop boundaries</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>shape</code></td>
+          <td>
+                <code><span title="imops.utils.AxesLike">AxesLike</span></code>
+          </td>
+          <td><p>shape to restore crop to</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>padding_values</code></td>
+          <td>
+                <code><span title="typing.Union">Union</span>[<span title="imops.utils.AxesParams">AxesParams</span>, <span title="typing.Callable">Callable</span>]</code>
+          </td>
+          <td><p>values to pad with. If Callable (e.g. <code>numpy.min</code>) - <code>padding_values(x)</code> will be used</p></td>
+          <td>
+                <code>0</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>padded</code></td>          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>padded array</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>  <span class="c1"># array of shape [2, 3, 4]</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">padded</span> <span class="o">=</span> <span class="n">restore_crop</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]),</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>  <span class="c1"># pad to shape [4, 4, 4]</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">padded</span> <span class="o">=</span> <span class="n">restore_crop</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>  <span class="c1"># fail, box is inconsistent with an array</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">padded</span> <span class="o">=</span> <span class="n">restore_crop</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">]]),</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>  <span class="c1"># pad to shape [3, 5, 7]</span>
+</code></pre></div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="imops.morphology.binary_dilation" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">imops</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">binary_dilation</span> <span class="o">=</span> <span class="n">morphology_op_wrapper</span><span class="p">(</span><span class="s1">&#39;binary_dilation&#39;</span><span class="p">,</span> <span class="p">{</span><span class="n">Scipy</span><span class="p">():</span> <span class="n">scipy_binary_dilation</span><span class="p">,</span> <span class="n">Cython</span><span class="p">(</span><span class="n">fast</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span> <span class="n">cython_binary_dilation</span><span class="p">,</span> <span class="n">Cython</span><span class="p">(</span><span class="n">fast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span> <span class="n">cython_fast_binary_dilation</span><span class="p">})</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="imops.morphology.binary_erosion" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">imops</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">binary_erosion</span> <span class="o">=</span> <span class="n">morphology_op_wrapper</span><span class="p">(</span><span class="s1">&#39;binary_erosion&#39;</span><span class="p">,</span> <span class="p">{</span><span class="n">Scipy</span><span class="p">():</span> <span class="n">scipy_binary_erosion</span><span class="p">,</span> <span class="n">Cython</span><span class="p">(</span><span class="n">fast</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span> <span class="n">cython_binary_erosion</span><span class="p">,</span> <span class="n">Cython</span><span class="p">(</span><span class="n">fast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span> <span class="n">cython_fast_binary_erosion</span><span class="p">})</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="imops.morphology.binary_closing" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">imops</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">binary_closing</span> <span class="o">=</span> <span class="n">morphology_op_wrapper</span><span class="p">(</span><span class="s1">&#39;binary_closing&#39;</span><span class="p">,</span> <span class="p">{</span><span class="n">Scipy</span><span class="p">():</span> <span class="n">composition_args</span><span class="p">(</span><span class="n">scipy_binary_erosion</span><span class="p">,</span> <span class="n">scipy_binary_dilation</span><span class="p">),</span> <span class="n">Cython</span><span class="p">(</span><span class="n">fast</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span> <span class="n">composition_args</span><span class="p">(</span><span class="n">cython_binary_erosion</span><span class="p">,</span> <span class="n">cython_binary_dilation</span><span class="p">),</span> <span class="n">Cython</span><span class="p">(</span><span class="n">fast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span> <span class="n">composition_args</span><span class="p">(</span><span class="n">cython_fast_binary_erosion</span><span class="p">,</span> <span class="n">cython_fast_binary_dilation</span><span class="p">)})</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="imops.morphology.binary_opening" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">imops</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">binary_opening</span> <span class="o">=</span> <span class="n">morphology_op_wrapper</span><span class="p">(</span><span class="s1">&#39;binary_opening&#39;</span><span class="p">,</span> <span class="p">{</span><span class="n">Scipy</span><span class="p">():</span> <span class="n">composition_args</span><span class="p">(</span><span class="n">scipy_binary_dilation</span><span class="p">,</span> <span class="n">scipy_binary_erosion</span><span class="p">),</span> <span class="n">Cython</span><span class="p">(</span><span class="n">fast</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span> <span class="n">composition_args</span><span class="p">(</span><span class="n">cython_binary_dilation</span><span class="p">,</span> <span class="n">cython_binary_erosion</span><span class="p">),</span> <span class="n">Cython</span><span class="p">(</span><span class="n">fast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span> <span class="n">composition_args</span><span class="p">(</span><span class="n">cython_fast_binary_dilation</span><span class="p">,</span> <span class="n">cython_fast_binary_erosion</span><span class="p">)})</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
   </div>
 
 </div>
