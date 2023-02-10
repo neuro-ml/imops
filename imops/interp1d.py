@@ -14,12 +14,54 @@ class interp1d:
     """
     Faster parallelizable version of `scipy.interpolate.interp1d` for fp32 / fp64 inputs.
 
-    Works faster only for ndim <= 3. Shares interface with `scipy.interpolate.interp1d` except for
-    - `num_threads` argument defining how many threads to use (all available threads are used by default)
-    - `backend` argument defining which backend to use. `numba`, `cython` and `scipy` are available,
-        `cython` is used by default.
+    Works faster only for ndim <= 3. Shares interface with `scipy.interpolate.interp1d` except for `num_threads` and
+    `backend` arguments.
 
-    See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html`
+    Parameters
+    ----------
+    x: np.ndarray
+        1d array of real values (aka coordinates)
+    y: np.ndarray
+        nd array of real values. The length of y along the interpolation axis must be equal to the length of x
+    kind: Union[int, str]
+        specifies the kind of interpolation as a string or as an integer specifying the order of interpolation to use.
+        Only kind=1 and 'linear` are fast and parallelizable, other kinds will force to use `scipy` implementation
+    axis: int
+        specifies the axis of y along which to interpolate. Interpolation defaults to the last axis of y
+    copy: bool
+        if True, the class makes internal copies of x and y. If False, references to x and y are used
+    bounds_error: bool
+        if True, a ValueError is raised any time interpolation is attempted on a value outside of the range of x where
+        extrapolation is necessary. If False, out of bounds values are assigned fill_value. By default, an error is
+        raised unless fill_value='extrapolate'
+    fill_value: Union[float, str]
+        if a float, this value will be used to fill in for requested points outside of the data range. If not provided,
+        then the default is NaN. If 'extrapolate', values for points outside of the data range will be extrapolated
+    assume_sorted: bool
+        if False, values of x can be in any order and they are sorted first. If True, x has to be an array of
+        monotonically increasing values
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default
+
+    Methods
+    -------
+    __call__
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> from imops.interp1d import interp1d
+    >>> x = np.arange(0, 10)
+    >>> y = np.exp(-x/3.0)
+    >>> f = interp1d(x, y)
+    >>> xnew = np.arange(0, 9, 0.1)
+    >>> ynew = f(xnew)   # use interpolation function returned by `interp1d`
+    >>> plt.plot(x, y, 'o', xnew, ynew, '-')
+    >>> plt.show()
     """
 
     def __init__(
@@ -98,6 +140,20 @@ class interp1d:
                 self.src_interp1d = njit(**njit_kwargs)(numba_interp1d)
 
     def __call__(self, x_new: np.ndarray) -> np.ndarray:
+        """
+        Evaluate the interpolant
+
+        Parameters
+        ----------
+        x_new: np.ndarray
+            1d array points to evaluate the interpolant at.
+
+        Returns
+        -------
+        y_new: np.ndarray
+            interpolated values. Shape is determined by replacing the interpolation axis in the original array with
+            the shape of x
+        """
         num_threads = normalize_num_threads(self.num_threads, self.backend)
 
         if self.scipy_interp1d is not None:
