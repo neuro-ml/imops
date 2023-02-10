@@ -20,6 +20,9 @@ pip install imops[numba]  # additionally install Numba backend
 ::: imops.zoom.zoom_to_shape
 
 ::: imops.interp1d.interp1d
+    options:
+      members:
+        - __call__
 
 ::: imops.pad.pad
 
