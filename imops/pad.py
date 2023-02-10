@@ -17,7 +17,7 @@ def pad(
     Parameters
     ----------
     x: np.ndarray
-        array to pad
+        n-dimensional array to pad
     padding: Union[AxesLike, Sequence[Sequence[int]]]
         if 2D array [[start_1, stop_1], ..., [start_n, stop_n]] - specifies individual padding
         for each axis from `axis`. The length of the array must either be equal to 1 or match the length of `axis`.
@@ -74,7 +74,7 @@ def pad_to_shape(
     Parameters
     ----------
     x: np.ndarray
-        array to pad
+        n-dimensional array to pad
     shape: AxesLike
         final shape
     axis: AxesLike
@@ -125,7 +125,7 @@ def pad_to_divisible(
     Parameters
     ----------
     x: np.ndarray
-        array to pad
+        n-dimensional array to pad
     divisor: AxesLike
         float or sequence of floats an incoming array shape will be divisible by
     axis: AxesLike
@@ -169,7 +169,7 @@ def restore_crop(
     Parameters
     ----------
     x: np.ndarray
-        array to pad
+        n-dimensional array to pad
     box: np.ndarray
         array of shape (2, x.ndim) describing crop boundaries
     shape: AxesLike

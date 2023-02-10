@@ -26,7 +26,7 @@ def radon(
     Parameters
     ----------
     image: np.ndarray
-        an array with at least 2 axes
+        an n-dimensional array with at least 2 axes
     axes: tuple[int, int]
         the axes in the `image` along which the Radon transform will be applied.
         The `image` shape along the `axes` must be of the same length
@@ -118,7 +118,7 @@ def inverse_radon(
     Parameters
     ----------
     sinogram: np.ndarray
-        an array with at least 2 axes
+        an n-dimensional array with at least 2 axes
     axes: tuple[int, int]
         the axes in the `image` along which the inverse Radon transform will be applied.
         The `image` shape along the `axes` must be of the same length

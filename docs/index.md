@@ -24,6 +24,10 @@ pip install imops[numba]  # additionally install Numba backend
       members:
         - __call__
 
+::: imops.crop.crop_to_shape
+
+::: imops.crop.crop_to_box
+
 ::: imops.pad.pad
 
 ::: imops.pad.pad_to_shape

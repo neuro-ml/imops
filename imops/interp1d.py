@@ -20,9 +20,9 @@ class interp1d:
     Parameters
     ----------
     x: np.ndarray
-        1d array of real values (aka coordinates)
+        1-dimensional array of real values (aka coordinates)
     y: np.ndarray
-        nd array of real values. The length of y along the interpolation axis must be equal to the length of x
+        n-dimensional array of real values. The length of y along the interpolation axis must be equal to the x length
     kind: Union[int, str]
         specifies the kind of interpolation as a string or as an integer specifying the order of interpolation to use.
         Only kind=1 and 'linear` are fast and parallelizable, other kinds will force to use `scipy` implementation
@@ -53,15 +53,12 @@ class interp1d:
     Examples
     --------
     >>> import numpy as np
-    >>> import matplotlib.pyplot as plt
     >>> from imops.interp1d import interp1d
     >>> x = np.arange(0, 10)
     >>> y = np.exp(-x/3.0)
     >>> f = interp1d(x, y)
     >>> xnew = np.arange(0, 9, 0.1)
     >>> ynew = f(xnew)   # use interpolation function returned by `interp1d`
-    >>> plt.plot(x, y, 'o', xnew, ynew, '-')
-    >>> plt.show()
     """
 
     def __init__(
