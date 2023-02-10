@@ -19,6 +19,8 @@ pip install imops[numba]  # additionally install Numba backend
 
 ::: imops.zoom.zoom_to_shape
 
+::: imops.interp1d.interp1d
+
 ::: imops.pad.pad
 
 ::: imops.pad.pad_to_shape
