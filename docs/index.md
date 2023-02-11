@@ -11,18 +11,6 @@ pip install imops[numba]  # additionally install Numba backend
 
 ## Functions
 
-::: imops.radon.radon
-
-::: imops.radon.inverse_radon
-
-::: imops.zoom.zoom
-
-::: imops.zoom.zoom_to_shape
-
-::: imops.interp1d.interp1d
-    options:
-      members:
-        - __call__
 
 ::: imops.crop.crop_to_shape
 
@@ -35,3 +23,16 @@ pip install imops[numba]  # additionally install Numba backend
 ::: imops.pad.pad_to_divisible
 
 ::: imops.pad.restore_crop
+
+::: imops.zoom.zoom
+
+::: imops.zoom.zoom_to_shape
+
+::: imops.interp1d.interp1d
+    options:
+      members:
+        - __call__
+
+::: imops.radon.radon
+
+::: imops.radon.inverse_radon
