@@ -3025,21 +3025,83 @@ the shape of x</p></td>
   <div class="doc doc-contents first">
   
       <p>Fast version of <code>skimage.measure.label</code> which optionally returns sizes of connected components, labels and sizes.
-If more than 2 outputs are requested <code>NamedTuple</code> is returned.</p>
-<p>label_image: np.ndarray
-    image to label
-background: int
-    consider all pixels with this value as background pixels, and label them as 0. By default, 0-valued pixels are
-    considered as background pixels
-connectivity: int
-    maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. Accepted values are ranging from 1
-    to input.ndim. If None, a full connectivity of input.ndim is used
-return_num: bool
-    whether to return the number of assigned labels
-return_labels: bool
-    whether to return assigned labels
-return_sizes: bool
-    whether to return sizes of connected components (excluding background)</p>
+If 2 or more outputs are requested <code>NamedTuple</code> is returned.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>label_image</code></td>
+          <td>
+                <code><span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td><p>image to label</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>background</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>consider all pixels with this value as background pixels, and label them as 0. By default, 0-valued pixels are
+considered as background pixels</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>connectivity</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. Accepted values are ranging from 1
+to input.ndim. If None, a full connectivity of input.ndim is used</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>return_num</code></td>
+          <td>
+                <code>bool</code>
+          </td>
+          <td><p>whether to return the number of assigned labels</p></td>
+          <td>
+                <code>False</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>return_labels</code></td>
+          <td>
+                <code>bool</code>
+          </td>
+          <td><p>whether to return assigned labels</p></td>
+          <td>
+                <code>False</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>return_sizes</code></td>
+          <td>
+                <code>bool</code>
+          </td>
+          <td><p>whether to return sizes of connected components (excluding background)</p></td>
+          <td>
+                <code>False</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
 
   <p><strong>Returns:</strong></p>
   <table>
@@ -3172,7 +3234,9 @@ return_sizes: bool
 <span class="normal"><a href="#__codelineno-0-105">105</a></span>
 <span class="normal"><a href="#__codelineno-0-106">106</a></span>
 <span class="normal"><a href="#__codelineno-0-107">107</a></span>
-<span class="normal"><a href="#__codelineno-0-108">108</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="k">def</span> <span class="nf">label</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="k">def</span> <span class="nf">label</span><span class="p">(</span>
 <a id="__codelineno-0-23" name="__codelineno-0-23"></a>    <span class="n">label_image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
 <a id="__codelineno-0-24" name="__codelineno-0-24"></a>    <span class="n">background</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-25" name="__codelineno-0-25"></a>    <span class="n">connectivity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3182,83 +3246,85 @@ return_sizes: bool
 <a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">]:</span>
 <a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">    Fast version of `skimage.measure.label` which optionally returns sizes of connected components, labels and sizes.</span>
-<a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">    If more than 2 outputs are requested `NamedTuple` is returned.</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">    If 2 or more outputs are requested `NamedTuple` is returned.</span>
 <a id="__codelineno-0-33" name="__codelineno-0-33"></a>
-<a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    label_image: np.ndarray</span>
-<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        image to label</span>
-<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">    background: int</span>
-<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        consider all pixels with this value as background pixels, and label them as 0. By default, 0-valued pixels are</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        considered as background pixels</span>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">    connectivity: int</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. Accepted values are ranging from 1</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        to input.ndim. If None, a full connectivity of input.ndim is used</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    return_num: bool</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        whether to return the number of assigned labels</span>
-<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">    return_labels: bool</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        whether to return assigned labels</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">    return_sizes: bool</span>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        whether to return sizes of connected components (excluding background)</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    Returns</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    -------</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    labeled_image: np.ndarray</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    num_components: int</span>
-<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        number of connected components excluding background. Returned if `return_num` is True</span>
-<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">    labels: np.ndarray</span>
-<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        components labels. Returned if `return_labels` is True</span>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    sizes: np.ndarray</span>
-<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        components sizes. Returned if `return_sizes` is True</span>
-<a id="__codelineno-0-58" name="__codelineno-0-58"></a>
-<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">    Examples</span>
-<a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">    --------</span>
-<a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    &gt;&gt;&gt; labeled = label(x)</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">    &gt;&gt;&gt; labeled, num_components, sizes = label(x, return_num=True, return_sizes=True)</span>
-<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    &gt;&gt;&gt; out = labels(x, return_labels=True, return_sizes=True)</span>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    &gt;&gt;&gt; out.labeled_image, out.labels, out.sizes  # output fields can be accessed this way</span>
-<a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="n">ndim</span> <span class="o">=</span> <span class="n">label_image</span><span class="o">.</span><span class="n">ndim</span>
-<a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="n">connectivity</span> <span class="o">=</span> <span class="n">connectivity</span> <span class="ow">or</span> <span class="n">ndim</span>
-<a id="__codelineno-0-68" name="__codelineno-0-68"></a>
-<a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">connectivity</span> <span class="o">&lt;=</span> <span class="n">ndim</span><span class="p">:</span>
-<a id="__codelineno-0-70" name="__codelineno-0-70"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Connectivity for </span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s1">D image should be in [1, ..., </span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s1">]. Got </span><span class="si">{</span><span class="n">connectivity</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
-<a id="__codelineno-0-71" name="__codelineno-0-71"></a>
-<a id="__codelineno-0-72" name="__codelineno-0-72"></a>    <span class="k">if</span> <span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-<a id="__codelineno-0-73" name="__codelineno-0-73"></a>        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Fast label is only supported for ndim&lt;=3, Falling back to scikit-image&#39;s implementation.&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="n">labeled_image</span><span class="p">,</span> <span class="n">num_components</span> <span class="o">=</span> <span class="n">skimage_label</span><span class="p">(</span>
-<a id="__codelineno-0-75" name="__codelineno-0-75"></a>            <span class="n">label_image</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="n">background</span><span class="p">,</span> <span class="n">return_num</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span>
-<a id="__codelineno-0-76" name="__codelineno-0-76"></a>        <span class="p">)</span>
-<a id="__codelineno-0-77" name="__codelineno-0-77"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-78" name="__codelineno-0-78"></a>        <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<a id="__codelineno-0-79" name="__codelineno-0-79"></a>            <span class="n">label_image</span> <span class="o">=</span> <span class="n">label_image</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
-<a id="__codelineno-0-80" name="__codelineno-0-80"></a>
-<a id="__codelineno-0-81" name="__codelineno-0-81"></a>        <span class="k">if</span> <span class="n">background</span><span class="p">:</span>
-<a id="__codelineno-0-82" name="__codelineno-0-82"></a>            <span class="n">label_image</span> <span class="o">=</span> <span class="n">remap</span><span class="p">(</span>
-<a id="__codelineno-0-83" name="__codelineno-0-83"></a>                <span class="n">label_image</span><span class="p">,</span> <span class="p">{</span><span class="n">background</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span> <span class="n">background</span><span class="p">},</span> <span class="n">preserve_missing_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="kc">False</span>
-<a id="__codelineno-0-84" name="__codelineno-0-84"></a>            <span class="p">)</span>
-<a id="__codelineno-0-85" name="__codelineno-0-85"></a>
-<a id="__codelineno-0-86" name="__codelineno-0-86"></a>        <span class="n">labeled_image</span><span class="p">,</span> <span class="n">num_components</span> <span class="o">=</span> <span class="n">connected_components</span><span class="p">(</span>
-<a id="__codelineno-0-87" name="__codelineno-0-87"></a>            <span class="n">label_image</span><span class="p">,</span>
-<a id="__codelineno-0-88" name="__codelineno-0-88"></a>            <span class="n">connectivity</span><span class="o">=</span><span class="n">skimage2cc3d</span><span class="p">[(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">connectivity</span><span class="p">)],</span>
-<a id="__codelineno-0-89" name="__codelineno-0-89"></a>            <span class="n">return_N</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-0-90" name="__codelineno-0-90"></a>        <span class="p">)</span>
-<a id="__codelineno-0-91" name="__codelineno-0-91"></a>
-<a id="__codelineno-0-92" name="__codelineno-0-92"></a>        <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<a id="__codelineno-0-93" name="__codelineno-0-93"></a>            <span class="n">labeled_image</span> <span class="o">=</span> <span class="n">labeled_image</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<a id="__codelineno-0-94" name="__codelineno-0-94"></a>
-<a id="__codelineno-0-95" name="__codelineno-0-95"></a>    <span class="n">res</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;labeled_image&#39;</span><span class="p">,</span> <span class="n">labeled_image</span><span class="p">)]</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">    label_image: np.ndarray</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        image to label</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">    background: int</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">        consider all pixels with this value as background pixels, and label them as 0. By default, 0-valued pixels are</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        considered as background pixels</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    connectivity: int</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. Accepted values are ranging from 1</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        to input.ndim. If None, a full connectivity of input.ndim is used</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">    return_num: bool</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        whether to return the number of assigned labels</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">    return_labels: bool</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        whether to return assigned labels</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    return_sizes: bool</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        whether to return sizes of connected components (excluding background)</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">    labeled_image: np.ndarray</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">    num_components: int</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        number of connected components excluding background. Returned if `return_num` is True</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    labels: np.ndarray</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        components labels. Returned if `return_labels` is True</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">    sizes: np.ndarray</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">        components sizes. Returned if `return_sizes` is True</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    Examples</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">    --------</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    &gt;&gt;&gt; labeled = label(x)</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    &gt;&gt;&gt; labeled, num_components, sizes = label(x, return_num=True, return_sizes=True)</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">    &gt;&gt;&gt; out = labels(x, return_labels=True, return_sizes=True)</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="sd">    &gt;&gt;&gt; out.labeled_image, out.labels, out.sizes  # output fields can be accessed this way</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a>    <span class="n">ndim</span> <span class="o">=</span> <span class="n">label_image</span><span class="o">.</span><span class="n">ndim</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="n">connectivity</span> <span class="o">=</span> <span class="n">connectivity</span> <span class="ow">or</span> <span class="n">ndim</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">connectivity</span> <span class="o">&lt;=</span> <span class="n">ndim</span><span class="p">:</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Connectivity for </span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s1">D image should be in [1, ..., </span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s1">]. Got </span><span class="si">{</span><span class="n">connectivity</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a>    <span class="k">if</span> <span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a>        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Fast label is only supported for ndim&lt;=3, Falling back to scikit-image&#39;s implementation.&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a>        <span class="n">labeled_image</span><span class="p">,</span> <span class="n">num_components</span> <span class="o">=</span> <span class="n">skimage_label</span><span class="p">(</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>            <span class="n">label_image</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="n">background</span><span class="p">,</span> <span class="n">return_num</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a>        <span class="p">)</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a>        <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>            <span class="n">label_image</span> <span class="o">=</span> <span class="n">label_image</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a>        <span class="k">if</span> <span class="n">background</span><span class="p">:</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a>            <span class="n">label_image</span> <span class="o">=</span> <span class="n">remap</span><span class="p">(</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a>                <span class="n">label_image</span><span class="p">,</span> <span class="p">{</span><span class="n">background</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span> <span class="n">background</span><span class="p">},</span> <span class="n">preserve_missing_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="kc">False</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>            <span class="p">)</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a>        <span class="n">labeled_image</span><span class="p">,</span> <span class="n">num_components</span> <span class="o">=</span> <span class="n">connected_components</span><span class="p">(</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a>            <span class="n">label_image</span><span class="p">,</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>            <span class="n">connectivity</span><span class="o">=</span><span class="n">skimage2cc3d</span><span class="p">[(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">connectivity</span><span class="p">)],</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a>            <span class="n">return_N</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a>        <span class="p">)</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a>        <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a>            <span class="n">labeled_image</span> <span class="o">=</span> <span class="n">labeled_image</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <a id="__codelineno-0-96" name="__codelineno-0-96"></a>
-<a id="__codelineno-0-97" name="__codelineno-0-97"></a>    <span class="k">if</span> <span class="n">return_num</span><span class="p">:</span>
-<a id="__codelineno-0-98" name="__codelineno-0-98"></a>        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;num_components&#39;</span><span class="p">,</span> <span class="n">num_components</span><span class="p">))</span>
-<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="k">if</span> <span class="n">return_labels</span><span class="p">:</span>
-<a id="__codelineno-0-100" name="__codelineno-0-100"></a>        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;labels&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_components</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))))</span>
-<a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="k">if</span> <span class="n">return_sizes</span><span class="p">:</span>
-<a id="__codelineno-0-102" name="__codelineno-0-102"></a>        <span class="n">_</span><span class="p">,</span> <span class="n">sizes</span> <span class="o">=</span> <span class="n">unique</span><span class="p">(</span><span class="n">labeled_image</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-0-103" name="__codelineno-0-103"></a>        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;sizes&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
-<a id="__codelineno-0-104" name="__codelineno-0-104"></a>
-<a id="__codelineno-0-105" name="__codelineno-0-105"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<a id="__codelineno-0-106" name="__codelineno-0-106"></a>        <span class="k">return</span> <span class="n">labeled_image</span>
-<a id="__codelineno-0-107" name="__codelineno-0-107"></a>
-<a id="__codelineno-0-108" name="__codelineno-0-108"></a>    <span class="k">return</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Labeling&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">subres</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">subres</span> <span class="ow">in</span> <span class="n">res</span><span class="p">])(</span><span class="o">*</span><span class="p">[</span><span class="n">subres</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">subres</span> <span class="ow">in</span> <span class="n">res</span><span class="p">])</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>    <span class="n">res</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;labeled_image&#39;</span><span class="p">,</span> <span class="n">labeled_image</span><span class="p">)]</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="k">if</span> <span class="n">return_num</span><span class="p">:</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;num_components&#39;</span><span class="p">,</span> <span class="n">num_components</span><span class="p">))</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="k">if</span> <span class="n">return_labels</span><span class="p">:</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;labels&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_components</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))))</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>    <span class="k">if</span> <span class="n">return_sizes</span><span class="p">:</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>        <span class="n">_</span><span class="p">,</span> <span class="n">sizes</span> <span class="o">=</span> <span class="n">unique</span><span class="p">(</span><span class="n">labeled_image</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;sizes&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>        <span class="k">return</span> <span class="n">labeled_image</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>    <span class="k">return</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Labeling&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">subres</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">subres</span> <span class="ow">in</span> <span class="n">res</span><span class="p">])(</span><span class="o">*</span><span class="p">[</span><span class="n">subres</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">subres</span> <span class="ow">in</span> <span class="n">res</span><span class="p">])</span>
 </code></pre></div></td></tr></table></div>
       </details>
   </div>
