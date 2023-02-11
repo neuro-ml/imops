@@ -15,10 +15,16 @@ from .utils import FAST_MATH_WARNING, composition_args, normalize_num_threads
 
 
 def morphology_op_doc(op_name: str) -> str:
-    return f"""
-    Fast parallelizable binary morphological {op_name.split('_')[-1]} of an image
+    op2result = {
+        'binary_dilation': 'dilated',
+        'binary_erosion': 'eroded',
+        'binary_closing': 'closing',
+        'binary_opening': 'opening',
+    }
 
-    See `https://scikit-image.org/docs/stable/api/skimage.morphology#skimage.morphology.{op_name}`
+    short_op = op_name.split('_')[-1]
+    return f"""
+    Fast parallelizable binary morphological {short_op} of an image
 
     Parameters
     ----------
@@ -31,6 +37,15 @@ def morphology_op_doc(op_name: str) -> str:
         cpu count + num_threads + 1 threads will be used
     backend: BackendLike
         which backend to use. `cython` and `scipy` are available, `cython` is used by default
+
+    Returns
+    -------
+    {op2result[op_name]}: np.ndarray
+        the result of morphological {short_op}
+
+    Examples
+    --------
+    >>> {op2result[op_name]} = {op_name}(x)
     """
 
 
@@ -84,6 +99,7 @@ def morphology_op_wrapper(
         return out.astype(bool)
 
     wrapped.__name__ = op_name
+    # TODO: Add mkdocstrings handler to collect docstring as it doesn't work now
     wrapped.__doc__ = morphology_op_doc(op_name)
 
     return wrapped
