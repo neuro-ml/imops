@@ -120,8 +120,7 @@ def inverse_radon(
     sinogram: np.ndarray
         an n-dimensional array with at least 2 axes
     axes: tuple[int, int]
-        the axes in the `image` along which the inverse Radon transform will be applied.
-        The `image` shape along the `axes` must be of the same length
+        the axes in the `image` along which the inverse Radon transform will be applied
     theta: int | Sequence[float]
         the angles for which the inverse Radon transform will be computed. If it is an integer - the angles will
         be evenly distributed between 0 and 180, `theta` values in total
