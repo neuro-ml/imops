@@ -28,9 +28,40 @@ def label(
     return_sizes: bool = False,
 ) -> Union[np.ndarray, NamedTuple]:
     """
-    Fast version of `skimage.measure.label` which optionally returns sizes of connected components
+    Fast version of `skimage.measure.label` which optionally returns sizes of connected components, labels and sizes.
+    If more than 2 outputs are requested `NamedTuple` is returned.
 
-    See `https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.label`
+    label_image: np.ndarray
+        image to label
+    background: int
+        consider all pixels with this value as background pixels, and label them as 0. By default, 0-valued pixels are
+        considered as background pixels
+    connectivity: int
+        maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. Accepted values are ranging from 1
+        to input.ndim. If None, a full connectivity of input.ndim is used
+    return_num: bool
+        whether to return the number of assigned labels
+    return_labels: bool
+        whether to return assigned labels
+    return_sizes: bool
+        whether to return sizes of connected components (excluding background)
+
+    Returns
+    -------
+    labeled_image: np.ndarray
+    num_components: int
+        number of connected components excluding background. Returned if `return_num` is True
+    labels: np.ndarray
+        components labels. Returned if `return_labels` is True
+    sizes: np.ndarray
+        components sizes. Returned if `return_sizes` is True
+
+    Examples
+    --------
+    >>> labeled = label(x)
+    >>> labeled, num_components, sizes = label(x, return_num=True, return_sizes=True)
+    >>> out = labels(x, return_labels=True, return_sizes=True)
+    >>> out.labeled_image, out.labels, out.sizes  # output fields can be accessed this way
     """
     ndim = label_image.ndim
     connectivity = connectivity or ndim
