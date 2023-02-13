@@ -33,6 +33,14 @@ pip install imops[numba]  # additionally install Numba backend
       members:
         - __call__
 
+::: imops.morphology.binary_dilation
+
+::: imops.morphology.binary_erosion
+
+::: imops.morphology.binary_opening
+
+::: imops.morphology.binary_closing
+
 ::: imops.measure.label
 
 ::: imops.radon.radon
