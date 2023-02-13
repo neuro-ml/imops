@@ -43,18 +43,32 @@ def zoom(
 
     Parameters
     ----------
-    x
-    scale_factor
-    axis
-        axis along which the tensor will be scaled.
-    order
-        order of interpolation.
-    fill_value
-        value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used.
-    num_threads
-        the number of threads to use for computation. Default = the cpu count.
-    backend
-        which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default.
+    x: np.ndarray
+        n-dimensional array
+    scale_factor: AxesParams
+        float or sequence of floats describing how to scale along axes
+    axis: AxesLike
+        axis along which array will be scaled
+    order: int
+        order of interpolation
+    fill_value: float | Callable
+        value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default
+
+    Returns
+    -------
+    zoomed: np.ndarray
+        zoomed array
+
+    Examples
+    --------
+    >>> zoomed = zoom(x, 2, axis=[0, 1])  # 3d array
+    >>> zoomed = zoom(x, [1, 2, 3])  # different scales along each axes
+    >>> zoomed = zoom(x.astype(int))  # will fall back to scipy's implementation because of int dtype
     """
     x = np.asarray(x)
     axis, scale_factor = broadcast_axis(axis, x.ndim, scale_factor)
@@ -82,19 +96,32 @@ def zoom_to_shape(
 
     Parameters
     ----------
-    x
-    shape
-        final shape.
-    axis
-        axes along which the tensor will be scaled.
-    order
-        order of interpolation.
-    fill_value
-        value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used.
-    num_threads
-        the number of threads to use for computation. Default = the cpu count.
-    backend
-        which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default.
+    x: np.ndarray
+        n-dimensional array
+    shape: AxesLike
+        float or sequence of floats describing desired lengths along axes
+    axis: AxesLike
+        axis along which array will be scaled
+    order: int
+        order of interpolation
+    fill_value: float | Callable
+        value to fill past edges. If Callable (e.g. `numpy.min`) - `fill_value(x)` will be used
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default
+
+    Returns
+    -------
+    zoomed: np.ndarray
+        zoomed array
+
+    Examples
+    --------
+    >>> zoomed = zoom_to_shape(x, [3, 4, 5])  # 3d array
+    >>> zoomed = zoom_to_shape(x, [6, 7], axis=[1, 2])  # zoom to shape along specified axes
+    >>> zoomed = zoom_to_shape(x.astype(int))  # will fall back to scipy's implementation because of int dtype
     """
     x = np.asarray(x)
     axis, shape = broadcast_axis(axis, x.ndim, shape)

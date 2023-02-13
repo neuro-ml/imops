@@ -12,22 +12,32 @@ def pad(
     padding_values: Union[AxesParams, Callable] = 0,
 ) -> np.ndarray:
     """
-    Pad `x` according to `padding` along the `axes`.
+    Pad `x` according to `padding` along the `axis`.
 
     Parameters
     ----------
-    x
-        tensor to pad.
-    padding
+    x: np.ndarray
+        n-dimensional array to pad
+    padding: Union[AxesLike, Sequence[Sequence[int]]]
         if 2D array [[start_1, stop_1], ..., [start_n, stop_n]] - specifies individual padding
         for each axis from `axis`. The length of the array must either be equal to 1 or match the length of `axis`.
         If 1D array [val_1, ..., val_n] - same as [[val_1, val_1], ..., [val_n, val_n]].
-        If scalar (val) - same as [[val, val]].
-    padding_values
+        If scalar (val) - same as [[val, val]]
+    axis: AxesLike
+        axis along which `x` will be padded
+    padding_values: Union[AxesParams, Callable]
         values to pad with, must be broadcastable to the resulting array.
-        If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used.
-    axis
-        axis along which `x` will be padded.
+        If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used
+
+    Returns
+    -------
+    padded: np.ndarray
+        padded array
+
+    Examples
+    --------
+    >>> padded = pad(x, 2)  # pad 2 zeros on each side of each axes
+    >>> padded = pad(x, [1, 1], axis=(-1, -2))  # pad 1 zero on each side of last 2 axes
     """
     x = np.asarray(x)
     padding = np.asarray(padding)
@@ -63,16 +73,28 @@ def pad_to_shape(
 
     Parameters
     ----------
-    x
-    shape
-        final shape.
-    padding_values
-        values to pad with. If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used.
-    axis
-        axis along which `x` will be padded.
-    ratio
-        the fraction of the padding that will be applied to the left, `1.0 - ratio` will be applied to the right.
-        By default `ratio=0.5`, i.e. it is applied uniformly to the left and right.
+    x: np.ndarray
+        n-dimensional array to pad
+    shape: AxesLike
+        final shape
+    axis: AxesLike
+        axis along which `x` will be padded
+    padding_values: Union[AxesParams, Callable]
+        values to pad with, must be broadcastable to the resulting array.
+        If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used
+    ratio: AxesParams
+        float or sequence of floats describing what proportion of padding to apply on the left sides of padding axes.
+        Remaining ratio of padding will be applied on the right sides
+
+    Returns
+    -------
+    padded: np.ndarray
+        padded array
+
+    Examples
+    --------
+    >>> padded = pad_to_shape(x, [4, 5, 6])  # pad 3d array
+    >>> padded = pad_to_shape(x, [4, 5], axis=[0, 1], ratio=0)  # pad first 2 axes on the right
     """
     x = np.asarray(x)
     axis, shape, ratio = broadcast_axis(axis, x.ndim, shape, ratio)
@@ -96,26 +118,37 @@ def pad_to_divisible(
     padding_values: Union[AxesParams, Callable] = 0,
     ratio: AxesParams = 0.5,
     remainder: AxesLike = 0,
-):
+) -> np.ndarray:
     """
-    Pad `x` to be divisible by `divisor` along the `axes`.
+    Pad `x` to be divisible by `divisor` along the `axis`.
 
     Parameters
     ----------
-    x
-    divisor
-        a value an incoming array should be divisible by.
-    remainder
-        `x` will be padded such that its shape gives the remainder `remainder` when divided by `divisor`.
-    axis
-        axes along which the array will be padded. If None - the last `len(divisor)` axes are used.
-    padding_values
-        values to pad with. If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used.
-    ratio
-        the fraction of the padding that will be applied to the left, `1 - ratio` will be applied to the right.
-    References
-    ----------
-    `pad_to_shape`
+    x: np.ndarray
+        n-dimensional array to pad
+    divisor: AxesLike
+        float or sequence of floats an incoming array shape will be divisible by
+    axis: AxesLike
+        axis along which the array will be padded. If None - the last `len(divisor)` axes are used
+    padding_values: Union[AxesParams, Callable]
+        values to pad with. If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used
+    ratio: AxesParams
+        float or sequence of floats describing what proportion of padding to apply on the left sides of padding axes.
+        Remaining ratio of padding will be applied on the right sides
+    remainder: AxesLike
+        `x` will be padded such that its shape gives the remainder `remainder` when divided by `divisor`
+
+    Returns
+    -------
+    padded: np.ndarray
+        padded array
+
+    Examples
+    --------
+    >>> x  # array of shape [2, 3, 4]
+    >>> padded = pad_to_divisible(x, 6)  # pad to shape [6, 6, 6]
+    >>> padded = pad_to_divisible(x, [4, 3], axis=[0, 1], ratio=1)  # pad first 2 axes on the left, shape - [4, 3, 4]
+    >>> padded = pad_to_divisible(x, 3, remainder=1)  # pad to shape [4, 4, 4]
     """
     x = np.asarray(x)
     axis = axis_from_dim(axis, x.ndim)
@@ -127,13 +160,41 @@ def pad_to_divisible(
     return pad_to_shape(x, shape + (remainder - shape) % divisor, axis, padding_values, ratio)
 
 
-def restore_crop(x: np.ndarray, box: np.ndarray, shape: AxesLike, padding_values: AxesParams = 0) -> np.ndarray:
+def restore_crop(
+    x: np.ndarray, box: np.ndarray, shape: AxesLike, padding_values: Union[AxesParams, Callable] = 0
+) -> np.ndarray:
     """
     Pad `x` to match `shape`. The left padding is taken equal to `box`'s start.
+
+    Parameters
+    ----------
+    x: np.ndarray
+        n-dimensional array to pad
+    box: np.ndarray
+        array of shape (2, x.ndim) describing crop boundaries
+    shape: AxesLike
+        shape to restore crop to
+    padding_values: Union[AxesParams, Callable]
+        values to pad with. If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used
+
+    Returns
+    -------
+    padded: np.ndarray
+        padded array
+
+    Examples
+    --------
+    >>> x  # array of shape [2, 3, 4]
+    >>> padded = restore_crop(x, np.array([[0, 0, 0], [2, 3, 4]]), [4, 4, 4])  # pad to shape [4, 4, 4]
+    >>> padded = restore_crop(x, np.array([[0, 0, 0], [1, 1, 1]]), [4, 4, 4])  # fail, box is inconsistent with an array
+    >>> padded = restore_crop(x, np.array([[1, 2, 3], [3, 5, 7]]), [3, 5, 7])  # pad to shape [3, 5, 7]
     """
-    x = np.asarray(x)
-    assert len(shape) == x.ndim
     start, stop = np.asarray(box)
+
+    assert len(shape) == x.ndim
+    assert len(start) == len(stop) == x.ndim
+
+    x = np.asarray(x)
 
     if (stop > shape).any() or (stop - start != x.shape).any():
         raise ValueError(

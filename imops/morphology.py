@@ -14,23 +14,6 @@ from .src._morphology import _binary_dilation as cython_binary_dilation, _binary
 from .utils import FAST_MATH_WARNING, composition_args, normalize_num_threads
 
 
-def morphology_op_doc(op_name: str) -> str:
-    return f"""
-    Fast parallelizable binary morphological {op_name.split('_')[-1]} of an image
-
-    See `https://scikit-image.org/docs/stable/api/skimage.morphology#skimage.morphology.{op_name}`
-
-    Parameters
-    ----------
-    image
-    footprint
-    num_threads
-        the number of threads to use for computation. Default = the cpu count.
-    backend
-        which backend to use. `cython` and `scipy` are available, `cython` is used by default.
-    """
-
-
 def morphology_op_wrapper(
     op_name: str, backend2src_op: Callable[[np.ndarray, np.ndarray, int], np.ndarray]
 ) -> Callable:
@@ -80,13 +63,10 @@ def morphology_op_wrapper(
 
         return out.astype(bool)
 
-    wrapped.__name__ = op_name
-    wrapped.__doc__ = morphology_op_doc(op_name)
-
     return wrapped
 
 
-binary_dilation = morphology_op_wrapper(
+_binary_dilation = morphology_op_wrapper(
     'binary_dilation',
     {
         Scipy(): scipy_binary_dilation,
@@ -95,7 +75,39 @@ binary_dilation = morphology_op_wrapper(
     },
 )
 
-binary_erosion = morphology_op_wrapper(
+
+def binary_dilation(
+    image: np.ndarray, footprint: np.ndarray = None, num_threads: int = -1, backend: BackendLike = None
+) -> np.ndarray:
+    """
+    Fast parallelizable binary morphological dilation of an image
+
+    Parameters
+    ----------
+    image: np.ndarray
+        input image
+    footprint: np.ndarray
+        the neighborhood expressed as a 2-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
+
+    Returns
+    -------
+    dilated: np.ndarray
+        the result of morphological dilation
+
+    Examples
+    --------
+    >>> dilated = binary_dilation(x)
+    """
+
+    return _binary_dilation(image, footprint, num_threads, backend)
+
+
+_binary_erosion = morphology_op_wrapper(
     'binary_erosion',
     {
         Scipy(): scipy_binary_erosion,
@@ -104,7 +116,39 @@ binary_erosion = morphology_op_wrapper(
     },
 )
 
-binary_closing = morphology_op_wrapper(
+
+def binary_erosion(
+    image: np.ndarray, footprint: np.ndarray = None, num_threads: int = -1, backend: BackendLike = None
+) -> np.ndarray:
+    """
+    Fast parallelizable binary morphological erosion of an image
+
+    Parameters
+    ----------
+    image: np.ndarray
+        input image
+    footprint: np.ndarray
+        the neighborhood expressed as a 2-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
+
+    Returns
+    -------
+    eroded: np.ndarray
+        the result of morphological erosion
+
+    Examples
+    --------
+    >>> eroded = binary_erosion(x)
+    """
+
+    return _binary_erosion(image, footprint, num_threads, backend)
+
+
+_binary_closing = morphology_op_wrapper(
     'binary_closing',
     {
         Scipy(): composition_args(scipy_binary_erosion, scipy_binary_dilation),
@@ -113,7 +157,39 @@ binary_closing = morphology_op_wrapper(
     },
 )
 
-binary_opening = morphology_op_wrapper(
+
+def binary_closing(
+    image: np.ndarray, footprint: np.ndarray = None, num_threads: int = -1, backend: BackendLike = None
+) -> np.ndarray:
+    """
+    Fast parallelizable binary morphological closing of an image
+
+    Parameters
+    ----------
+    image: np.ndarray
+        input image
+    footprint: np.ndarray
+        the neighborhood expressed as a 2-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
+
+    Returns
+    -------
+    closing: np.ndarray
+        the result of morphological closing
+
+    Examples
+    --------
+    >>> closing = binary_closing(x)
+    """
+
+    return _binary_closing(image, footprint, num_threads, backend)
+
+
+_binary_opening = morphology_op_wrapper(
     'binary_opening',
     {
         Scipy(): composition_args(scipy_binary_dilation, scipy_binary_erosion),
@@ -121,3 +197,34 @@ binary_opening = morphology_op_wrapper(
         Cython(fast=True): composition_args(cython_fast_binary_dilation, cython_fast_binary_erosion),
     },
 )
+
+
+def binary_opening(
+    image: np.ndarray, footprint: np.ndarray = None, num_threads: int = -1, backend: BackendLike = None
+) -> np.ndarray:
+    """
+    Fast parallelizable binary morphological opening of an image
+
+    Parameters
+    ----------
+    image: np.ndarray
+        input image
+    footprint: np.ndarray
+        the neighborhood expressed as a 2-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
+
+    Returns
+    -------
+    opening: np.ndarray
+        the result of morphological opening
+
+    Examples
+    --------
+    >>> opnening = binary_opening(x)
+    """
+
+    return _binary_opening(image, footprint, num_threads, backend)

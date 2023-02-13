@@ -39,30 +39,6 @@ def normalize_num_threads(num_threads: int, backend: Backend):
     return max_threads + num_threads + 1
 
 
-def normalize_axes(x: np.ndarray, axes) -> np.ndarray:
-    assert x.ndim in [2, 3]
-    squeeze = x.ndim == 2
-    if squeeze:
-        x = x[None]
-        if axes is None:
-            axes = [1, 2]
-        else:
-            axes = np.array(np.core.numeric.normalize_axis_tuple(axes, 2)) + 1
-
-    if axes is None:
-        raise ValueError('For 3D inputs must pass the `axes` argument.')
-
-    return np.moveaxis(x, axes, [1, 2]), axes, squeeze
-
-
-def restore_axes(x: np.ndarray, axes, squeeze: bool) -> np.ndarray:
-    x = np.moveaxis(x, [1, 2], axes)
-    if squeeze:
-        (x,) = x
-
-    return x
-
-
 def get_c_contiguous_permutaion(array: np.ndarray) -> Optional[np.ndarray]:
     for permutation in permutations(range(array.ndim)):
         if np.transpose(array, permutation).data.c_contiguous:

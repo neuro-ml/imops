@@ -9,30 +9,60 @@ from .src._backprojection import backprojection3d
 from .src._fast_backprojection import backprojection3d as fast_backprojection3d
 from .src._fast_radon import radon3d as fast_radon3d
 from .src._radon import radon3d
-from .utils import FAST_MATH_WARNING, normalize_axes, normalize_num_threads, restore_axes
+from .utils import FAST_MATH_WARNING, normalize_num_threads
 
 
 def radon(
     image: np.ndarray,
     axes: Tuple[int, int] = None,
-    theta: Union[int, Sequence[float]] = None,
+    theta: Union[int, Sequence[float]] = 180,
     return_fill: bool = False,
     num_threads: int = -1,
     backend: BackendLike = None,
-) -> np.ndarray:
+) -> Union[np.ndarray, Tuple[np.ndarray, float]]:
     """
     Fast implementation of Radon transform. Adapted from scikit-image.
+
+    Parameters
+    ----------
+    image: np.ndarray
+        an n-dimensional array with at least 2 axes
+    axes: tuple[int, int]
+        the axes in the `image` along which the Radon transform will be applied.
+        The `image` shape along the `axes` must be of the same length
+    theta: int | Sequence[float]
+        the angles for which the Radon transform will be computed. If it is an integer - the angles will
+        be evenly distributed between 0 and 180, `theta` values in total
+    return_fill: bool
+        whether to return the value that fills the image outside the circle working area
+    num_threads: int
+        the number of threads to be used for parallel computation. By default - equals to the number of cpu cores
+    backend: str | Backend
+        the execution backend. Currently only "Cython" is avaliable
+
+    Returns
+    -------
+    sinogram: np.ndarray
+        the result of the Radon transform
+    fill_value: float
+        the value that fills the image outside the circle working area. Returned only if `return_fill` is True
+
+    Examples
+    --------
+    >>> sinogram = radon(image)  # 2d image
+    >>> sinogram, fill_value = radon(image, return_fill=True)  # 2d image with fill value
+    >>> sinogram = radon(image, axes=(-2, -1))  # nd image
     """
     backend = resolve_backend(backend)
     if backend.name not in ('Cython',):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
-    image, axes, squeeze = normalize_axes(image, axes)
+    image, axes, extra = normalize_axes(image, axes)
     if image.shape[1] != image.shape[2]:
-        raise ValueError(f'The image must be square along the provided axes. Shape: {image.shape[1:]}.')
+        raise ValueError(
+            f'The image must be square along the provided axes ({axes}), but has shape: {image.shape[1:]}.'
+        )
 
-    if theta is None:
-        theta = 180
     if isinstance(theta, int):
         theta = np.linspace(0, 180, theta, endpoint=False)
 
@@ -65,7 +95,7 @@ def radon(
 
     sinogram = radon3d_(image, np.deg2rad(theta), limits, num_threads)
 
-    result = restore_axes(sinogram, axes, squeeze)
+    result = restore_axes(sinogram, axes, extra)
     if return_fill:
         result = result, min_
 
@@ -74,23 +104,53 @@ def radon(
 
 def inverse_radon(
     sinogram: np.ndarray,
+    axes: Tuple[int, int] = None,
+    theta: Union[int, Sequence[float]] = 180,
+    fill_value: float = 0,
     a: float = 0,
     b: float = 1,
-    fill_value: float = 0,
-    theta: Union[int, Sequence[float]] = None,
-    axes: Tuple[int, int] = None,
     num_threads: int = -1,
     backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Fast implementation of inverse Radon transform. Adapted from scikit-image.
+
+    Parameters
+    ----------
+    sinogram: np.ndarray
+        an n-dimensional array with at least 2 axes
+    axes: tuple[int, int]
+        the axes in the `image` along which the inverse Radon transform will be applied
+    theta: int | Sequence[float]
+        the angles for which the inverse Radon transform will be computed. If it is an integer - the angles will
+        be evenly distributed between 0 and 180, `theta` values in total
+    fill_value: float
+        the value that fills the image outside the circle working area. Can be returned by `radon`
+    a: float
+        the first parameter of the sharpen filter
+    b: float
+        the second parameter of the sharpen filter
+    num_threads: int
+        the number of threads to be used for parallel computation. By default - equals to the number of cpu cores
+    backend: str | Backend
+        the execution backend. Currently only "Cython" is avaliable
+
+    Returns
+    -------
+    image: np.ndarray
+        the result of the inverse Radon transform
+
+    Examples
+    --------
+    >>> image = inverse_radon(sinogram)  # 2d image
+    >>> image = inverse_radon(sinogram, fill_value=-1000)  # 2d image with fill value
+    >>> image = inverse_radon(sinogram, axes=(-2, -1))  # nd image
     """
     backend = resolve_backend(backend)
     if backend.name not in ('Cython',):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
-    sinogram, axes, squeeze = normalize_axes(sinogram, axes)
-
+    sinogram, axes, extra = normalize_axes(sinogram, axes)
     if theta is None:
         theta = sinogram.shape[-1]
     if isinstance(theta, int):
@@ -98,7 +158,10 @@ def inverse_radon(
 
     angles_count = len(theta)
     if angles_count != sinogram.shape[-1]:
-        raise ValueError('The given `theta` does not match the number of projections in `sinogram`.')
+        raise ValueError(
+            f'The given `theta` (size {angles_count}) does not match the number of '
+            f'projections in `sinogram` ({sinogram.shape[-1]}).'
+        )
     output_size = sinogram.shape[1]
     sinogram = _sinogram_circle_to_square(sinogram)
 
@@ -132,11 +195,32 @@ def inverse_radon(
     else:
         backprojection3d_ = backprojection3d
 
-    reconstructed = backprojection3d_(
-        filtered_sinogram, theta, xs, inside_circle, fill_value, img_shape, output_size, num_threads
+    reconstructed = np.asarray(
+        backprojection3d_(filtered_sinogram, theta, xs, inside_circle, fill_value, img_shape, output_size, num_threads)
     )
 
-    return restore_axes(reconstructed, axes, squeeze)
+    return restore_axes(reconstructed, axes, extra)
+
+
+def normalize_axes(x: np.ndarray, axes):
+    if x.ndim < 2:
+        raise ValueError(f'Radon transform requires an array with at least 2 dimensions. {x.ndim}-dim array provided')
+    if axes is None:
+        if x.ndim > 2:
+            raise ValueError('For arrays of higher dimensionality the `axis` arguments is required')
+        axes = [0, 1]
+
+    axes = np.core.numeric.normalize_axis_tuple(axes, x.ndim, 'axes')
+    x = np.moveaxis(x, axes, (-2, -1))
+    extra = x.shape[:-2]
+    x = x.reshape(-1, *x.shape[-2:])
+    return x, axes, extra
+
+
+def restore_axes(x: np.ndarray, axes: tuple, extra: tuple) -> np.ndarray:
+    x = x.reshape(*extra, *x.shape[-2:])
+    x = np.moveaxis(x, (-2, -1), axes)
+    return x
 
 
 def _ramp_filter(size: int) -> np.ndarray:

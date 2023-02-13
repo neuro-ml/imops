@@ -1,0 +1,50 @@
+site_name: 'imops: Fast image processing algorithms'
+site_url: https://neuro-ml.github.io/imops
+repo_url: https://github.com/neuro-ml/imops
+
+plugins:
+  - search
+  - mike:
+      canonical_version: latest
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            docstring_style: numpy
+            members_order: source
+            show_if_no_docstring: true
+            show_source: true
+            heading_level: 3
+            show_signature: true
+
+      watch:
+        - imops
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github-alt
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
+extra:
+  version:
+    provider: mike

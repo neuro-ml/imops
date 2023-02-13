@@ -1,4 +1,4 @@
-black
+black<23.0.0
 flake8<=5
 flake8-tidy-imports
 flake8-quotes

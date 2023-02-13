@@ -10,14 +10,27 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
 
     Parameters
     ----------
-    x
-    shape
-        final shape.
-    axis
-        axis along which `x` will be padded.
-    ratio
-        the fraction of the crop that will be applied to the left, `1 - ratio` will be applied to the right.
-        By default `ratio=0.5`, i.e. it is applied uniformly to the left and right.
+    x: np.ndarray
+        n-dimensional array
+    shape: AxesLike
+        final shape
+    axis: AxesLike
+        axis along which `x` will be padded
+    ratio: AxesParams
+        float or sequence of floats describing what proportion of cropping to apply on the left sides of cropping axes.
+        Remaining ratio of cropping will be applied on the right sides
+
+    Returns
+    -------
+    cropped: np.ndarray
+        cropped array
+
+    Examples
+    --------
+    >>> x  # array of shape [2, 3, 4]
+    >>> cropped = crop_to_shape(x, [1, 2, 3], ratio=0)  # crop to shape [1, 2, 3] from the right
+    >>> cropped = crop_to_shape(x, 2, axis=1, ratio=1)  # crop to shape [2, 2, 4] from the left
+    >>> cropped = crop_to_shape(x, [3, 4, 5])  # fail due to bigger resulting shape
     """
     x = np.asarray(x)
     axis, shape, ratio = broadcast_axis(axis, x.ndim, shape, ratio)
@@ -36,6 +49,29 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
 def crop_to_box(x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_values: AxesParams = None) -> np.ndarray:
     """
     Crop `x` according to `box` along `axis`.
+
+    Parameters
+    ----------
+    x: np.ndarray
+        n-dimensional array
+    box: np.ndarray
+        array of shape (2, x.ndim or len(axis) if axis is passed) describing crop boundaries
+    axis: AxesLike
+        axis along which `x` will be cropped
+    padding_values: AxesParams
+        values to pad with if box exceeds the input's limits
+
+    Returns
+    -------
+    cropped: np.ndarray
+        cropped array
+
+    Examples
+    --------
+    >>> x  # array of shape [2, 3, 4]
+    >>> cropped = crop_to_box(x, np.array([[0, 0, 0], [1, 1, 1]]))  # crop to shape [1, 1, 1]
+    >>> cropped = crop_to_box(x, np.array([[0, 0, 0], [5, 5, 5]]))  # fail, box exceeds the input's limits
+    >>> cropped = crop_to_box(x, np.array([[0], [5]]), axis=0, padding_values=0)  # pad with 0-s to shape [5, 3, 4]
     """
     x = np.asarray(x)
     start, stop = box
@@ -44,6 +80,7 @@ def crop_to_box(x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_v
     slice_start = np.maximum(start, 0)
     slice_stop = np.minimum(stop, np.array(x.shape)[list(axis)])
     padding = np.array([slice_start - start, stop - slice_stop], dtype=int).T
+
     if padding_values is None and padding.any():
         raise ValueError(f"The box {box} exceeds the input's limits {x.shape}.")
 
