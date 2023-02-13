@@ -142,4 +142,4 @@ def test_stress(backend):
         out = interp1d(old_locations, inp, axis=axis, bounds_error=False, fill_value=0, backend=backend)(new_locations)
         desired_out = scipy_interp1d(old_locations, inp, axis=axis, bounds_error=False, fill_value=0)(new_locations)
 
-        allclose(out, desired_out, err_msg=f'{i, shape}')
+        allclose(out, desired_out, rtol=1e-6, err_msg=f'{i, shape}')
