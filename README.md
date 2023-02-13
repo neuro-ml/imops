@@ -5,7 +5,7 @@
 
 # Imops
 
-Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines
+Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines. Docs are [here](https://neuro-ml.github.io/imops/)
 
 # Install
 
