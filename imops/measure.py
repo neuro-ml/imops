@@ -28,7 +28,7 @@ def label(
     return_sizes: bool = False,
 ) -> Union[np.ndarray, NamedTuple]:
     """
-    Fast version of `skimage.measure.label` which optionally returns sizes of connected components, labels and sizes.
+    Fast version of `skimage.measure.label` which optionally returns number of connected components, labels and sizes.
     If 2 or more outputs are requested `NamedTuple` is returned.
 
     Parameters
@@ -42,7 +42,7 @@ def label(
         maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. Accepted values are ranging from 1
         to input.ndim. If None, a full connectivity of input.ndim is used
     return_num: bool
-        whether to return the number of assigned labels
+        whether to return the number of connected components
     return_labels: bool
         whether to return assigned labels
     return_sizes: bool
