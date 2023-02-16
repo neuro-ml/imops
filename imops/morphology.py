@@ -224,7 +224,7 @@ def binary_opening(
 
     Examples
     --------
-    >>> opnening = binary_opening(x)
+    >>> opening = binary_opening(x)
     """
 
     return _binary_opening(image, footprint, num_threads, backend)
