@@ -26,7 +26,7 @@ def label(
     return_num: bool = False,
     return_labels: bool = False,
     return_sizes: bool = False,
-    out_dtype: type = None,
+    dtype: type = None,
 ) -> Union[np.ndarray, NamedTuple]:
     """
     Fast version of `skimage.measure.label` which optionally returns number of connected components, labels and sizes.
@@ -48,7 +48,7 @@ def label(
         whether to return assigned labels
     return_sizes: bool
         whether to return sizes of connected components (excluding background)
-    out_dtype:
+    dtype:
         if specified, must be one of np.uint16, np.uint32 or np.uint64. If not specified, it will be automatically
         determined. Most of the time, you should leave this off so that the smallest safe dtype will be used. However,
         in some applications you can save an up-conversion in the next operation by outputting the appropriately sized
@@ -58,7 +58,7 @@ def label(
     -------
     labeled_image: np.ndarray
         array of np.uint16, np.uint32 or np.uint64 numbers depending on the number of connected components and
-        `out_dtype` if 'scikit-image' fallback did not happen. Otherwise dtype will be np.int32
+        `dtype` if 'scikit-image' fallback did not happen. Otherwise dtype will be np.int32
     num_components: int
         number of connected components excluding background. Returned if `return_num` is True
     labels: np.ndarray
@@ -81,10 +81,8 @@ def label(
 
     if ndim > 3:
         warn("Fast label is only supported for ndim<=3, Falling back to scikit-image's implementation.")
-        if out_dtype is not None:
-            warn(
-                "Explicitly passed `out_dtype` has no effect if fallback to scikit-image's implementation has occurred."
-            )
+        if dtype is not None:
+            warn("Explicitly passed `dtype` has no effect if fallback to scikit-image's implementation has occurred.")
         labeled_image, num_components = skimage_label(
             label_image, background=background, return_num=True, connectivity=connectivity
         )
@@ -104,7 +102,7 @@ def label(
             label_image,
             connectivity=skimage2cc3d[(ndim, connectivity)],
             return_N=True,
-            out_dtype=out_dtype,
+            out_dtype=dtype,
         )
 
         if ndim == 1:
