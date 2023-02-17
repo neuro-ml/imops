@@ -8,6 +8,9 @@ ignore = W503,E203,B028
 per-file-ignores =
     __init__.py:F401
     tests/*:I251
+    benchmarks/*:I251
 max-line-length = 120
 banned-modules =
     imops.* = Use relative imports
+exclude =
+    .asv

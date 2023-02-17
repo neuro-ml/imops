@@ -61,6 +61,7 @@ line_length = 120
 lines_after_imports = 2
 profile = 'black'
 combine_as_imports = true
+skip_glob='.asv'
 
 [tool.setuptools.packages.find]
 include = ['imops']

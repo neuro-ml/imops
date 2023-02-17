@@ -1,0 +1,23 @@
+{
+    "version": 1,
+    "project": "imops",
+    "project_url": "https://github.com/neuro-ml/imops",
+    "repo": ".",
+    "branches": ["master", "dev"],
+    "dvcs": "git",
+    "environment_type": "conda",
+    "show_commit_url": "https://github.com/neuro-ml/imops/commit",
+    "pythons": ["3.10"],
+    "matrix": {
+        "numpy": ["1.23"],
+        "Cython": [],
+        "scipy": [],
+        "scikit-image": [],
+        "pip+connected-components-3d": [],
+        "pip+fastremap": []
+    },
+    "env_dir": ".asv/env",
+    "results_dir": ".asv/results",
+    "html_dir": ".asv/html",
+    "build_cache_size": 2
+}
