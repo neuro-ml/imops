@@ -10,13 +10,10 @@ from skimage.morphology import (
     binary_opening as sk_binary_opening,
 )
 
-from imops.backend import Backend, Cython, Scipy
+from imops._configs import morphology_configs
+from imops.backend import Backend
 from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening
 
-
-scipy_configurations = [Scipy()]
-cython_configurations = [Cython(fast) for fast in [False, True]]
-all_configurations = scipy_configurations + cython_configurations
 
 test_pairs = [
     [sk_binary_dilation, binary_dilation],
@@ -31,7 +28,7 @@ class Alien7(Backend):
     pass
 
 
-@pytest.fixture(params=all_configurations, ids=map(str, all_configurations))
+@pytest.fixture(params=morphology_configs, ids=map(str, morphology_configs))
 def backend(request):
     return request.param
 

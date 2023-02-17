@@ -9,12 +9,19 @@
     "show_commit_url": "https://github.com/neuro-ml/imops/commit",
     "pythons": ["3.10"],
     "matrix": {
-        "numpy": ["1.23"],
-        "Cython": [],
-        "scipy": [],
-        "scikit-image": [],
-        "pip+connected-components-3d": [],
-        "pip+fastremap": []
+        "req": {
+            "numpy": [],
+            "Cython": [],
+            "scipy": [],
+            "scikit-image": [],
+            "numba": [],
+            "pip+connected-components-3d": [],
+            "pip+fastremap": []
+        },
+        "env_nobuild": {
+            "OMP_NUM_THREADS": "8",
+            "NUMBA_NUM_THREADS": "8"
+        }
     },
     "env_dir": ".asv/env",
     "results_dir": ".asv/results",

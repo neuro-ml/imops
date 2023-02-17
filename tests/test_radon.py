@@ -6,13 +6,11 @@ import pytest
 from utils import fill_outside, sample_ct, sk_iradon, sk_radon
 
 from imops import inverse_radon, radon
-from imops.backend import Backend, Cython
+from imops._configs import radon_configs
+from imops.backend import Backend
 
 
 almost_eq = np.testing.assert_array_almost_equal
-
-cython_configurations = [Cython(fast) for fast in [False, True]]
-all_configurations = cython_configurations
 
 
 @dataclass
@@ -20,7 +18,7 @@ class Alien5(Backend):
     pass
 
 
-@pytest.fixture(params=all_configurations, ids=map(str, all_configurations))
+@pytest.fixture(params=radon_configs, ids=map(str, radon_configs))
 def backend(request):
     return request.param
 
