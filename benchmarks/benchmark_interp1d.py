@@ -17,17 +17,23 @@ except ModuleNotFoundError:
 
 from imops.interp1d import interp1d
 
+from .common import discard_arg
+
 
 class Interp1dSuite:
-    params = interp1d_configs
+    params = [interp1d_configs, ('float32', 'float64')]
+    param_names = ['backend', 'dtype']
 
-    def setup(self, backend):
-        self.image = np.random.randn(256, 256, 256)
-        self.x = np.random.randn(256)
-        self.x_new = np.random.randn(256)
+    @discard_arg(1)
+    def setup(self, dtype):
+        self.image = np.random.randn(256, 256, 256).astype(dtype)
+        self.x = np.random.randn(256).astype(dtype)
+        self.x_new = np.random.randn(256).astype(dtype)
 
+    @discard_arg(2)
     def time_interp1d(self, backend):
         interp1d(self.x, self.image, bounds_error=False, fill_value='extrapolate', backend=backend)(self.x_new)
 
+    @discard_arg(2)
     def peakmem_interp1d(self, backend):
         interp1d(self.x, self.image, bounds_error=False, fill_value='extrapolate', backend=backend)(self.x_new)

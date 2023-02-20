@@ -17,15 +17,21 @@ except ModuleNotFoundError:
 
 from imops.zoom import zoom
 
+from .common import discard_arg
+
 
 class ZoomSuite:
-    params = zoom_configs
+    params = [zoom_configs, ('float32', 'float64')]
+    param_names = ['backend', 'dtype']
 
-    def setup(self, backend):
-        self.image = np.random.randn(256, 256, 256)
+    @discard_arg(1)
+    def setup(self, dtype):
+        self.image = np.random.randn(256, 256, 256).astype(dtype)
 
+    @discard_arg(2)
     def time_zoom(self, backend):
         zoom(self.image, 2, backend=backend)
 
+    @discard_arg(2)
     def peakmem_zoom(self, backend):
         zoom(self.image, 2, backend=backend)

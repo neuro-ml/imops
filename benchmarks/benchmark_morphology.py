@@ -14,33 +14,45 @@ except ModuleNotFoundError:
 
 from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening
 
+from .common import discard_arg
+
 
 class MorphologySuite:
-    params = morphology_configs
+    params = [morphology_configs, ('bool', 'int64')]
+    param_names = ['backend', 'dtype']
 
-    def setup(self, backend):
-        self.image = np.random.binomial(1, 0.5, (256, 256, 256)).astype(bool)
+    @discard_arg(1)
+    def setup(self, dtype):
+        self.image = np.random.randint(0, 5 if dtype is int else 2, (256, 256, 256)).astype(dtype)
 
+    @discard_arg(2)
     def time_closing(self, backend):
-        binary_closing(self.image)
+        binary_closing(self.image, backend=backend)
 
+    @discard_arg(2)
     def time_dilation(self, backend):
-        binary_dilation(self.image)
+        binary_dilation(self.image, backend=backend)
 
+    @discard_arg(2)
     def time_erosion(self, backend):
-        binary_erosion(self.image)
+        binary_erosion(self.image, backend=backend)
 
+    @discard_arg(2)
     def time_opening(self, backend):
-        binary_opening(self.image)
+        binary_opening(self.image, backend=backend)
 
+    @discard_arg(2)
     def peakmem_closing(self, backend):
-        binary_closing(self.image)
+        binary_closing(self.image, backend=backend)
 
+    @discard_arg(2)
     def peakmem_dilation(self, backend):
-        binary_dilation(self.image)
+        binary_dilation(self.image, backend=backend)
 
+    @discard_arg(2)
     def peakmem_erosion(self, backend):
-        binary_erosion(self.image)
+        binary_erosion(self.image, backend=backend)
 
+    @discard_arg(2)
     def peakmem_opening(self, backend):
-        binary_opening(self.image)
+        binary_opening(self.image, backend=backend)
