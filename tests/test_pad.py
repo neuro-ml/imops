@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from imops import crop_to_box, pad, pad_to_divisible, pad_to_shape, restore_crop
-from imops.utils import seeded_by
+from imops.testing import seeded_by
 
 
 SEED = 1337

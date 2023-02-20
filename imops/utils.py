@@ -107,19 +107,3 @@ def composition_args(f: Callable, g: Callable) -> Callable:
         return f(g(*args), *args[1:])
 
     return inner
-
-
-def seeded_by(seed):
-    def wrapper(func):
-        def inner(*args, **kwargs):
-            old_state = np.random.get_state()
-            np.random.seed(seed)
-
-            try:
-                return func(*args, **kwargs)
-            finally:
-                np.random.set_state(old_state)
-
-        return inner
-
-    return wrapper

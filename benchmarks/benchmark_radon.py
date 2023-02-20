@@ -13,7 +13,7 @@ from imops.radon import inverse_radon, radon
 
 # TODO: Remove this crutch as soon as updated radon.py appears in the master
 try:
-    from imops.radon import sample_ct, sk_iradon, sk_radon
+    from imops.testing import sample_ct, sk_iradon, sk_radon
 except ImportError:
     import warnings
 

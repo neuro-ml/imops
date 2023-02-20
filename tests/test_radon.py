@@ -6,7 +6,8 @@ import pytest
 
 from imops._configs import radon_configs
 from imops.backend import Backend
-from imops.radon import fill_outside, inverse_radon, radon, sample_ct, sk_iradon, sk_radon
+from imops.radon import inverse_radon, radon
+from imops.testing import fill_outside, sample_ct, sk_iradon, sk_radon
 
 
 almost_eq = np.testing.assert_array_almost_equal

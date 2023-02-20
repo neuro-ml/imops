@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from imops import crop_to_box, crop_to_shape
-from imops.utils import seeded_by
+from imops.testing import seeded_by
 
 
 SEED = 1337
