@@ -63,6 +63,8 @@ def radon(
             f'The image must be square along the provided axes ({axes}), but has shape: {image.shape[1:]}.'
         )
 
+    if theta is None:
+        theta = 180
     if isinstance(theta, int):
         theta = np.linspace(0, 180, theta, endpoint=False)
 
@@ -151,6 +153,7 @@ def inverse_radon(
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
     sinogram, axes, extra = normalize_axes(sinogram, axes)
+
     if theta is None:
         theta = sinogram.shape[-1]
     if isinstance(theta, int):
