@@ -95,7 +95,7 @@ def radon(
     else:
         radon3d_ = radon3d
 
-    sinogram = radon3d_(image, np.deg2rad(theta).astype(image.dtype), limits, num_threads)
+    sinogram = radon3d_(image, np.deg2rad(theta, dtype=image.dtype), limits, num_threads)
 
     result = restore_axes(sinogram, axes, extra)
     if return_fill:
