@@ -23,7 +23,7 @@ class MorphologySuite:
 
     @discard_arg(1)
     def setup(self, dtype):
-        self.image = np.random.randint(0, 5 if dtype is int else 2, (256, 256, 256)).astype(dtype)
+        self.image = np.random.randint(0, 5 if dtype == 'int64' else 2, (256, 256, 256)).astype(dtype)
 
     @discard_arg(2)
     def time_closing(self, backend):
