@@ -187,7 +187,7 @@ def inverse_radon(
 
     dtype = sinogram.dtype
     filtered_sinogram = filtered_sinogram.astype(dtype)
-    theta, xs = np.deg2rad(theta).astype(dtype), xs.astype(dtype)
+    theta, xs = np.deg2rad(theta, dtype=dtype), xs.astype(dtype)
 
     num_threads = normalize_num_threads(num_threads, backend)
 
