@@ -70,7 +70,7 @@ def label(
     --------
     >>> labeled = label(x)
     >>> labeled, num_components, sizes = label(x, return_num=True, return_sizes=True)
-    >>> out = labels(x, return_labels=True, return_sizes=True)
+    >>> out = label(x, return_labels=True, return_sizes=True)
     >>> out.labeled_image, out.labels, out.sizes  # output fields can be accessed this way
     """
     ndim = label_image.ndim
