@@ -46,3 +46,7 @@ pip install imops[numba]  # additionally install Numba backend
 ::: imops.radon.radon
 
 ::: imops.radon.inverse_radon
+
+::: imops.numeric.parallel_sum
+
+::: imops.numeric.parallel_pointwise_mul
