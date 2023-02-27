@@ -5,6 +5,7 @@ from .backend import Cython, Numba, Scipy
 
 scipy_configs = [Scipy()]
 radon_configs = [Cython(fast) for fast in [False, True]]
+numeric_configs = [Cython(fast) for fast in [False, True]]
 morphology_configs = [
     Scipy(),
     *[Cython(fast) for fast in [False, True]],

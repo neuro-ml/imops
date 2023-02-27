@@ -3,7 +3,8 @@ from functools import partial
 import numpy as np
 import pytest
 
-from imops import crop_to_box, pad, pad_to_divisible, pad_to_shape, restore_crop
+from imops.crop import crop_to_box
+from imops.pad import pad, pad_to_divisible, pad_to_shape, restore_crop
 from imops.testing import seeded_by
 
 
@@ -85,7 +86,7 @@ def test_pad():
     padding_values = np.min(x, axis=(1, 2), keepdims=True)
 
     y = pad(x, padding, padding_values=padding_values)
-    np.testing.assert_array_equal(
+    assert_eq(
         y,
         np.array(
             [
@@ -136,15 +137,15 @@ def test_pad_to_divisible():
     x = np.zeros((4, 8, 12))
 
     y = pad_to_divisible(x, 4)
-    np.testing.assert_array_equal(y, x)
+    assert_eq(y, x)
 
     x = np.zeros((3, 5))
 
     y = pad_to_divisible(x, 1)
-    np.testing.assert_array_equal(y, x)
+    assert_eq(y, x)
 
     y = pad_to_divisible(x, 4)
-    np.testing.assert_array_equal(y, np.zeros((4, 8)))
+    assert_eq(y, np.zeros((4, 8)))
 
     y = pad_to_divisible(x, 4, remainder=2)
-    np.testing.assert_array_equal(y, np.zeros((6, 6)))
+    assert_eq(y, np.zeros((6, 6)))

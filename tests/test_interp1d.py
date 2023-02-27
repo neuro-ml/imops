@@ -5,9 +5,9 @@ import pytest
 from numpy.testing import assert_allclose as allclose
 from scipy.interpolate import interp1d as scipy_interp1d
 
-from imops import interp1d
 from imops._configs import interp1d_configs
 from imops.backend import Backend
+from imops.interp1d import interp1d
 
 
 @dataclass

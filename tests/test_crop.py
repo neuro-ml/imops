@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from imops import crop_to_box, crop_to_shape
+from imops.crop import crop_to_box, crop_to_shape
 from imops.testing import seeded_by
 
 

@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
 from skimage.morphology import (
     binary_closing as sk_binary_closing,
     binary_dilation as sk_binary_dilation,
@@ -15,6 +14,7 @@ from imops.backend import Backend
 from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening
 
 
+assert_eq = np.testing.assert_array_equal
 test_pairs = [
     [sk_binary_dilation, binary_dilation],
     [sk_binary_erosion, binary_erosion],
@@ -78,7 +78,7 @@ def test_stress(pair, backend, footprint_shape_modifier):
 
         desired_out = sk_op(inp, footprint)
 
-        assert_array_equal(
+        assert_eq(
             imops_op(inp, footprint, backend=backend),
             desired_out,
             err_msg=f'{i, shape, footprint}',
