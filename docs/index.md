@@ -43,6 +43,8 @@ pip install imops[numba]  # additionally install Numba backend
 
 ::: imops.measure.label
 
+::: imops.measure.center_of_mass
+
 ::: imops.radon.radon
 
 ::: imops.radon.inverse_radon

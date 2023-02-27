@@ -2,9 +2,12 @@ from platform import python_version
 
 import numpy as np
 import pytest
+from numpy.testing import assert_allclose as allclose
+from scipy.ndimage import center_of_mass as scipy_center_of_mass
 from skimage.measure import label as sk_label
 
-from imops.measure import label
+from imops._configs import numeric_configs
+from imops.measure import center_of_mass, label
 
 
 assert_eq = np.testing.assert_array_equal
@@ -154,3 +157,30 @@ def test_stress(connectivity, ndim):
             err_msg=f'{connectivity, ndim, inp.shape}',
         )
         assert sk_num_components == num_components, f'{connectivity, ndim, inp.shape}'
+
+
+@pytest.fixture(params=['short', 'int', 'long', 'float', 'double'])
+def dtype(request):
+    return request.param
+
+
+@pytest.fixture(params=numeric_configs, ids=map(str, numeric_configs))
+def backend(request):
+    return request.param
+
+
+@pytest.fixture(params=range(1, 9))
+def num_threads(request):
+    return request.param
+
+
+def test_center_of_mass(backend, num_threads, dtype):
+    for _ in range(32):
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
+        inp = np.random.randn(*shape).astype(dtype)
+
+        out = center_of_mass(inp, num_threads=num_threads, backend=backend)
+        desired_out = scipy_center_of_mass(inp)
+
+        allclose(out, desired_out)
+        assert np.array(out).dtype == np.array(desired_out).dtype

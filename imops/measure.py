@@ -1,11 +1,14 @@
 from collections import namedtuple
-from typing import NamedTuple, Union
+from typing import NamedTuple, Tuple, Union
 from warnings import warn
 
 import numpy as np
 from cc3d import connected_components
 from fastremap import remap, unique
 from skimage.measure import label as skimage_label
+
+from .backend import BackendLike
+from .numeric import parallel_pointwise_mul, parallel_sum
 
 
 # (ndim, skimage_connectivity) -> cc3d_connectivity
@@ -122,3 +125,45 @@ def label(
         return labeled_image
 
     return namedtuple('Labeling', [subres[0] for subres in res])(*[subres[1] for subres in res])
+
+
+def center_of_mass(array: np.ndarray, num_threads: int = -1, backend: BackendLike = None) -> Tuple[float, ...]:
+    """
+    Calculate the center of mass of the values
+
+    Parameters
+    ----------
+    array: np.ndarray
+        data from which to calculate center-of-mass. The masses can either be positive or negative
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. Only `cython` is available
+
+    Returns
+    -------
+    center_of_mass: tuple, or list of tuples
+        coordinates of centers-of-mass
+
+    Examples
+    --------
+    >>> center = center_of_mass(np.ones((2, 2)))  # (0.5, 0.5)
+    """
+    normalizer = parallel_sum(array.ravel(), num_threads=num_threads, backend=backend)
+    grids = np.ogrid[[slice(0, i) for i in array.shape]]
+
+    return tuple(
+        parallel_sum(
+            parallel_pointwise_mul(
+                array,
+                grids[dim].astype(array.dtype),
+                num_threads=num_threads,
+                backend=backend,
+            ).ravel(),
+            num_threads=num_threads,
+            backend=backend,
+        )
+        / normalizer
+        for dim in range(array.ndim)
+    )
