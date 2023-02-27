@@ -47,7 +47,7 @@ def test_alien_backend(alien_backend):
 def test_pointwise_mul_size_mismatch(backend, num_threads, dtype):
     with pytest.raises(ValueError):
         parallel_pointwise_mul(
-            np.ones(1, dtype=dtype), np.ones(2, dtype=dtype), num_threads=num_threads, backend=backend
+            np.ones(4, dtype=dtype), np.ones(2, dtype=dtype), num_threads=num_threads, backend=backend
         )
     with pytest.raises(ValueError):
         parallel_pointwise_mul(
@@ -55,6 +55,9 @@ def test_pointwise_mul_size_mismatch(backend, num_threads, dtype):
         )
     with pytest.raises(ValueError):
         parallel_pointwise_mul(np.array([]), np.ones(2, dtype=dtype), num_threads=num_threads, backend=backend)
+
+    with pytest.raises(ValueError):
+        parallel_pointwise_mul(np.ones((1, 2, 3)), np.ones((1, 2, 3, 4)), num_threads=num_threads, backend=backend)
 
 
 def test_empty_sum(backend, num_threads, dtype):
@@ -93,8 +96,26 @@ def test_stress_sum(backend, num_threads, dtype):
 
 def test_stress_pointwise_mul(backend, num_threads, dtype):
     for _ in range(32):
-        nums1 = (32 * np.random.randn(np.random.randint(1, 10**4))).astype(dtype)
-        nums2 = (32 * np.random.randn(len(nums1))).astype(dtype)
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
+
+        nums1 = (32 * np.random.randn(*shape)).astype(dtype)
+        nums2 = (32 * np.random.randn(*shape)).astype(dtype)
+
+        out = parallel_pointwise_mul(nums1, nums2, num_threads=num_threads, backend=backend)
+        desired_out = nums1 * nums2
+
+        if dtype in ('short', 'int', 'long'):
+            assert_eq(out, desired_out)
+        else:
+            allclose(out, desired_out)
+
+
+def test_broadcast_pointwise_mul(backend, num_threads, dtype):
+    for _ in range(32):
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
+
+        nums1 = (32 * np.random.randn(*[x if np.random.binomial(1, 0.7) else 1 for x in shape])).astype(dtype)
+        nums2 = (32 * np.random.randn(*[x if np.random.binomial(1, 0.7) else 1 for x in shape])).astype(dtype)
 
         out = parallel_pointwise_mul(nums1, nums2, num_threads=num_threads, backend=backend)
         desired_out = nums1 * nums2
