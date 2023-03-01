@@ -27,7 +27,7 @@ def num_threads(request):
     return request.param
 
 
-@pytest.fixture(params=['short', 'int', 'long', 'float', 'double'])
+@pytest.fixture(params=['int16', 'int32', 'int65', 'float32', 'float64'])
 def dtype(request):
     return request.param
 
@@ -93,7 +93,7 @@ def test_stress_sum(backend, num_threads, dtype):
         out = parallel_sum(nums, num_threads=num_threads, backend=backend)
         desired_out = np.sum(nums)
 
-        if dtype in ('short', 'int', 'long'):
+        if dtype in ('int16', 'int32', 'int64'):
             assert_eq(out, desired_out)
         else:
             allclose(out, desired_out)
@@ -109,7 +109,7 @@ def test_stress_pointwise_mul(backend, num_threads, dtype):
         out = parallel_pointwise_mul(nums1, nums2, num_threads=num_threads, backend=backend)
         desired_out = nums1 * nums2
 
-        if dtype in ('short', 'int', 'long'):
+        if dtype in ('int16', 'int32', 'int64'):
             assert_eq(out, desired_out)
         else:
             allclose(out, desired_out)
@@ -125,7 +125,7 @@ def test_broadcast_pointwise_mul(backend, num_threads, dtype):
         out = parallel_pointwise_mul(nums1, nums2, num_threads=num_threads, backend=backend)
         desired_out = nums1 * nums2
 
-        if dtype in ('short', 'int', 'long'):
+        if dtype in ('int16', 'int32', 'int64'):
             assert_eq(out, desired_out)
         else:
             allclose(out, desired_out)

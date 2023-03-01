@@ -159,7 +159,7 @@ def test_stress(connectivity, ndim):
         assert sk_num_components == num_components, f'{connectivity, ndim, inp.shape}'
 
 
-@pytest.fixture(params=['short', 'int', 'long', 'float', 'double'])
+@pytest.fixture(params=['int16', 'int32', 'int64', 'float32', 'float64'])
 def dtype(request):
     return request.param
 
