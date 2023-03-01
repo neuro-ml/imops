@@ -44,6 +44,11 @@ def test_alien_backend(alien_backend):
         parallel_pointwise_mul(nums1, nums2, backend=alien_backend)
 
 
+def test_parallel_sum_ndim_mismatch(backend, num_threads, dtype):
+    with pytest.raises(ValueError):
+        parallel_sum(np.ones((2, 2), dtype=dtype), num_threads=num_threads, backend=backend)
+
+
 def test_pointwise_mul_size_mismatch(backend, num_threads, dtype):
     with pytest.raises(ValueError):
         parallel_pointwise_mul(

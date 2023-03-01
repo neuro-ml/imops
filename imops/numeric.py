@@ -23,7 +23,8 @@ def parallel_sum(nums: np.ndarray, num_threads: int = -1, backend: BackendLike =
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
     backend: BackendLike
-        which backend to use. Only `cython` is available
+        which backend to use. `cython` and `scipy` (primarly for benchmarking) are available,
+        `cython` is used by default
 
     Returns
     -------
@@ -34,11 +35,19 @@ def parallel_sum(nums: np.ndarray, num_threads: int = -1, backend: BackendLike =
     >>> s = parallel_sum(x, num_threads=1)
     >>> s = parallel_sum(x, num_threads=8, backend=Cython(fast=True))  # ffast-math compiled version
     """
+    ndim = nums.ndim
+
+    if ndim != 1:
+        raise ValueError(f'Input must be 1-dimensional instead of {ndim}-dimensional.')
+
     backend = resolve_backend(backend)
-    if backend.name not in ('Cython',):
+    if backend.name not in ('Cython', 'Scipy'):
         raise ValueError(f'Unsupported backend "{backend.name}"')
 
     num_threads = normalize_num_threads(num_threads, backend)
+
+    if backend.name == 'Scipy':
+        return nums.sum()
 
     if backend.name == 'Cython':
         if backend.fast:
@@ -64,7 +73,8 @@ def parallel_pointwise_mul(
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
     backend: BackendLike
-        which backend to use. Only `cython` is available
+        which backend to use. `cython` and `scipy` (primarly for benchmarking) are available,
+        `cython` is used by default
 
     Returns
     -------
@@ -88,13 +98,18 @@ def parallel_pointwise_mul(
             raise ValueError(f'Arrays of shapes {nums1.shape} and {nums2.shape} are not broadcastable.')
 
     if nums1.ndim > 3:
+        warn('Parallel pointwise multiplication is only supported for ndim<=3. Falling back to naive x * y.')
+
         return nums1 * nums2
 
     backend = resolve_backend(backend)
-    if backend.name not in ('Cython',):
+    if backend.name not in ('Cython', 'Scipy'):
         raise ValueError(f'Unsupported backend "{backend.name}"')
 
     num_threads = normalize_num_threads(num_threads, backend)
+
+    if backend.name == 'Scipy':
+        return nums1 * nums2
 
     if backend.name == 'Cython':
         if backend.fast:
