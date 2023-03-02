@@ -9,6 +9,7 @@ from .common import discard_arg
 class NumericSuite:
     params = [numeric_configs, ('float32', 'float64', 'int32', 'int64')]
     param_names = ['backend', 'dtype']
+    timeout = 300
 
     @discard_arg(1)
     def setup(self, dtype):
