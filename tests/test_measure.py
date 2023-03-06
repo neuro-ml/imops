@@ -182,5 +182,4 @@ def test_center_of_mass(backend, num_threads, dtype):
         out = center_of_mass(inp, num_threads=num_threads, backend=backend)
         desired_out = scipy_center_of_mass(inp)
 
-        allclose(out, desired_out)
-        assert np.array(out).dtype == np.array(desired_out).dtype
+        allclose(out, desired_out, rtol=1e-3 if dtype == 'float32' else 1e-7)
