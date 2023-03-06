@@ -1,4 +1,5 @@
 from collections import namedtuple
+from platform import python_version
 from typing import NamedTuple, Tuple, Union
 from warnings import warn
 
@@ -55,7 +56,7 @@ def label(
         if specified, must be one of np.uint16, np.uint32 or np.uint64. If not specified, it will be automatically
         determined. Most of the time, you should leave this off so that the smallest safe dtype will be used. However,
         in some applications you can save an up-conversion in the next operation by outputting the appropriately sized
-        type instead
+        type instead. Has no effect for python3.6
 
     Returns
     -------
@@ -105,7 +106,7 @@ def label(
             label_image,
             connectivity=skimage2cc3d[(ndim, connectivity)],
             return_N=True,
-            out_dtype=dtype,
+            **{'out_dtype': dtype} if python_version()[:3] != '3.6' else {},
         )
 
         if ndim == 1:
