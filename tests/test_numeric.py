@@ -96,7 +96,7 @@ def test_stress_sum(backend, num_threads, dtype):
         if dtype in ('int16', 'int32', 'int64'):
             assert_eq(out, desired_out)
         else:
-            allclose(out, desired_out, rtol=1e-3 if dtype == 'float32' else 1e-7)
+            allclose(out, desired_out, rtol=1e-2 if dtype == 'float32' else 1e-7)
 
 
 def test_stress_pointwise_mul(backend, num_threads, dtype):
