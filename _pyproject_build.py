@@ -1,9 +1,17 @@
 import shutil
 from pathlib import Path
 
-import numpy as np
 from setuptools import Extension
 from setuptools.command.build_py import build_py
+
+
+class NumpyImport:
+    def __repr__(self):
+        import numpy as np
+
+        return np.get_include()
+
+    __fspath__ = __repr__
 
 
 class PyprojectBuild(build_py):
@@ -33,7 +41,7 @@ class PyprojectBuild(build_py):
                     Extension(
                         f'{name}.src._{prefix}{module}',
                         [f'{name}/src/_{prefix}{module}.pyx'],
-                        include_dirs=[np.get_include()],
+                        include_dirs=[NumpyImport()],
                         extra_compile_args=args + additional_args,
                         extra_link_args=args + additional_args,
                         define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
