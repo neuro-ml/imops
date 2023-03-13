@@ -11,7 +11,7 @@ from .src._numeric import _parallel_pointwise_mul as cython_parallel_pointwise_m
 from .utils import FAST_MATH_WARNING, normalize_num_threads
 
 
-def parallel_sum(nums: np.ndarray, num_threads: int = -1, backend: BackendLike = None) -> float:
+def _sum(nums: np.ndarray, num_threads: int = -1, backend: BackendLike = None) -> float:
     """
     Parallel sum of flat numpy array
 
@@ -32,8 +32,8 @@ def parallel_sum(nums: np.ndarray, num_threads: int = -1, backend: BackendLike =
 
     Examples
     --------
-    >>> s = parallel_sum(x, num_threads=1)
-    >>> s = parallel_sum(x, num_threads=8, backend=Cython(fast=True))  # ffast-math compiled version
+    >>> s = _sum(x, num_threads=1)
+    >>> s = _sum(x, num_threads=8, backend=Cython(fast=True))  # ffast-math compiled version
     """
     ndim = nums.ndim
 
@@ -59,9 +59,7 @@ def parallel_sum(nums: np.ndarray, num_threads: int = -1, backend: BackendLike =
     return src_parallel_sum(nums, num_threads)
 
 
-def parallel_pointwise_mul(
-    nums1: np.ndarray, nums2: np.ndarray, num_threads: int = -1, backend: BackendLike = None
-) -> np.ndarray:
+def _mul(nums1: np.ndarray, nums2: np.ndarray, num_threads: int = -1, backend: BackendLike = None) -> np.ndarray:
     """
     Parallel pointwise multiplication of 2 numpy arrays (aka x * y). Works faster only for ndim <= 3.
 
@@ -83,9 +81,9 @@ def parallel_pointwise_mul(
 
     Examples
     --------
-    >>> mul = parallel_pointwise_mul(nums1, nums2, num_threads=8)
-    >>> mul = parallel_pointwise_mul(np.ones((2, 3)), np.ones((1, 3)))  # broadcasting, mul.shape == (2, 3)
-    >>> mul = parallel_pointwise_mul(nums1, nums2, backend=Cython(fast=True))  # ffast-math compiled version
+    >>> mul = _mul(nums1, nums2, num_threads=8)
+    >>> mul = _mul(np.ones((2, 3)), np.ones((1, 3)))  # broadcasting, mul.shape == (2, 3)
+    >>> mul = _mul(nums1, nums2, backend=Cython(fast=True))  # ffast-math compiled version
     """
     if not nums1.size and not nums2.size:
         return np.array([], dtype=nums1.dtype)

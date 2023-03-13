@@ -8,8 +8,8 @@ from cc3d import connected_components
 from fastremap import remap, unique
 from skimage.measure import label as skimage_label
 
+from ._numeric import _mul, _sum
 from .backend import BackendLike
-from .numeric import parallel_pointwise_mul, parallel_sum
 
 
 # (ndim, skimage_connectivity) -> cc3d_connectivity
@@ -151,12 +151,12 @@ def center_of_mass(array: np.ndarray, num_threads: int = -1, backend: BackendLik
     --------
     >>> center = center_of_mass(np.ones((2, 2)))  # (0.5, 0.5)
     """
-    normalizer = parallel_sum(array.ravel(), num_threads=num_threads, backend=backend)
+    normalizer = _sum(array.ravel(), num_threads=num_threads, backend=backend)
     grids = np.ogrid[list(map(slice, array.shape))]
 
     return tuple(
-        parallel_sum(
-            parallel_pointwise_mul(
+        _sum(
+            _mul(
                 array,
                 grids[dim].astype(array.dtype),
                 num_threads=num_threads,
