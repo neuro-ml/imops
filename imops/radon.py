@@ -63,8 +63,6 @@ def radon(
             f'The image must be square along the provided axes ({axes}), but has shape: {image.shape[1:]}.'
         )
 
-    if theta is None:
-        theta = 180
     if isinstance(theta, int):
         theta = np.linspace(0, 180, theta, endpoint=False)
 
@@ -107,7 +105,7 @@ def radon(
 def inverse_radon(
     sinogram: np.ndarray,
     axes: Tuple[int, int] = None,
-    theta: Union[int, Sequence[float]] = 180,
+    theta: Union[int, Sequence[float]] = None,
     fill_value: float = 0,
     a: float = 0,
     b: float = 1,
