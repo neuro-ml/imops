@@ -62,7 +62,7 @@ def label(
     -------
     labeled_image: np.ndarray
         array of np.uint16, np.uint32 or np.uint64 numbers depending on the number of connected components and
-        `dtype` if 'scikit-image' fallback did not happen. Otherwise dtype will be np.int32
+        `dtype`
     num_components: int
         number of connected components excluding background. Returned if `return_num` is True
     labels: np.ndarray
@@ -85,11 +85,11 @@ def label(
 
     if ndim > 3:
         warn("Fast label is only supported for ndim<=3, Falling back to scikit-image's implementation.")
-        if dtype is not None:
-            warn("Explicitly passed `dtype` has no effect if fallback to scikit-image's implementation has occurred.")
         labeled_image, num_components = skimage_label(
             label_image, background=background, return_num=True, connectivity=connectivity
         )
+        if dtype is not None:
+            labeled_image = labeled_image.astype(dtype)
     else:
         if ndim == 1:
             label_image = label_image[None]
