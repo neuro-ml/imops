@@ -1,19 +1,13 @@
 from dataclasses import dataclass
-from itertools import product
 
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose as allclose
 from scipy.interpolate import interp1d as scipy_interp1d
 
-from imops import interp1d
-from imops.backend import Backend, Cython, Numba, Scipy
-
-
-scipy_configurations = [Scipy()]
-cython_configurations = [Cython(fast) for fast in [False, True]]
-numba_configurations = [Numba(*flags) for flags in product([False, True], repeat=3)]
-all_configurations = scipy_configurations + cython_configurations + numba_configurations
+from imops._configs import interp1d_configs
+from imops.backend import Backend
+from imops.interp1d import interp1d
 
 
 @dataclass
@@ -21,7 +15,7 @@ class Alien3(Backend):
     pass
 
 
-@pytest.fixture(params=all_configurations, ids=map(str, all_configurations))
+@pytest.fixture(params=interp1d_configs, ids=map(str, interp1d_configs))
 def backend(request):
     return request.param
 

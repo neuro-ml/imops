@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
 from skimage.morphology import (
     binary_closing as sk_binary_closing,
     binary_dilation as sk_binary_dilation,
@@ -10,14 +9,12 @@ from skimage.morphology import (
     binary_opening as sk_binary_opening,
 )
 
-from imops.backend import Backend, Cython, Scipy
+from imops._configs import morphology_configs
+from imops.backend import Backend
 from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening
 
 
-scipy_configurations = [Scipy()]
-cython_configurations = [Cython(fast) for fast in [False, True]]
-all_configurations = scipy_configurations + cython_configurations
-
+assert_eq = np.testing.assert_array_equal
 test_pairs = [
     [sk_binary_dilation, binary_dilation],
     [sk_binary_erosion, binary_erosion],
@@ -31,7 +28,7 @@ class Alien7(Backend):
     pass
 
 
-@pytest.fixture(params=all_configurations, ids=map(str, all_configurations))
+@pytest.fixture(params=morphology_configs, ids=map(str, morphology_configs))
 def backend(request):
     return request.param
 
@@ -81,7 +78,7 @@ def test_stress(pair, backend, footprint_shape_modifier):
 
         desired_out = sk_op(inp, footprint)
 
-        assert_array_equal(
+        assert_eq(
             imops_op(inp, footprint, backend=backend),
             desired_out,
             err_msg=f'{i, shape, footprint}',

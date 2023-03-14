@@ -4,22 +4,6 @@ import numpy as np
 from skimage.transform import iradon as iradon_, radon as radon_
 
 
-def seeded_by(seed):
-    def wrapper(func):
-        def inner(*args, **kwargs):
-            old_state = np.random.get_state()
-            np.random.seed(seed)
-
-            try:
-                return func(*args, **kwargs)
-            finally:
-                np.random.set_state(old_state)
-
-        return inner
-
-    return wrapper
-
-
 def sk_iradon(xs):
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', module='numpy')
@@ -56,3 +40,19 @@ def fill_outside(x, fill):
     xpr, ypr = np.mgrid[:size, :size] - radius
     x[:, (xpr**2 + ypr**2) > radius**2] = fill
     return x
+
+
+def seeded_by(seed):
+    def wrapper(func):
+        def inner(*args, **kwargs):
+            old_state = np.random.get_state()
+            np.random.seed(seed)
+
+            try:
+                return func(*args, **kwargs)
+            finally:
+                np.random.set_state(old_state)
+
+        return inner
+
+    return wrapper

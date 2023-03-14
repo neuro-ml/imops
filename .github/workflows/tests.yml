@@ -61,7 +61,7 @@ jobs:
           sed -i -e "s|$(echo $MODULE_PARENT/ | tr "/" .)||g" reports/coverage-${{ matrix.python-version }}.xml
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: reports-${{ matrix.python-version }}
           path: reports/*-${{ matrix.python-version }}.xml

@@ -1,11 +1,15 @@
 from collections import namedtuple
-from typing import NamedTuple, Union
+from platform import python_version
+from typing import NamedTuple, Tuple, Union
 from warnings import warn
 
 import numpy as np
 from cc3d import connected_components
 from fastremap import remap, unique
 from skimage.measure import label as skimage_label
+
+from ._numeric import _mul, _sum
+from .backend import BackendLike
 
 
 # (ndim, skimage_connectivity) -> cc3d_connectivity
@@ -26,6 +30,7 @@ def label(
     return_num: bool = False,
     return_labels: bool = False,
     return_sizes: bool = False,
+    dtype: type = None,
 ) -> Union[np.ndarray, NamedTuple]:
     """
     Fast version of `skimage.measure.label` which optionally returns number of connected components, labels and sizes.
@@ -47,10 +52,17 @@ def label(
         whether to return assigned labels
     return_sizes: bool
         whether to return sizes of connected components (excluding background)
+    dtype:
+        if specified, must be one of np.uint16, np.uint32 or np.uint64. If not specified, it will be automatically
+        determined. Most of the time, you should leave this off so that the smallest safe dtype will be used. However,
+        in some applications you can save an up-conversion in the next operation by outputting the appropriately sized
+        type instead. Has no effect for python3.6
 
     Returns
     -------
     labeled_image: np.ndarray
+        array of np.uint16, np.uint32 or np.uint64 numbers depending on the number of connected components and
+        `dtype`
     num_components: int
         number of connected components excluding background. Returned if `return_num` is True
     labels: np.ndarray
@@ -62,7 +74,7 @@ def label(
     --------
     >>> labeled = label(x)
     >>> labeled, num_components, sizes = label(x, return_num=True, return_sizes=True)
-    >>> out = labels(x, return_labels=True, return_sizes=True)
+    >>> out = label(x, return_labels=True, return_sizes=True)
     >>> out.labeled_image, out.labels, out.sizes  # output fields can be accessed this way
     """
     ndim = label_image.ndim
@@ -76,19 +88,25 @@ def label(
         labeled_image, num_components = skimage_label(
             label_image, background=background, return_num=True, connectivity=connectivity
         )
+        if dtype is not None:
+            labeled_image = labeled_image.astype(dtype)
     else:
         if ndim == 1:
             label_image = label_image[None]
 
         if background:
             label_image = remap(
-                label_image, {background: 0, 0: background}, preserve_missing_labels=True, in_place=False
+                label_image,
+                {background: 0, 0: background},
+                preserve_missing_labels=True,
+                in_place=False,
             )
 
         labeled_image, num_components = connected_components(
             label_image,
             connectivity=skimage2cc3d[(ndim, connectivity)],
             return_N=True,
+            **{'out_dtype': dtype} if python_version()[:3] != '3.6' else {},
         )
 
         if ndim == 1:
@@ -108,3 +126,45 @@ def label(
         return labeled_image
 
     return namedtuple('Labeling', [subres[0] for subres in res])(*[subres[1] for subres in res])
+
+
+def center_of_mass(array: np.ndarray, num_threads: int = -1, backend: BackendLike = None) -> Tuple[float, ...]:
+    """
+    Calculate the center of mass of the values
+
+    Parameters
+    ----------
+    array: np.ndarray
+        data from which to calculate center-of-mass. The masses can either be positive or negative
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. Only `cython` is available
+
+    Returns
+    -------
+    center_of_mass: tuple, or list of tuples
+        coordinates of centers-of-mass
+
+    Examples
+    --------
+    >>> center = center_of_mass(np.ones((2, 2)))  # (0.5, 0.5)
+    """
+    normalizer = _sum(array.ravel(), num_threads=num_threads, backend=backend)
+    grids = np.ogrid[list(map(slice, array.shape))]
+
+    return tuple(
+        _sum(
+            _mul(
+                array,
+                grids[dim].astype(array.dtype),
+                num_threads=num_threads,
+                backend=backend,
+            ).ravel(),
+            num_threads=num_threads,
+            backend=backend,
+        )
+        / normalizer
+        for dim in range(array.ndim)
+    )

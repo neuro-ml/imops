@@ -93,7 +93,7 @@ def radon(
     else:
         radon3d_ = radon3d
 
-    sinogram = radon3d_(image, np.deg2rad(theta), limits, num_threads)
+    sinogram = radon3d_(image, np.deg2rad(theta, dtype=image.dtype), limits, num_threads)
 
     result = restore_axes(sinogram, axes, extra)
     if return_fill:
@@ -105,7 +105,7 @@ def radon(
 def inverse_radon(
     sinogram: np.ndarray,
     axes: Tuple[int, int] = None,
-    theta: Union[int, Sequence[float]] = 180,
+    theta: Union[int, Sequence[float]] = None,
     fill_value: float = 0,
     a: float = 0,
     b: float = 1,
@@ -151,6 +151,7 @@ def inverse_radon(
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
     sinogram, axes, extra = normalize_axes(sinogram, axes)
+
     if theta is None:
         theta = sinogram.shape[-1]
     if isinstance(theta, int):
@@ -185,7 +186,7 @@ def inverse_radon(
 
     dtype = sinogram.dtype
     filtered_sinogram = filtered_sinogram.astype(dtype)
-    theta, xs = np.deg2rad(theta).astype(dtype), xs.astype(dtype)
+    theta, xs = np.deg2rad(theta, dtype=dtype), xs.astype(dtype)
 
     num_threads = normalize_num_threads(num_threads, backend)
 

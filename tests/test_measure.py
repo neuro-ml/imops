@@ -2,10 +2,15 @@ from platform import python_version
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_allclose as allclose
+from scipy.ndimage import center_of_mass as scipy_center_of_mass
 from skimage.measure import label as sk_label
 
-from imops.measure import label
+from imops._configs import numeric_configs
+from imops.measure import center_of_mass, label
+
+
+assert_eq = np.testing.assert_array_equal
 
 
 @pytest.fixture(params=[1, 2, 3, 4])
@@ -39,7 +44,7 @@ def test_dtype(connectivity, ndim):
         )[0 if ndim == 4 and dtype != bool else ...]
         connectivity = min(connectivity, inp_dtype.ndim)
 
-        assert_array_equal(
+        assert_eq(
             sk_label(inp_dtype, connectivity=connectivity),
             label(inp_dtype, connectivity=connectivity),
             err_msg=str(dtype),
@@ -62,7 +67,7 @@ def test_background(connectivity, ndim):
 
     for background in [0, 1, 2, 3, 4]:
         background = background > 0 if booled else background
-        assert_array_equal(
+        assert_eq(
             sk_label(inp, connectivity=connectivity, background=background),
             label(inp, connectivity=connectivity, background=background),
             err_msg=f'{connectivity, ndim, background}',
@@ -81,7 +86,7 @@ def test_ones(connectivity, ndim):
     if ndim == 4:
         inp = inp.astype(bool)
 
-    assert_array_equal(
+    assert_eq(
         sk_label(inp, connectivity=connectivity),
         label(inp, connectivity=connectivity),
         err_msg=f'{connectivity, ndim}',
@@ -94,7 +99,7 @@ def test_zeros(connectivity, ndim):
     if ndim == 4:
         inp = inp.astype(bool)
 
-    assert_array_equal(
+    assert_eq(
         sk_label(inp, connectivity=connectivity),
         label(inp, connectivity=connectivity),
         err_msg=f'{connectivity, ndim}',
@@ -146,9 +151,35 @@ def test_stress(connectivity, ndim):
         sk_labeled, sk_num_components = sk_label(inp, connectivity=connectivity, return_num=True)
         labeled, num_components = label(inp, connectivity=connectivity, return_num=True)
 
-        assert_array_equal(
+        assert_eq(
             sk_labeled,
             labeled,
             err_msg=f'{connectivity, ndim, inp.shape}',
         )
         assert sk_num_components == num_components, f'{connectivity, ndim, inp.shape}'
+
+
+@pytest.fixture(params=['int16', 'int32', 'int64', 'float32', 'float64'])
+def dtype(request):
+    return request.param
+
+
+@pytest.fixture(params=numeric_configs, ids=map(str, numeric_configs))
+def backend(request):
+    return request.param
+
+
+@pytest.fixture(params=range(1, 9))
+def num_threads(request):
+    return request.param
+
+
+def test_center_of_mass(backend, num_threads, dtype):
+    for _ in range(32):
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
+        inp = np.random.randn(*shape).astype(dtype)
+
+        out = center_of_mass(inp, num_threads=num_threads, backend=backend)
+        desired_out = scipy_center_of_mass(inp)
+
+        allclose(out, desired_out, rtol=1e-2 if dtype == 'float32' else 1e-7)

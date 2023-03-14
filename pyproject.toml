@@ -1,10 +1,5 @@
 [build-system]
-requires = [
-    'setuptools',
-    'numpy',
-    'Cython'
-]
-
+requires = ['setuptools', 'numpy', 'Cython']
 build-backend = 'setuptools.build_meta'
 
 [project]
@@ -40,35 +35,43 @@ dependencies = [
     'fastremap',
 ]
 
+[options]
+include_package_data = true
+
+[project.optional-dependencies]
+numba = ['numba']
+
 [project.urls]
 'Homepage' = 'https://github.com/neuro-ml/imops'
 'Issues' = 'https://github.com/neuro-ml/imops/issues'
 'Source' = 'https://github.com/neuro-ml/imops'
 'Docs' = 'https://neuro-ml.github.io/imops'
 
-
 [tool.black]
 line-length = 120
 skip-string-normalization = true
 
 [tool.pytest.ini_options]
-markers = [
-    'nonumba',
-]
+markers = ['nonumba']
 
 [tool.isort]
 line_length = 120
 lines_after_imports = 2
 profile = 'black'
 combine_as_imports = true
+skip_glob='.asv'
+
+[tool.setuptools]
+py-modules = ['_pyproject_build']
+
+[tool.setuptools.cmdclass]
+build_py = "_pyproject_build.PyprojectBuild"
 
 [tool.setuptools.packages.find]
 include = ['imops']
 
 [tool.setuptools.package-data]
-imops = [
-    'py.typed',
-]
+imops = ['py.typed']
 
 [tool.setuptools.dynamic]
 version = {attr = 'imops.__version__.__version__'}
