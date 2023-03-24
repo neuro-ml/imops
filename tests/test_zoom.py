@@ -164,7 +164,6 @@ def test_thin(backend):
                 : None if shape[1] == 1 else -1,
                 : None if shape[2] == 1 else -1,
                 : None if shape[3] == 1 else -1,
-                : None if shape[4] == 1 else -1,
             ]
             allclose(
                 zoom(inp, scale, backend=backend)[without_borders],
