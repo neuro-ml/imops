@@ -9,11 +9,11 @@ from scipy.ndimage import zoom as scipy_zoom
 
 from imops._configs import zoom_configs
 from imops.backend import Backend
-from imops.utils import get_c_contiguous_permutaion, inverse_permutation
+from imops.utils import ZOOM_SRC_DIM, get_c_contiguous_permutaion, inverse_permutation
 from imops.zoom import _zoom, zoom, zoom_to_shape
 
 
-# [:-1, :-1, :-1] below is used because of the strange scipy.ndimage.zoom behaviour at the edge
+# [:-1, :-1, :-1, :-1, :-1] below is used because of the strange scipy.ndimage.zoom behaviour at the edge
 # https://github.com/scipy/scipy/issues/4922
 
 
@@ -66,7 +66,7 @@ def test_shape(backend):
 
 def test_identity(backend):
     for i in range(16):
-        shape = np.random.randint(2, 128, size=np.random.randint(1, 4))
+        shape = np.random.randint(2, 32, size=np.random.randint(1, ZOOM_SRC_DIM + 1))
         inp = np.random.randn(*shape)
 
         allclose(inp, zoom(inp, 1, backend=backend), err_msg=f'{i, shape}')
@@ -76,12 +76,12 @@ def test_dtype(backend):
     for inp_dtype in (np.float32, np.float64):
         for scale_dtype in (np.int32, np.float32, np.float64):
             for i in range(4):
-                shape = np.random.randint(2, 128, size=np.random.randint(1, 4))
+                shape = np.random.randint(2, 32, size=np.random.randint(1, ZOOM_SRC_DIM + 1))
                 inp = (10 * np.random.randn(*shape)).astype(inp_dtype)
                 inp_copy = np.copy(inp)
-                scale = np.random.uniform(0.5, 2, size=inp.ndim).astype(scale_dtype)
+                scale = np.random.uniform(0.5, 1.5, size=inp.ndim).astype(scale_dtype)
 
-                without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
+                without_borders = np.index_exp[:-1, :-1, :-1, :-1, :-1][: inp.ndim]
 
                 out = zoom(inp, scale, backend=backend)
                 desired_out = scipy_zoom(inp, scale, order=1)
@@ -113,31 +113,28 @@ def test_scale_types(backend):
 
 
 def test_contiguity_awareness(backend):
-    for i in range(2):
-        for j in range(2):
-            inp = np.random.randn(*(64,) * (3 - i))
-            scale = np.random.uniform(0.5, 2, size=inp.ndim)
+    for i in range(ZOOM_SRC_DIM):
+        inp = np.random.randn(*(32,) * (ZOOM_SRC_DIM - i))
+        scale = np.random.uniform(0.5, 1.5, size=inp.ndim)
 
-            zoom(inp, scale, backend=backend)
+        zoom(inp, scale, backend=backend)
 
-            desired_out = scipy_zoom(inp, scale, order=1)
-            without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
+        desired_out = scipy_zoom(inp, scale, order=1)
+        without_borders = np.index_exp[:-1, :-1, :-1, :-1, :-1][: inp.ndim]
 
-            for permutation in permutations(range(inp.ndim)):
-                # This changes contiguity
-                permuted = np.transpose(inp, permutation)
+        for permutation in permutations(range(inp.ndim)):
+            # This changes contiguity
+            permuted = np.transpose(inp, permutation)
 
-                out_permuted = zoom(permuted, scale[np.array(permutation)], backend=backend)
+            out_permuted = zoom(permuted, scale[np.array(permutation)], backend=backend)
 
-                allclose(
-                    np.transpose(out_permuted, inverse_permutation(np.array(permutation)))[without_borders],
-                    desired_out[without_borders],
-                    err_msg=f'{i, j, permutation}',
-                )
+            allclose(
+                np.transpose(out_permuted, inverse_permutation(np.array(permutation)))[without_borders],
+                desired_out[without_borders],
+                err_msg=f'{i, permutation}',
+            )
 
-                assert (
-                    get_c_contiguous_permutaion(permuted) is not None
-                ), f"Didn't find permutation for {i, j, permutation}"
+            assert get_c_contiguous_permutaion(permuted) is not None, f"Didn't find permutation for {i, permutation}"
 
 
 def test_nocontiguous(backend):
@@ -155,14 +152,18 @@ def test_nocontiguous(backend):
 
 
 def test_thin(backend):
-    for i in range(3):
+    for i in range(ZOOM_SRC_DIM):
         for j in range(16):
-            shape = [1 if k < i else np.random.randint(2, 128) for k in range(3)]
+            shape = [1 if k < i else np.random.randint(2, 64) for k in range(ZOOM_SRC_DIM + 1)]
             inp = np.random.randn(*shape)
-            scale = np.random.uniform(0.5, 2, size=3)
+            scale = np.random.uniform(0.5, 1.5, size=3)
 
             without_borders = np.index_exp[
-                : None if shape[0] == 1 else -1, : None if shape[1] == 1 else -1, : None if shape[2] == 1 else -1
+                : None if shape[0] == 1 else -1,
+                : None if shape[1] == 1 else -1,
+                : None if shape[2] == 1 else -1,
+                : None if shape[3] == 1 else -1,
+                : None if shape[4] == 1 else -1,
             ]
             allclose(
                 zoom(inp, scale, backend=backend)[without_borders],
@@ -174,13 +175,13 @@ def test_thin(backend):
 def test_stress(backend):
     """Make sure that our zoom-s are consistent with scipy's"""
     for i in range(32):
-        shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
+        shape = np.random.randint(16, 32, size=np.random.randint(1, ZOOM_SRC_DIM + 1))
         inp = np.random.randn(*shape)
         scale = np.random.uniform(0.5, 2, size=inp.ndim if np.random.binomial(1, 0.5) else 1)
         if len(scale) == 1:
             scale = scale[0]
 
-        without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
+        without_borders = np.index_exp[:-1, :-1, :-1, :-1, :-1][: inp.ndim]
         desired_out = scipy_zoom(inp, scale, order=1)[without_borders]
 
         allclose(

@@ -10,6 +10,7 @@ from .src._fast_zoom import _zoom as cython_fast_zoom
 from .src._zoom import _zoom as cython_zoom
 from .utils import (
     FAST_MATH_WARNING,
+    ZOOM_SRC_DIM,
     AxesLike,
     AxesParams,
     broadcast_axis,
@@ -39,7 +40,7 @@ def zoom(
     """
     Rescale `x` according to `scale_factor` along the `axis`.
 
-    Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim <= 3 and order = 1.
+    Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim <= 5 and order = 1.
 
     Parameters
     ----------
@@ -92,7 +93,7 @@ def zoom_to_shape(
     """
     Rescale `x` to match `shape` along the `axis`.
 
-    Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim <= 3 and order = 1.
+    Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim <= 5 and order = 1.
 
     Parameters
     ----------
@@ -155,7 +156,7 @@ def _zoom(
     """
     Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs.
 
-    Works faster only for ndim <= 3. Shares interface with `scipy.ndimage.zoom`
+    Works faster only for ndim <= 5. Shares interface with `scipy.ndimage.zoom`
     except for
     - `num_threads` argument defining how many threads to use (all available threads are used by default).
     - `backend` argument defining which backend to use. `numba`, `cython` and `scipy` are available,
@@ -179,14 +180,14 @@ def _zoom(
 
     if (
         dtype not in (np.float32, np.float64)
-        or ndim > 3
+        or ndim > ZOOM_SRC_DIM
         or output is not None
         or order != 1
         or mode != 'constant'
         or grid_mode
     ):
         warn(
-            'Fast zoom is only supported for ndim<=3, dtype=float32 or float64, output=None, '
+            f'Fast zoom is only supported for ndim<={ZOOM_SRC_DIM}, dtype=float32 or float64, output=None, '
             "order=1, mode='constant', grid_mode=False. Falling back to scipy's implementation.",
         )
 
@@ -212,7 +213,7 @@ def _zoom(
         njit_kwargs = {kwarg: getattr(backend, kwarg) for kwarg in backend.__dataclass_fields__.keys()}
         src_zoom = njit(**njit_kwargs)(numba_zoom)
 
-    n_dummy = 3 - ndim
+    n_dummy = ZOOM_SRC_DIM - ndim
 
     if n_dummy:
         input = input[(None,) * n_dummy]
