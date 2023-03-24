@@ -10,6 +10,8 @@ from imops._configs import numeric_configs
 from imops.measure import center_of_mass, label
 
 
+np.random.seed(1337)
+
 assert_eq = np.testing.assert_array_equal
 
 

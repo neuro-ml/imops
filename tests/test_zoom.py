@@ -16,6 +16,7 @@ from imops.zoom import _zoom, zoom, zoom_to_shape
 # [:-1, :-1, :-1, :-1, :-1] below is used because of the strange scipy.ndimage.zoom behaviour at the edge
 # https://github.com/scipy/scipy/issues/4922
 
+np.random.seed(1337)
 
 # FIXME: fix inconsistency
 # rtol=1e-6 as there is still some inconsistency
