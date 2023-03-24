@@ -16,7 +16,7 @@ FAST_MATH_WARNING = (
     'unexpected results, use at your own risk! Visit https://simonbyrne.github.io/notes/fastmath/ for more information.'
 )
 
-ZOOM_SRC_DIM = 5
+ZOOM_SRC_DIM = 4
 
 
 def normalize_num_threads(num_threads: int, backend: Backend):
