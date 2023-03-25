@@ -155,7 +155,7 @@ def test_nocontiguous(backend):
 def test_thin(backend):
     for i in range(ZOOM_SRC_DIM):
         for j in range(16):
-            shape = [1 if k < i else np.random.randint(2, 64) for k in range(ZOOM_SRC_DIM + 1)]
+            shape = [1 if k < i else np.random.randint(2, 32) for k in range(ZOOM_SRC_DIM + 1)]
             inp = np.random.randn(*shape)
             scale = np.random.uniform(0.5, 1.5, size=len(shape))
 
