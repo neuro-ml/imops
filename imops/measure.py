@@ -151,6 +151,9 @@ def center_of_mass(array: np.ndarray, num_threads: int = -1, backend: BackendLik
     --------
     >>> center = center_of_mass(np.ones((2, 2)))  # (0.5, 0.5)
     """
+    if array.dtype == 'bool':
+        array = array.astype(float)
+
     normalizer = _sum(array.ravel(), num_threads=num_threads, backend=backend)
     grids = np.ogrid[list(map(slice, array.shape))]
 
