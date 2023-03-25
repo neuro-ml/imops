@@ -157,7 +157,7 @@ def test_thin(backend):
         for j in range(16):
             shape = [1 if k < i else np.random.randint(2, 64) for k in range(ZOOM_SRC_DIM + 1)]
             inp = np.random.randn(*shape)
-            scale = np.random.uniform(0.5, 1.5, size=3)
+            scale = np.random.uniform(0.5, 1.5, size=len(shape))
 
             without_borders = np.index_exp[
                 : None if shape[0] == 1 else -1,
