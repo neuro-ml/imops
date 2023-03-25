@@ -162,7 +162,7 @@ def _zoom(
     """
     Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs.
 
-    Works faster only for ndim <= 5. Shares interface with `scipy.ndimage.zoom`
+    Works faster only for ndim <= 4. Shares interface with `scipy.ndimage.zoom`
     except for
     - `num_threads` argument defining how many threads to use (all available threads are used by default).
     - `backend` argument defining which backend to use. `numba`, `cython` and `scipy` are available,

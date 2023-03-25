@@ -1,7 +1,7 @@
 import numpy as np
 
 from imops._configs import numeric_configs
-from imops.numeric import parallel_pointwise_mul, parallel_sum
+from imops._numeric import _mul, _sum
 
 from .common import discard_arg
 
@@ -19,16 +19,16 @@ class NumericSuite:
 
     @discard_arg(2)
     def time_sum(self, backend):
-        parallel_sum(self.nums_1d, backend=backend)
+        _sum(self.nums_1d, backend=backend)
 
     @discard_arg(2)
     def peakmem_sum(self, backend):
-        parallel_sum(self.nums_1d, backend=backend)
+        _sum(self.nums_1d, backend=backend)
 
     @discard_arg(2)
     def time_pointwise_mul(self, backend):
-        parallel_pointwise_mul(self.nums1_3d, self.nums2_3d, backend=backend)
+        _mul(self.nums1_3d, self.nums2_3d, backend=backend)
 
     @discard_arg(2)
     def peakmem_pointwise_mul(self, backend):
-        parallel_pointwise_mul(self.nums1_3d, self.nums2_3d, backend=backend)
+        _mul(self.nums1_3d, self.nums2_3d, backend=backend)
