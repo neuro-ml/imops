@@ -4216,7 +4216,7 @@ cpu count + num_threads + 1 threads will be used</p></td>
 <a id="__codelineno-0-151" name="__codelineno-0-151"></a><span class="sd">    --------</span>
 <a id="__codelineno-0-152" name="__codelineno-0-152"></a><span class="sd">    &gt;&gt;&gt; center = center_of_mass(np.ones((2, 2)))  # (0.5, 0.5)</span>
 <a id="__codelineno-0-153" name="__codelineno-0-153"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-154" name="__codelineno-0-154"></a>    <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;bool&#39;</span><span class="p">:</span>
+<a id="__codelineno-0-154" name="__codelineno-0-154"></a>    <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
 <a id="__codelineno-0-155" name="__codelineno-0-155"></a>        <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 <a id="__codelineno-0-156" name="__codelineno-0-156"></a>
 <a id="__codelineno-0-157" name="__codelineno-0-157"></a>    <span class="n">normalizer</span> <span class="o">=</span> <span class="n">_sum</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">num_threads</span><span class="o">=</span><span class="n">num_threads</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">)</span>
