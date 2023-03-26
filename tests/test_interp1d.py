@@ -10,6 +10,9 @@ from imops.backend import Backend
 from imops.interp1d import interp1d
 
 
+np.random.seed(1337)
+
+
 @dataclass
 class Alien3(Backend):
     pass

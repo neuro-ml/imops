@@ -139,7 +139,7 @@ def interpolate3d(input: np.ndarray, rows: int, cols: int, dims: int, r: int, c:
     return c0 * (1 - dd) + c1 * dd
 
 
-def _zoom(input: np.ndarray, zoom: np.ndarray, cval: float) -> np.ndarray:
+def _zoom3d(input: np.ndarray, zoom: np.ndarray, cval: float) -> np.ndarray:
     contiguous_input = np.ascontiguousarray(input)
 
     old_rows, old_cols, old_dims = input.shape
@@ -167,5 +167,129 @@ def _zoom(input: np.ndarray, zoom: np.ndarray, cval: float) -> np.ndarray:
                     k * adjusted_dim_coef,
                     cval,
                 )
+
+    return zoomed
+
+
+@njit(nogil=True)
+def get_pixel4d(
+    input: np.ndarray,
+    dim1: int,
+    dim2: int,
+    dim3: int,
+    dim4: int,
+    c1: int,
+    c2: int,
+    c3: int,
+    c4: int,
+    cval: float,
+) -> float:
+    if 0 <= c1 < dim1 and 0 <= c2 < dim2 and 0 <= c3 < dim3 and 0 <= c4 < dim4:
+        return input[c1, c2, c3, c4]
+
+    return cval
+
+
+@njit(nogil=True)
+def interpolate4d(
+    input: np.ndarray,
+    dim1: int,
+    dim2: int,
+    dim3: int,
+    dim4: int,
+    c1: int,
+    c2: int,
+    c3: int,
+    c4: int,
+    cval: float,
+) -> float:
+    minc1 = int(c1)
+    minc2 = int(c2)
+    minc3 = int(c3)
+    minc4 = int(c4)
+    maxc1 = minc1 + 1
+    maxc2 = minc2 + 1
+    maxc3 = minc3 + 1
+    maxc4 = minc4 + 1
+
+    dc1 = c1 - minc1
+    dc2 = c2 - minc2
+    dc3 = c3 - minc3
+    dc4 = c4 - minc4
+
+    c0000 = get_pixel4d(input, dim1, dim2, dim3, dim4, minc1, minc2, minc3, minc4, cval)
+    c0001 = get_pixel4d(input, dim1, dim2, dim3, dim4, minc1, minc2, minc3, maxc4, cval)
+    c0010 = get_pixel4d(input, dim1, dim2, dim3, dim4, minc1, minc2, maxc3, minc4, cval)
+    c0011 = get_pixel4d(input, dim1, dim2, dim3, dim4, minc1, minc2, maxc3, maxc4, cval)
+    c0100 = get_pixel4d(input, dim1, dim2, dim3, dim4, minc1, maxc2, minc3, minc4, cval)
+    c0101 = get_pixel4d(input, dim1, dim2, dim3, dim4, minc1, maxc2, minc3, maxc4, cval)
+    c0110 = get_pixel4d(input, dim1, dim2, dim3, dim4, minc1, maxc2, maxc3, minc4, cval)
+    c0111 = get_pixel4d(input, dim1, dim2, dim3, dim4, minc1, maxc2, maxc3, maxc4, cval)
+    c1000 = get_pixel4d(input, dim1, dim2, dim3, dim4, maxc1, minc2, minc3, minc4, cval)
+    c1001 = get_pixel4d(input, dim1, dim2, dim3, dim4, maxc1, minc2, minc3, maxc4, cval)
+    c1010 = get_pixel4d(input, dim1, dim2, dim3, dim4, maxc1, minc2, maxc3, minc4, cval)
+    c1011 = get_pixel4d(input, dim1, dim2, dim3, dim4, maxc1, minc2, maxc3, maxc4, cval)
+    c1100 = get_pixel4d(input, dim1, dim2, dim3, dim4, maxc1, maxc2, minc3, minc4, cval)
+    c1101 = get_pixel4d(input, dim1, dim2, dim3, dim4, maxc1, maxc2, minc3, maxc4, cval)
+    c1110 = get_pixel4d(input, dim1, dim2, dim3, dim4, maxc1, maxc2, maxc3, minc4, cval)
+    c1111 = get_pixel4d(input, dim1, dim2, dim3, dim4, maxc1, maxc2, maxc3, maxc4, cval)
+
+    c000 = c0000 * (1 - dc1) + c1000 * dc1
+    c001 = c0001 * (1 - dc1) + c1001 * dc1
+    c010 = c0010 * (1 - dc1) + c1010 * dc1
+    c011 = c0011 * (1 - dc1) + c1011 * dc1
+    c100 = c0100 * (1 - dc1) + c1100 * dc1
+    c101 = c0101 * (1 - dc1) + c1101 * dc1
+    c110 = c0110 * (1 - dc1) + c1110 * dc1
+    c111 = c0111 * (1 - dc1) + c1111 * dc1
+
+    c00 = c000 * (1 - dc2) + c100 * dc2
+    c01 = c001 * (1 - dc2) + c101 * dc2
+    c10 = c010 * (1 - dc2) + c110 * dc2
+    c11 = c011 * (1 - dc2) + c111 * dc2
+
+    c0_ = c00 * (1 - dc3) + c10 * dc3
+    c1_ = c01 * (1 - dc3) + c11 * dc3
+
+    return c0_ * (1 - dc4) + c1_ * dc4
+
+
+def _zoom4d(input: np.ndarray, zoom: np.ndarray, cval: float) -> np.ndarray:
+    contiguous_input = np.ascontiguousarray(input)
+
+    old_dim1, old_dim2, old_dim3, old_dim4 = input.shape
+    dim1_coef, dim2_coef, dim3_coef, dim4_coef = zoom
+
+    new_shape = (
+        round(old_dim1 * dim1_coef),
+        round(old_dim2 * dim2_coef),
+        round(old_dim3 * dim3_coef),
+        round(old_dim4 * dim4_coef),
+    )
+    new_dim1, new_dim2, new_dim3, new_dim4 = new_shape
+
+    zoomed = np.zeros(new_shape, dtype=input.dtype)
+
+    adjusted_dim1_coef = adjusted_coef(old_dim1, new_dim1)
+    adjusted_dim2_coef = adjusted_coef(old_dim2, new_dim2)
+    adjusted_dim3_coef = adjusted_coef(old_dim3, new_dim3)
+    adjusted_dim4_coef = adjusted_coef(old_dim4, new_dim4)
+
+    for i1 in prange(new_dim1):
+        for i2 in prange(new_dim2):
+            for i3 in prange(new_dim3):
+                for i4 in prange(new_dim4):
+                    zoomed[i1, i2, i3, i4] = interpolate4d(
+                        contiguous_input,
+                        old_dim1,
+                        old_dim2,
+                        old_dim3,
+                        old_dim4,
+                        i1 * adjusted_dim1_coef,
+                        i2 * adjusted_dim2_coef,
+                        i3 * adjusted_dim3_coef,
+                        i4 * adjusted_dim4_coef,
+                        cval,
+                    )
 
     return zoomed

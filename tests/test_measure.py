@@ -10,6 +10,8 @@ from imops._configs import numeric_configs
 from imops.measure import center_of_mass, label
 
 
+np.random.seed(1340)
+
 assert_eq = np.testing.assert_array_equal
 
 
@@ -159,7 +161,7 @@ def test_stress(connectivity, ndim):
         assert sk_num_components == num_components, f'{connectivity, ndim, inp.shape}'
 
 
-@pytest.fixture(params=['int16', 'int32', 'int64', 'float32', 'float64'])
+@pytest.fixture(params=['int16', 'int32', 'int64', 'float32', 'float64', 'bool'])
 def dtype(request):
     return request.param
 
@@ -177,7 +179,11 @@ def num_threads(request):
 def test_center_of_mass(backend, num_threads, dtype):
     for _ in range(32):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
-        inp = np.random.randn(*shape).astype(dtype)
+        inp = (
+            np.random.binomial(1, 0.5, shape).astype(dtype)
+            if dtype == 'bool'
+            else np.random.randn(*shape).astype(dtype)
+        )
 
         out = center_of_mass(inp, num_threads=num_threads, backend=backend)
         desired_out = scipy_center_of_mass(inp)

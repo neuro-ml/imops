@@ -124,6 +124,16 @@ cdef inline FLOAT get_pixel3d(FLOAT* input,
             return input[rows * cols * d + rows * c + r]
 
 
+cdef inline FLOAT get_pixel4d(FLOAT* input,
+                              Py_ssize_t stride1, Py_ssize_t stride2, Py_ssize_t stride3, Py_ssize_t stride4,
+                              Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
+                              Py_ssize_t c1, Py_ssize_t c2, Py_ssize_t c3, Py_ssize_t c4,
+                              FLOAT cval) nogil:
+        if (c1 < 0) or (c1 >= dim1) or (c2 < 0) or (c2 >= dim2) or (c3 < 0) or (c3 >= dim3) or (c4 < 0) or (c4 >= dim4):
+            return cval
+        return input[c1 * stride1 + c2 * stride2 + c3 * stride3 + c4 * stride4]
+
+
 cdef inline double adjusted_coef(Py_ssize_t old_n, Py_ssize_t new_n) nogil:
     if new_n == 1:
         return old_n
@@ -170,7 +180,68 @@ cdef inline FLOAT interpolate3d(FLOAT* input,
     return c0 * (1 - dd) + c1 * dd
 
 
-def _zoom(FLOAT[:, :, :] input, double[:] zoom, double cval, Py_ssize_t num_threads):
+cdef inline FLOAT interpolate4d(FLOAT* input,
+                                Py_ssize_t stride1, Py_ssize_t stride2, Py_ssize_t stride3, Py_ssize_t stride4,
+                                Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
+                                double c1, double c2, double c3, double c4,
+                                double cval) nogil:
+    cdef double dc1, dc2, dc3, dc4
+    cdef long minc1, minc2, minc3, minc4, maxc1, maxc2, maxc3, maxc4
+
+    minc1 = <long>floor(c1)
+    minc2 = <long>floor(c2)
+    minc3 = <long>floor(c3)
+    minc4 = <long>floor(c4)
+    maxc1 = minc1 + 1
+    maxc2 = minc2 + 1
+    maxc3 = minc3 + 1
+    maxc4 = minc4 + 1
+
+    dc1 = c1 - minc1
+    dc2 = c2 - minc2
+    dc3 = c3 - minc3
+    dc4 = c4 - minc4
+
+    cdef double c000, c001, c010, c011, c100, c101, c110, c111, c00, c01, c10, c11, c0_, c1_
+
+    cdef double c0000 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, minc1, minc2, minc3, minc4, cval)
+    cdef double c0001 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, minc1, minc2, minc3, maxc4, cval)
+    cdef double c0010 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, minc1, minc2, maxc3, minc4, cval)
+    cdef double c0011 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, minc1, minc2, maxc3, maxc4, cval)
+    cdef double c0100 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, minc1, maxc2, minc3, minc4, cval)
+    cdef double c0101 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, minc1, maxc2, minc3, maxc4, cval)
+    cdef double c0110 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, minc1, maxc2, maxc3, minc4, cval)
+    cdef double c0111 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, minc1, maxc2, maxc3, maxc4, cval)
+    cdef double c1000 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, maxc1, minc2, minc3, minc4, cval)
+    cdef double c1001 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, maxc1, minc2, minc3, maxc4, cval)
+    cdef double c1010 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, maxc1, minc2, maxc3, minc4, cval)
+    cdef double c1011 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, maxc1, minc2, maxc3, maxc4, cval)
+    cdef double c1100 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, maxc1, maxc2, minc3, minc4, cval)
+    cdef double c1101 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, maxc1, maxc2, minc3, maxc4, cval)
+    cdef double c1110 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, maxc1, maxc2, maxc3, minc4, cval)
+    cdef double c1111 = get_pixel4d(input, stride1, stride2, stride3, stride4, dim1, dim2, dim3, dim4, maxc1, maxc2, maxc3, maxc4, cval)
+
+    c000 = c0000 * (1 - dc1) + c1000 * dc1
+    c001 = c0001 * (1 - dc1) + c1001 * dc1
+    c010 = c0010 * (1 - dc1) + c1010 * dc1
+    c011 = c0011 * (1 - dc1) + c1011 * dc1
+    c100 = c0100 * (1 - dc1) + c1100 * dc1
+    c101 = c0101 * (1 - dc1) + c1101 * dc1
+    c110 = c0110 * (1 - dc1) + c1110 * dc1
+    c111 = c0111 * (1 - dc1) + c1111 * dc1
+
+    c00 = c000 * (1 - dc2) + c100 * dc2
+    c01 = c001 * (1 - dc2) + c101 * dc2
+    c10 = c010 * (1 - dc2) + c110 * dc2
+    c11 = c011 * (1 - dc2) + c111 * dc2
+
+    c0_ = c00 * (1 - dc3) + c10 * dc3
+    c1_ = c01 * (1 - dc3) + c11 * dc3
+
+    return c0_ * (1 - dc4) + c1_ * dc4
+
+
+def _zoom3d(FLOAT[:, :, :] input, double[:] zoom, double cval, Py_ssize_t num_threads):
     cdef FLOAT[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
 
     cdef Py_ssize_t old_rows = input.shape[0], old_cols = input.shape[1], old_dims = input.shape[2]
@@ -196,5 +267,51 @@ def _zoom(FLOAT[:, :, :] input, double[:] zoom, double cval, Py_ssize_t num_thre
                     old_rows, old_cols, old_dims,
                     i * adjusted_row_coef, j * adjusted_col_coef, k * adjusted_dim_coef, cval,
                 )
+
+    return np.asarray(zoomed)
+
+
+def _zoom4d(FLOAT[:, :, :, :] input, double[:] zoom, double cval, Py_ssize_t num_threads):
+    cdef FLOAT[:, :, :, ::1] contiguous_input = np.ascontiguousarray(input)
+
+    cdef Py_ssize_t old_dim1 = input.shape[0], old_dim2 = input.shape[1], old_dim3 = input.shape[2], old_dim4 = input.shape[3]
+    cdef double dim1_coef = zoom[0], dim2_coef = zoom[1], dim3_coef = zoom[2], dim4_coef = zoom[3]
+    new_shape = (
+        round(old_dim1 * dim1_coef),
+        round(old_dim2 * dim2_coef),
+        round(old_dim3 * dim3_coef),
+        round(old_dim4 * dim4_coef),
+    )
+    cdef Py_ssize_t new_dim1 = new_shape[0], new_dim2 = new_shape[1], new_dim3 = new_shape[2], new_dim4 = new_shape[3]
+
+    cdef FLOAT[:, :, :, ::1] zoomed = np.zeros(new_shape, dtype=np.float32 if input.itemsize == 4 else np.float64)
+
+    cdef Py_ssize_t i1, i2, i3, i4, stride1, stride2, stride3, stride4
+    cdef double adjusted_dim1_coef, adjusted_dim2_coef, adjusted_dim3_coef, adjusted_dim4_coef
+
+    adjusted_dim1_coef = adjusted_coef(old_dim1, new_dim1)
+    adjusted_dim2_coef = adjusted_coef(old_dim2, new_dim2)
+    adjusted_dim3_coef = adjusted_coef(old_dim3, new_dim3)
+    adjusted_dim4_coef = adjusted_coef(old_dim4, new_dim4)
+
+    stride1 = old_dim2 * old_dim3 * old_dim4
+    stride2 = old_dim3 * old_dim4
+    stride3 = old_dim4
+    stride4 = 1
+
+    for i1 in prange(new_dim1, nogil=True, num_threads=num_threads):
+        for i2 in prange(new_dim2):
+            for i3 in prange(new_dim3):
+                for i4 in prange(new_dim4):
+                    zoomed[i1, i2, i3, i4] = interpolate4d(
+                        &contiguous_input[0, 0, 0, 0],
+                        stride1, stride2, stride3, stride4,
+                        old_dim1, old_dim2, old_dim3, old_dim4,
+                        i1 * adjusted_dim1_coef,
+                        i2 * adjusted_dim2_coef,
+                        i3 * adjusted_dim3_coef,
+                        i4 * adjusted_dim4_coef,
+                        cval,
+                    )
 
     return np.asarray(zoomed)

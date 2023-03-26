@@ -10,6 +10,8 @@ from imops.radon import inverse_radon, radon
 from imops.testing import fill_outside, sample_ct, sk_iradon, sk_radon
 
 
+np.random.seed(1337)
+
 almost_eq = np.testing.assert_array_almost_equal
 
 
