@@ -26,12 +26,39 @@ class ZoomSuite:
 
     @discard_arg(1)
     def setup(self, dtype):
-        self.image = np.random.randn(256, 256, 256).astype(dtype)
+        self.image_1d = np.random.randn(2**24).astype(dtype)
+        self.image_2d = np.random.randn(4096, 4096).astype(dtype)
+        self.image_3d = np.random.randn(256, 256, 256).astype(dtype)
+        self.image_4d = np.random.randn(64, 64, 64, 64).astype(dtype)
 
     @discard_arg(2)
-    def time_zoom(self, backend):
-        zoom(self.image, 2, backend=backend)
+    def time_zoom_1d(self, backend):
+        zoom(self.image_1d, 2, backend=backend)
 
     @discard_arg(2)
-    def peakmem_zoom(self, backend):
-        zoom(self.image, 2, backend=backend)
+    def time_zoom_2d(self, backend):
+        zoom(self.image_2d, 2, backend=backend)
+
+    @discard_arg(2)
+    def time_zoom_3d(self, backend):
+        zoom(self.image_3d, 2, backend=backend)
+
+    @discard_arg(2)
+    def time_zoom_4d(self, backend):
+        zoom(self.image_4d, 2, backend=backend)
+
+    @discard_arg(2)
+    def peakmem_zoom_1d(self, backend):
+        zoom(self.image_1d, 2, backend=backend)
+
+    @discard_arg(2)
+    def peakmem_zoom_2d(self, backend):
+        zoom(self.image_2d, 2, backend=backend)
+
+    @discard_arg(2)
+    def peakmem_zoom_3d(self, backend):
+        zoom(self.image_3d, 2, backend=backend)
+
+    @discard_arg(2)
+    def peakmem_zoom_4d(self, backend):
+        zoom(self.image_4d, 2, backend=backend)
