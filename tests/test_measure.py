@@ -41,9 +41,9 @@ def test_dtype(connectivity, ndim):
         np.float32,
         np.float64,
     ):
-        inp_dtype = np.random.randint(0, 5, size=np.random.randint(32, 64, size=ndim),).astype(
-            dtype
-        )[0 if ndim == 4 and dtype != bool else ...]
+        inp_dtype = np.random.randint(0, 5, size=np.random.randint(32, 64, size=ndim)).astype(dtype)[
+            0 if ndim == 4 and dtype != bool else ...
+        ]
         connectivity = min(connectivity, inp_dtype.ndim)
 
         assert_eq(
@@ -139,6 +139,31 @@ def test_multiple_output():
 
     labeled, labels = label(inp, return_labels=True)
     assert (labels == np.array([1, 2, 3, 4])).all()
+
+
+def test_no_background():
+    inp = np.ones((3, 3))
+
+    labeled, num_components, labels, sizes = label(inp, return_num=True, return_labels=True, return_sizes=True)
+
+    assert num_components == 1
+    assert len(labels) == 1
+    assert (labels == np.array([1])).all()
+    assert (sorted(sizes) == np.array([9])).all()
+    assert len(sizes) == 1
+
+
+def test_no_background2():
+    inp = np.ones((3, 3))
+    inp[0, 0] = 2
+
+    labeled, num_components, labels, sizes = label(inp, return_num=True, return_labels=True, return_sizes=True)
+
+    assert num_components == 2
+    assert len(labels) == 2
+    assert (labels == np.array([1, 2])).all()
+    assert len(sizes) == 2
+    assert (sorted(sizes) == np.array([1, 8])).all()
 
 
 def test_stress(connectivity, ndim):

@@ -120,7 +120,7 @@ def label(
         res.append(('labels', np.array(range(1, num_components + 1))))
     if return_sizes:
         _, sizes = unique(labeled_image, return_counts=True)
-        res.append(('sizes', sizes[1:]))
+        res.append(('sizes', sizes[1:] if 0 in labeled_image else sizes))
 
     if len(res) == 1:
         return labeled_image
