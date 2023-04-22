@@ -1,5 +1,4 @@
 from typing import Sequence, Tuple, Union
-from warnings import warn
 
 import numpy as np
 from scipy.fftpack import fft, ifft
@@ -9,7 +8,7 @@ from .src._backprojection import backprojection3d
 from .src._fast_backprojection import backprojection3d as fast_backprojection3d
 from .src._fast_radon import radon3d as fast_radon3d
 from .src._radon import radon3d
-from .utils import FAST_MATH_WARNING, normalize_num_threads
+from .utils import normalize_num_threads
 
 
 def radon(
@@ -87,11 +86,7 @@ def radon(
 
     num_threads = normalize_num_threads(num_threads, backend)
 
-    if backend.fast:
-        warn(FAST_MATH_WARNING)
-        radon3d_ = fast_radon3d
-    else:
-        radon3d_ = radon3d
+    radon3d_ = fast_radon3d if backend.fast else radon3d
 
     sinogram = radon3d_(image, np.deg2rad(theta, dtype=image.dtype), limits, num_threads)
 
@@ -190,11 +185,7 @@ def inverse_radon(
 
     num_threads = normalize_num_threads(num_threads, backend)
 
-    if backend.fast:
-        warn(FAST_MATH_WARNING)
-        backprojection3d_ = fast_backprojection3d
-    else:
-        backprojection3d_ = backprojection3d
+    backprojection3d_ = fast_backprojection3d if backend.fast else backprojection3d
 
     reconstructed = np.asarray(
         backprojection3d_(filtered_sinogram, theta, xs, inside_circle, fill_value, img_shape, output_size, num_threads)

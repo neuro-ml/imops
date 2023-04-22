@@ -11,11 +11,6 @@ from .backend import BACKEND2NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Bac
 AxesLike = Union[int, Sequence[int]]
 AxesParams = Union[float, Sequence[float]]
 
-FAST_MATH_WARNING = (
-    'Be careful, `fast=True` is an experimental feature. It enables some dangerous optimizations which can lead to '
-    'unexpected results, use at your own risk! Visit https://simonbyrne.github.io/notes/fastmath/ for more information.'
-)
-
 ZOOM_SRC_DIM = 4
 
 

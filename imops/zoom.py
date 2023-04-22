@@ -9,7 +9,6 @@ from .backend import BackendLike, resolve_backend
 from .src._fast_zoom import _zoom3d as cython_fast_zoom3d, _zoom4d as cython_fast_zoom4d
 from .src._zoom import _zoom3d as cython_zoom3d, _zoom4d as cython_zoom4d
 from .utils import (
-    FAST_MATH_WARNING,
     AxesLike,
     AxesParams,
     broadcast_axis,
@@ -202,8 +201,6 @@ def _zoom(
         )
 
     if backend.name == 'Cython':
-        if backend.fast:
-            warn(FAST_MATH_WARNING)
         src_zoom = _choose_cython_zoom(ndim, backend.fast)
 
     if backend.name == 'Numba':

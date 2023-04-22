@@ -8,7 +8,7 @@ from .src._fast_numeric import (
     _parallel_sum as cython_fast_parallel_sum,
 )
 from .src._numeric import _parallel_pointwise_mul as cython_parallel_pointwise_mul, _parallel_sum as cython_parallel_sum
-from .utils import FAST_MATH_WARNING, normalize_num_threads
+from .utils import normalize_num_threads
 
 
 def _sum(nums: np.ndarray, num_threads: int = -1, backend: BackendLike = None) -> float:
@@ -50,11 +50,7 @@ def _sum(nums: np.ndarray, num_threads: int = -1, backend: BackendLike = None) -
         return nums.sum()
 
     if backend.name == 'Cython':
-        if backend.fast:
-            warn(FAST_MATH_WARNING)
-            src_parallel_sum = cython_fast_parallel_sum
-        else:
-            src_parallel_sum = cython_parallel_sum
+        src_parallel_sum = cython_fast_parallel_sum if backend.fast else cython_parallel_sum
 
     return src_parallel_sum(nums, num_threads)
 
@@ -110,11 +106,9 @@ def _mul(nums1: np.ndarray, nums2: np.ndarray, num_threads: int = -1, backend: B
         return nums1 * nums2
 
     if backend.name == 'Cython':
-        if backend.fast:
-            warn(FAST_MATH_WARNING)
-            src_parallel_pointwise_mul = cython_fast_parallel_pointwise_mul
-        else:
-            src_parallel_pointwise_mul = cython_parallel_pointwise_mul
+        src_parallel_pointwise_mul = (
+            cython_fast_parallel_pointwise_mul if backend.fast else cython_parallel_pointwise_mul
+        )
 
     n_dummy = 3 - nums1.ndim
 
