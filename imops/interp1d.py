@@ -103,7 +103,9 @@ class interp1d:
                 self.bounds_error = True if bounds_error is None else bounds_error
 
             if len(x) != y.shape[axis]:
-                raise ValueError('x and y arrays must be equal in length along interpolation axis.')
+                raise ValueError(
+                    f'x and y arrays must be equal in length along interpolation axis: {len(x)} vs {y.shape[axis]}.'
+                )
 
             self.axis = axis
 
