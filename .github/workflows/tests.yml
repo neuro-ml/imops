@@ -48,6 +48,7 @@ jobs:
           flake8 .
           isort --check .
           black --check .
+          cython-lint imops/src
 
       - name: Test with pytest
         run: |

@@ -77,16 +77,15 @@ def radon3d(FLOAT[:, :, :] image, FLOAT[:] theta, INT[:] limits, Py_ssize_t num_
     cdef FLOAT[:] r_shift = center * (coss + sins - 1)
     cdef FLOAT[:] c_shift = center * (coss - sins - 1)
 
-    cdef Py_ssize_t i, j, alpha, slc
-    cdef FLOAT r, c
+    cdef Py_ssize_t i, alpha, slc
 
     for slc in prange(n_slices, nogil=True, num_threads=num_threads):
         for alpha in prange(n_angles):
-            for j in prange(size):
-                out[slc, j, alpha] = accumulate(
+            for i in prange(size):
+                out[slc, i, alpha] = accumulate(
                     &img[slc, 0, 0], &size,
                     &sinuses[alpha], &cosinuses[alpha], &r_shift[alpha], &c_shift[alpha],
-                    j, &limits[j],
+                    i, &limits[j],
                 )
 
     return np.asarray(out)

@@ -88,7 +88,7 @@ def _interp1d(FLOAT[:, :, :] input,
                             rows, cols, old_dims,
                             i, j, sort_permutation[max_idxs[k] - 1],
                             0,
-                        )  * (1 - dd[k]) +
+                        ) * (1 - dd[k]) +
                         get_pixel3d(
                             &contiguous_input[0, 0, 0],
                             rows, cols, old_dims,
@@ -114,14 +114,14 @@ cdef inline FLOAT get_pixel3d(FLOAT* input,
                               Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
                               Py_ssize_t r, Py_ssize_t c, Py_ssize_t d,
                               FLOAT cval, layout = b'C') nogil:
-        if (r < 0) or (r >= rows) or (c < 0) or (c >= cols) or (d < 0) or (d >= dims):
-            return cval
+    if (r < 0) or (r >= rows) or (c < 0) or (c >= cols) or (d < 0) or (d >= dims):
+        return cval
 
-        if layout == b'C':
-            return input[r * cols * dims + c * dims + d]
+    if layout == b'C':
+        return input[r * cols * dims + c * dims + d]
 
-        if layout == b'F':
-            return input[rows * cols * d + rows * c + r]
+    if layout == b'F':
+        return input[rows * cols * d + rows * c + r]
 
 
 cdef inline FLOAT get_pixel4d(FLOAT* input,
@@ -129,9 +129,9 @@ cdef inline FLOAT get_pixel4d(FLOAT* input,
                               Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
                               Py_ssize_t c1, Py_ssize_t c2, Py_ssize_t c3, Py_ssize_t c4,
                               FLOAT cval) nogil:
-        if (c1 < 0) or (c1 >= dim1) or (c2 < 0) or (c2 >= dim2) or (c3 < 0) or (c3 >= dim3) or (c4 < 0) or (c4 >= dim4):
-            return cval
-        return input[c1 * stride1 + c2 * stride2 + c3 * stride3 + c4 * stride4]
+    if (c1 < 0) or (c1 >= dim1) or (c2 < 0) or (c2 >= dim2) or (c3 < 0) or (c3 >= dim3) or (c4 < 0) or (c4 >= dim4):
+        return cval
+    return input[c1 * stride1 + c2 * stride2 + c3 * stride3 + c4 * stride4]
 
 
 cdef inline double adjusted_coef(Py_ssize_t old_n, Py_ssize_t new_n) nogil:
@@ -141,9 +141,9 @@ cdef inline double adjusted_coef(Py_ssize_t old_n, Py_ssize_t new_n) nogil:
 
 
 cdef inline FLOAT interpolate3d(FLOAT* input,
-                                 Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
-                                 double r, double c, double d,
-                                 double cval) nogil:
+                                Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
+                                double r, double c, double d,
+                                double cval) nogil:
     cdef double dr, dc, dd
     cdef long minr, minc, mind, maxr, maxc, maxd
 
