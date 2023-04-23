@@ -30,7 +30,7 @@ class PyprojectBuild(build_py):
 
         # Cython extension and .pyx source file names must be the same to compile
         # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
-        modules = ['backprojection', 'radon', 'zoom', 'morphology', 'numeric']
+        modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom']
         for module in modules:
             src_dir = Path(__file__).parent / 'imops' / 'src'
             shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')

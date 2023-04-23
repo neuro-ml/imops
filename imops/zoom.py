@@ -171,7 +171,7 @@ def _zoom(
     """
     backend = resolve_backend(backend)
     if backend.name not in ('Scipy', 'Numba', 'Cython'):
-        raise ValueError(f'Unsupported backend "{backend.name}"')
+        raise ValueError(f'Unsupported backend "{backend.name}".')
 
     ndim = input.ndim
     dtype = input.dtype

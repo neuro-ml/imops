@@ -14,6 +14,7 @@ from cython.parallel import prange
 
 
 ctypedef cython.numeric NUM
+ctypedef cython.integral INT
 
 
 cdef inline NUM _sum(NUM[:] nums) nogil:
