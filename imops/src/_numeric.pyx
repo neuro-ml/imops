@@ -39,7 +39,12 @@ def _parallel_sum(NUM[:] nums, Py_ssize_t num_threads) -> NUM:
     return np.sum(subsums) + np.sum(nums[chunksize * num_threads:])
 
 
-def _parallel_pointwise_mul(NUM[:, :, :] nums1, NUM[:, :, :] nums2, Py_ssize_t[:] res_shape, Py_ssize_t num_threads) -> np.ndarray:
+def _parallel_pointwise_mul(
+    NUM[:, :, :] nums1,
+    NUM[:, :, :] nums2,
+    Py_ssize_t[:] res_shape,
+    Py_ssize_t num_threads
+) -> np.ndarray:
     cdef NUM[:, :, ::1] contiguous_nums1 = np.ascontiguousarray(nums1), contiguous_nums2 = np.ascontiguousarray(nums2)
     cdef Py_ssize_t rows = res_shape[0], cols = res_shape[1], dims = res_shape[2]
 
