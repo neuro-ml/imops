@@ -11,10 +11,18 @@ cimport cython
 cimport numpy as np
 
 
-ctypedef cython.integral INT
+ctypedef fused LABEL:
+    signed char
+    short
+    int
+    long long
+    unsigned char
+    unsigned short
+    unsigned int
+    unsigned long long
 
 
-cdef inline Py_ssize_t _find(INT num, INT[:] nums) nogil:
+cdef inline Py_ssize_t _find(LABEL num, LABEL[:] nums) nogil:
     cdef Py_ssize_t i
 
     for i in range(len(nums)):
@@ -24,9 +32,9 @@ cdef inline Py_ssize_t _find(INT num, INT[:] nums) nogil:
     return -1
 
 
-def _labeled_center_of_mass(double[:, :, :] nums, INT[:, :, :] labels, INT[:] index) -> np.ndarray:
+def _labeled_center_of_mass(double[:, :, :] nums, LABEL[:, :, :] labels, LABEL[:] index) -> np.ndarray:
     cdef double[:, :, ::1] contiguous_nums = np.ascontiguousarray(nums)
-    cdef INT[:, :, ::1] contiguous_labels = np.ascontiguousarray(labels)
+    cdef LABEL[:, :, ::1] contiguous_labels = np.ascontiguousarray(labels)
 
     cdef Py_ssize_t index_len = len(index)
 

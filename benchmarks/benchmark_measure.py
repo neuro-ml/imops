@@ -1,7 +1,7 @@
 import numpy as np
 from skimage.measure import label as sk_label
 
-from imops._configs import numeric_configs
+from imops._configs import measure_configs
 from imops.measure import center_of_mass, label
 
 from .common import discard_arg
@@ -25,7 +25,7 @@ class LabelSuite:
 
 
 class CenterOfMassSuite:
-    params = [numeric_configs, ('float32', 'float64')]
+    params = [measure_configs, ('float32', 'float64')]
     param_names = ['backend', 'dtype']
 
     @discard_arg(1)

@@ -1,18 +1,26 @@
+from dataclasses import dataclass
 from platform import python_version
 
 import numpy as np
 import pytest
+from fastremap import unique
 from numpy.testing import assert_allclose as allclose
 from scipy.ndimage import center_of_mass as scipy_center_of_mass
 from skimage.measure import label as sk_label
 
-from imops._configs import numeric_configs
+from imops._configs import measure_configs
+from imops.backend import Backend
 from imops.measure import center_of_mass, label
 
 
-np.random.seed(1340)
+np.random.seed(1337)
 
 assert_eq = np.testing.assert_array_equal
+
+
+@dataclass
+class Alien10(Backend):
+    pass
 
 
 @pytest.fixture(params=[1, 2, 3, 4])
@@ -25,32 +33,26 @@ def ndim(request):
     return min(3, request.param) if python_version()[:3] == '3.6' else request.param
 
 
-def test_dtype(connectivity, ndim):
+@pytest.fixture(
+    params=['bool', 'int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64', 'float32', 'float64']
+)
+def mask_dtype(request):
+    return request.param
+
+
+def test_dtype(connectivity, ndim, mask_dtype):
     connectivity = min(connectivity, ndim)
 
-    for dtype in (
-        bool,
-        np.int8,
-        np.int16,
-        np.int32,
-        np.int64,
-        np.uint8,
-        np.uint16,
-        np.uint32,
-        np.uint64,
-        np.float32,
-        np.float64,
-    ):
-        inp_dtype = np.random.randint(0, 5, size=np.random.randint(32, 64, size=ndim)).astype(dtype)[
-            0 if ndim == 4 and dtype != bool else ...
-        ]
-        connectivity = min(connectivity, inp_dtype.ndim)
+    inp = np.random.randint(0, 5, size=np.random.randint(32, 64, size=ndim)).astype(mask_dtype)[
+        0 if ndim == 4 and dtype != bool else ...
+    ]
+    connectivity = min(connectivity, inp.ndim)
 
-        assert_eq(
-            sk_label(inp_dtype, connectivity=connectivity),
-            label(inp_dtype, connectivity=connectivity),
-            err_msg=str(dtype),
-        )
+    assert_eq(
+        sk_label(inp, connectivity=connectivity),
+        label(inp, connectivity=connectivity),
+        err_msg=str(mask_dtype),
+    )
 
 
 def test_background(connectivity, ndim):
@@ -186,31 +188,85 @@ def test_stress(connectivity, ndim):
         assert sk_num_components == num_components, f'{connectivity, ndim, inp.shape}'
 
 
-@pytest.fixture(params=['int16', 'int32', 'int64', 'float32', 'float64', 'bool'])
+@pytest.fixture(
+    params=['bool', 'int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64', 'float32', 'float64']
+)
 def dtype(request):
     return request.param
 
 
-@pytest.fixture(params=numeric_configs, ids=map(str, numeric_configs))
+@pytest.fixture(params=['bool', 'int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64'])
+def label_dtype(request):
+    return request.param
+
+
+@pytest.fixture(params=measure_configs, ids=map(str, measure_configs))
 def backend(request):
     return request.param
 
 
-@pytest.fixture(params=range(1, 9))
-def num_threads(request):
-    return request.param
+def test_both_specified(backend):
+    inp = np.random.randn(32, 32)
+    labels = unique(np.random.randint(0, 16, size=inp.shape))
+    index = np.array([1, 2, 3])
+
+    with pytest.raises(ValueError):
+        center_of_mass(inp, labels=labels, backend=backend)
+
+    with pytest.raises(ValueError):
+        center_of_mass(inp, index=index, backend=backend)
 
 
-def test_center_of_mass(backend, num_threads, dtype):
+@pytest.mark.parametrize('alien_backend', ['', Alien10(), 'Alien11'], ids=['empty', 'Alien10', 'Alien11'])
+def test_alien_backend(alien_backend):
+    inp = np.random.randn(32, 32)
+    labels = unique(np.random.randint(0, 16, size=inp.shape))
+    index = np.array([1, 2, 3])
+
+    with pytest.raises(ValueError):
+        center_of_mass(inp, backend=alien_backend)
+
+    with pytest.raises(ValueError):
+        center_of_mass(inp, labels=labels, index=index, backend=alien_backend)
+
+
+def test_center_of_mass(backend, dtype):
+    for _ in range(32):
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
+        inp = (
+            np.random.binomial(1, 0.5, shape).astype(dtype)
+            if dtype == 'bool' or 'u' in dtype
+            else (32 * np.random.randn(*shape)).astype(dtype) + 4
+        )
+
+        out = center_of_mass(inp, backend=backend)
+        desired_out = scipy_center_of_mass(inp)
+
+        assert isinstance(out, tuple)
+        assert isinstance(desired_out, tuple)
+        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-6)
+
+
+def test_labeled_center_of_mass(backend, dtype, label_dtype):
     for _ in range(32):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
         inp = (
             np.random.binomial(1, 0.5, shape).astype(dtype)
             if dtype == 'bool'
-            else np.random.randn(*shape).astype(dtype)
+            else (32 * np.random.randn(*shape)).astype(dtype) + 4
+        )
+        labels = np.random.randint(0, 2 if label_dtype == 'bool' else 16, size=shape, dtype=label_dtype)
+        index = (
+            unique(np.random.randint(0, 32, size=16)).astype(label_dtype)
+            if label_dtype != 'bool'
+            else np.random.choice(np.array([[False], [True], [False, True], [True, False]], dtype=object))
         )
 
-        out = center_of_mass(inp, num_threads=num_threads, backend=backend)
-        desired_out = scipy_center_of_mass(inp)
+        out = center_of_mass(inp, labels, index, backend)
+        desired_out = scipy_center_of_mass(inp, labels, index)
 
-        allclose(out, desired_out, rtol=1e-2 if dtype == 'float32' else 1e-7)
+        for x, y in zip(out, desired_out):
+            assert isinstance(x, tuple)
+            assert isinstance(y, tuple)
+
+        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-6)
