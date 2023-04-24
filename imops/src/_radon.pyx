@@ -85,7 +85,7 @@ def radon3d(FLOAT[:, :, :] image, FLOAT[:] theta, INT[:] limits, Py_ssize_t num_
                 out[slc, i, alpha] = accumulate(
                     &img[slc, 0, 0], &size,
                     &sinuses[alpha], &cosinuses[alpha], &r_shift[alpha], &c_shift[alpha],
-                    i, &limits[j],
+                    i, &limits[i],
                 )
 
     return np.asarray(out)
