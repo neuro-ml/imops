@@ -13,30 +13,22 @@ cimport numpy as np
 from cython.parallel import prange
 
 
-ctypedef cython.numeric NUM
-ctypedef cython.integral INT
-
-
-cdef inline NUM _sum(NUM[:] nums) nogil:
-    cdef Py_ssize_t i = 0
-    cdef NUM sum_ = 0
-
-    for i in range(len(nums)):
-        sum_ += nums[i]
-
-    return sum_
+ctypedef fused NUM:
+    short
+    int
+    long long
+    float
+    double
 
 
 def _parallel_sum(NUM[:] nums, Py_ssize_t num_threads) -> NUM:
-    cdef Py_ssize_t nums_len = len(nums)
-    cdef NUM[:] subsums = np.empty_like(nums, shape=num_threads)
-    cdef Py_ssize_t chunksize = nums_len // num_threads
-    cdef Py_ssize_t i
+    cdef NUM res = 0
+    cdef Py_ssize_t i, len_nums = len(nums)
 
-    for i in prange(num_threads, nogil=True, num_threads=num_threads):
-        subsums[i] = _sum(nums[i * chunksize: (i + 1) * chunksize])
+    for i in prange(len_nums, num_threads=num_threads, nogil=True):
+        res += nums[i]
 
-    return np.sum(subsums) + np.sum(nums[chunksize * num_threads:])
+    return res
 
 
 def _parallel_pointwise_mul(
