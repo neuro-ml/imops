@@ -200,6 +200,11 @@ def label_dtype(request):
     return request.param
 
 
+@pytest.fixture(params=range(1, 4))
+def num_threads(request):
+    return request.param
+
+
 @pytest.fixture(params=measure_configs, ids=map(str, measure_configs))
 def backend(request):
     return request.param
@@ -207,7 +212,7 @@ def backend(request):
 
 def test_both_specified(backend):
     inp = np.random.randn(32, 32)
-    labels = unique(np.random.randint(0, 16, size=inp.shape))
+    labels = np.random.randint(0, 16, size=inp.shape)
     index = np.array([1, 2, 3])
 
     with pytest.raises(ValueError):
@@ -217,10 +222,22 @@ def test_both_specified(backend):
         center_of_mass(inp, index=index, backend=backend)
 
 
+def test_noncontiguous_index(backend, label_dtype):
+    for _ in range(16):
+        inp = np.random.randn(32, 32) + 4
+        labels = np.random.randint(0, 16, size=inp.shape).astype(label_dtype)
+        index = np.random.permutation(np.arange(8)).astype(label_dtype)
+
+        out = center_of_mass(inp, labels, index, backend=backend)
+        desired_out = scipy_center_of_mass(inp, labels, index)
+
+        allclose(out, desired_out, rtol=1e-6)
+
+
 @pytest.mark.parametrize('alien_backend', ['', Alien10(), 'Alien11'], ids=['empty', 'Alien10', 'Alien11'])
 def test_alien_backend(alien_backend):
     inp = np.random.randn(32, 32)
-    labels = unique(np.random.randint(0, 16, size=inp.shape))
+    labels = np.random.randint(0, 16, size=inp.shape)
     index = np.array([1, 2, 3])
 
     with pytest.raises(ValueError):
@@ -230,7 +247,7 @@ def test_alien_backend(alien_backend):
         center_of_mass(inp, labels=labels, index=index, backend=alien_backend)
 
 
-def test_center_of_mass(backend, dtype):
+def test_center_of_mass(num_threads, backend, dtype):
     for _ in range(32):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
         inp = (
@@ -239,7 +256,7 @@ def test_center_of_mass(backend, dtype):
             else (32 * np.random.randn(*shape)).astype(dtype) + 4
         )
 
-        out = center_of_mass(inp, backend=backend)
+        out = center_of_mass(inp, num_threads=num_threads, backend=backend)
         desired_out = scipy_center_of_mass(inp)
 
         assert isinstance(out, tuple)
@@ -262,7 +279,7 @@ def test_labeled_center_of_mass(backend, dtype, label_dtype):
             else np.random.choice(np.array([[False], [True], [False, True], [True, False]], dtype=object))
         )
 
-        out = center_of_mass(inp, labels, index, backend)
+        out = center_of_mass(inp, labels, index, backend=backend)
         desired_out = scipy_center_of_mass(inp, labels, index)
 
         for x, y in zip(out, desired_out):

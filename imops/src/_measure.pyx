@@ -7,8 +7,9 @@
 
 import numpy as np
 
-cimport cython
 cimport numpy as np
+
+from cython.parallel import prange
 
 
 ctypedef fused LABEL:
@@ -35,6 +36,7 @@ cdef inline Py_ssize_t _find(LABEL num, LABEL[:] nums) nogil:
 def _labeled_center_of_mass(double[:, :, :] nums, LABEL[:, :, :] labels, LABEL[:] index) -> np.ndarray:
     cdef double[:, :, ::1] contiguous_nums = np.ascontiguousarray(nums)
     cdef LABEL[:, :, ::1] contiguous_labels = np.ascontiguousarray(labels)
+    cdef LABEL[:] contiguous_index = np.ascontiguousarray(index)
 
     cdef Py_ssize_t index_len = len(index)
 
@@ -48,7 +50,7 @@ def _labeled_center_of_mass(double[:, :, :] nums, LABEL[:, :, :] labels, LABEL[:
     for i in range(rows):
         for j in range(cols):
             for k in range(dims):
-                pos = _find(contiguous_labels[i, j, k], index)
+                pos = _find(contiguous_labels[i, j, k], contiguous_index)
 
                 if pos != -1:
                     normalizers[pos] += contiguous_nums[i, j, k]
@@ -64,26 +66,22 @@ def _labeled_center_of_mass(double[:, :, :] nums, LABEL[:, :, :] labels, LABEL[:
     return np.asarray(output)
 
 
-def _center_of_mass(double[:, :, :] nums) -> np.ndarray:
+def _center_of_mass(double[:, :, :] nums, Py_ssize_t num_threads) -> np.ndarray:
     cdef double[:, :, ::1] contiguous_nums = np.ascontiguousarray(nums)
 
-    cdef double[:] output = np.zeros(3)
+    cdef double output_x = 0, output_y = 0, output_z = 0
     cdef double normalizer = 0
 
     cdef Py_ssize_t rows = nums.shape[0], cols = nums.shape[1], dims = nums.shape[2]
     cdef Py_ssize_t i, j, k
 
-    # TODO: Use prange but consider critical section
-    for i in range(rows):
-        for j in range(cols):
-            for k in range(dims):
+    for i in prange(rows, num_threads=num_threads, nogil=True):
+        for j in prange(cols):
+            for k in prange(dims):
                 normalizer += contiguous_nums[i, j, k]
 
-                output[0] += contiguous_nums[i, j, k] * i
-                output[1] += contiguous_nums[i, j, k] * j
-                output[2] += contiguous_nums[i, j, k] * k
+                output_x += contiguous_nums[i, j, k] * i
+                output_y += contiguous_nums[i, j, k] * j
+                output_z += contiguous_nums[i, j, k] * k
 
-    for i in range(3):
-        output[i] /= normalizer
-
-    return np.asarray(output)
+    return np.array([output_x / normalizer, output_y / normalizer, output_z / normalizer])

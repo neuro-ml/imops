@@ -15,6 +15,7 @@ from .src._fast_measure import (
     _labeled_center_of_mass as _fast_labeled_center_of_mass,
 )
 from .src._measure import _center_of_mass, _labeled_center_of_mass
+from .utils import normalize_num_threads
 
 
 # (ndim, skimage_connectivity) -> cc3d_connectivity
@@ -137,6 +138,7 @@ def center_of_mass(
     array: np.ndarray,
     labels: np.ndarray = None,
     index: Union[int, Sequence[int]] = None,
+    num_threads: int = -1,
     backend: BackendLike = None,
 ) -> Union[Tuple[float, ...], List[Tuple[float, ...]]]:
     """
@@ -153,6 +155,10 @@ def center_of_mass(
         specified, `index` also must be specified and have same dtype
     index: Union[int, Sequence[int]]
         labels for which to calculate centers-of-mass. If specified, `labels` also must be specified and have same dtype
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used. If `labels` and `index` are specified, only 1 thread will be
+        used
     backend: BackendLike
         which backend to use. `cython` and `scipy` are available, `cython` is used by default
 
@@ -169,8 +175,11 @@ def center_of_mass(
         raise ValueError('`labels` and `index` should be both specified or both not specified.')
 
     backend = resolve_backend(backend)
+
     if backend.name not in ('Scipy', 'Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
+
+    num_threads = normalize_num_threads(num_threads, backend)
 
     if backend.name == 'Scipy':
         return scipy_center_of_mass(array, labels, index)
@@ -192,6 +201,9 @@ def center_of_mass(
         if len(index) != len(unique(index.astype(int))):
             raise ValueError('`index` should consist of unique values.')
 
+        if num_threads > 1:
+            warn('Using single-threaded implementation as `labels` and `index` are specified.')
+
         src_center_of_mass = _fast_labeled_center_of_mass if backend.fast else _labeled_center_of_mass
 
     if array.dtype != 'float64':
@@ -202,7 +214,7 @@ def center_of_mass(
         array = array[(None,) * n_dummy]
 
     if labels is None:
-        return tuple(src_center_of_mass(array))[n_dummy:]
+        return tuple(src_center_of_mass(array, num_threads))[n_dummy:]
 
     output = [tuple(x)[n_dummy:] for x in src_center_of_mass(array, labels[(None,) * n_dummy], index)]
 
