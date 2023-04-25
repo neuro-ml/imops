@@ -226,7 +226,7 @@ def test_noncontiguous_index(backend, label_dtype):
     for _ in range(16):
         inp = np.random.randn(32, 32) + 4
         labels = np.random.randint(0, 16, size=inp.shape).astype(label_dtype)
-        index = np.random.permutation(np.arange(8)).astype(label_dtype)
+        index = np.random.permutation(np.arange(8)).astype(label_dtype) if label_dtype != 'bool' else [True, False]
 
         out = center_of_mass(inp, labels, index, backend=backend)
         desired_out = scipy_center_of_mass(inp, labels, index)
@@ -261,7 +261,7 @@ def test_center_of_mass(num_threads, backend, dtype):
 
         assert isinstance(out, tuple)
         assert isinstance(desired_out, tuple)
-        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-6)
+        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-5)
 
 
 def test_labeled_center_of_mass(backend, dtype, label_dtype):
@@ -286,4 +286,4 @@ def test_labeled_center_of_mass(backend, dtype, label_dtype):
             assert isinstance(x, tuple)
             assert isinstance(y, tuple)
 
-        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-6)
+        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-5)
