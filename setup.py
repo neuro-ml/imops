@@ -39,7 +39,7 @@ version = runpy.run_path(root / name / '__version__.py')['__version__']
 # FIXME: code for cythonizing is duplicated in `_pyproject_build.py`
 modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom']
 for module in modules:
-    src_dir = Path(__file__).parent / 'imops' / 'src'
+    src_dir = Path(__file__).parent / name / 'src'
     shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
 
 args = ['-fopenmp']
