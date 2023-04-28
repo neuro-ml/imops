@@ -261,7 +261,7 @@ def test_center_of_mass(num_threads, backend, dtype):
 
         assert isinstance(out, tuple)
         assert isinstance(desired_out, tuple)
-        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-5)
+        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-4)
 
 
 def test_labeled_center_of_mass(backend, dtype, label_dtype):

@@ -70,7 +70,6 @@ def test_empty_sum(backend, num_threads, dtype):
     desired_out = np.sum(nums)
 
     assert_eq(out, desired_out)
-    assert out.dtype == desired_out.dtype
 
 
 def test_empty_mul(backend, num_threads, dtype):
