@@ -1,5 +1,5 @@
 [run]
-plugins = cython_coverage
+plugins = Cython.Coverage
 
 [report]
 omit =
