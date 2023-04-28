@@ -1,3 +1,6 @@
+[run]
+plugins = cython_coverage
+
 [report]
 omit =
     # FIXME: coverage can't reach lines of numba.njit-ed functions
