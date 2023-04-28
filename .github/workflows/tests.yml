@@ -48,6 +48,9 @@ jobs:
           flake8 .
           isort --check .
           black --check .
+        if: matrix.python-version != '3.6'
+        run: |
+          pip install cython-lint
           cython-lint imops/src
 
       - name: Test with pytest
