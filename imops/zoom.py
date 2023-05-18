@@ -196,7 +196,8 @@ def _zoom(
 
     ndim = input.ndim
     dtype = input.dtype
-    cval = np.array(cval).astype(dtype)
+    # TODO: how to accurately convert Python number to NumPy number?
+    cval = np.array([cval]).astype(dtype)[0]
     zoom = fill_by_indices(np.ones(input.ndim, 'float64'), zoom, range(input.ndim))
     num_threads = normalize_num_threads(num_threads, backend)
 
@@ -206,9 +207,12 @@ def _zoom(
         )
 
     if (
-        order not in (0, 1) or dtype not in (np.float32, np.float64)
-        if order == 1
-        else dtype not in (np.float32, np.float64, np.int16, np.int32, np.int64)
+        (order not in (0, 1))
+        or (
+            dtype not in (np.float32, np.float64)
+            if order == 1
+            else dtype not in (np.float32, np.float64, np.int16, np.int32, np.int64)
+        )
         or ndim > 4
         or output is not None
         or mode != 'constant'
