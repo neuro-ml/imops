@@ -3,7 +3,6 @@ from itertools import product
 import numpy as np
 
 
-# TODO: Remove this crutch as soon as _configs.py appears in the master
 try:
     from imops._configs import zoom_configs
 except ModuleNotFoundError:
@@ -17,13 +16,14 @@ except ModuleNotFoundError:
 
 from imops.zoom import zoom
 
-from .common import discard_arg
+from .common import NUMS_THREADS_TO_BENCHMARK, discard_arg
 
 
 class ZoomSuite:
-    params = [[0, 1], zoom_configs, ('float32', 'float64'), [1, 2, 3, 4]]
-    param_names = ['order', 'backend', 'dtype', 'ndim']
+    params = [[0, 1], NUMS_THREADS_TO_BENCHMARK, zoom_configs, ('float32', 'float64'), [1, 2, 3, 4]]
+    param_names = ['order', 'num_threads', 'backend', 'dtype', 'ndim']
 
+    @discard_arg(1)
     @discard_arg(1)
     @discard_arg(1)
     def setup(self, dtype, ndim):
@@ -31,10 +31,10 @@ class ZoomSuite:
 
     @discard_arg(-1)
     @discard_arg(-1)
-    def time_zoom(self, order, backend):
-        zoom(self.image, 2, order=order, backend=backend)
+    def time_zoom(self, order, num_threads, backend):
+        zoom(self.image, 2, order=order, num_threads=num_threads, backend=backend)
 
     @discard_arg(-1)
     @discard_arg(-1)
-    def peakmem_zoom(self, order, backend):
-        zoom(self.image, 2, order=order, backend=backend)
+    def peakmem_zoom(self, order, num_threads, backend):
+        zoom(self.image, 2, order=order, num_threads=num_threads, backend=backend)
