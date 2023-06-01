@@ -201,7 +201,7 @@ cdef inline NUM interpolate3d_nearest(NUM* input,
                                       Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
                                       double r, double c, double d,
                                       NUM cval) nogil:
-    cdef double minr, minc, mind, maxr, maxc, maxd, curr, curc, curd, distance, min_distance = 1.0
+    cdef double minr, minc, mind, maxr, maxc, maxd, curr, curc, curd, distance, min_distance = 3.0
     cdef short i, j, k, i_nearest = -1, j_nearest = -1, k_nearest = -1
 
     minr = floor(r)
@@ -226,7 +226,7 @@ cdef inline NUM interpolate3d_nearest(NUM* input,
 
                 distance = distance3d(r, c, d, curr, curc, curd)
 
-                if distance < min_distance:
+                if distance <= min_distance:
                     i_nearest = i
                     j_nearest = j
                     k_nearest = k
@@ -313,7 +313,7 @@ cdef inline NUM interpolate4d_nearest(NUM* input,
                                       double c1, double c2, double c3, double c4,
                                       NUM cval) nogil:
     cdef double minc1, minc2, minc3, minc4, maxc1, maxc2, maxc3, maxc4, curc1, curc2, curc3, curc4
-    cdef double distance, min_distance = 1.0
+    cdef double distance, min_distance = 3.0
     cdef short i1, i2, i3, i4, i1_nearest = -1, i2_nearest = -1, i3_nearest = -1, i4_nearest = -1
 
     minc1 = floor(c1)
@@ -342,14 +342,14 @@ cdef inline NUM interpolate4d_nearest(NUM* input,
                     if curc4 >= dim4:
                         continue
 
-                distance = distance4d(c1, c2, c3, c4, curc1, curc2, curc3, curc4)
+                    distance = distance4d(c1, c2, c3, c4, curc1, curc2, curc3, curc4)
 
-                if distance < min_distance:
-                    i1_nearest = i1
-                    i2_nearest = i2
-                    i3_nearest = i3
-                    i4_nearest = i4
-                    min_distance = distance
+                    if distance <= min_distance:
+                        i1_nearest = i1
+                        i2_nearest = i2
+                        i3_nearest = i3
+                        i4_nearest = i4
+                        min_distance = distance
 
     if i1_nearest == -1 or i2_nearest == -1 or i3_nearest == -1 or i4_nearest == -1:
         return cval
