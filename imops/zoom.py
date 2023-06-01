@@ -52,6 +52,23 @@ def _choose_cython_zoom(ndim: int, order: int, fast: bool) -> Callable:
     return cython_fast_zoom4d_linear if fast else cython_zoom4d_linear
 
 
+def _choose_numba_zoom(ndim: int, order: int) -> Callable:
+    assert ndim <= 4, ndim
+    assert order in (0, 1), order
+
+    if ndim <= 3:
+        if order == 0:
+            from .src._numba_zoom import _zoom3d_nearest as numba_zoom
+        else:
+            from .src._numba_zoom import _zoom3d_linear as numba_zoom
+    elif order == 0:
+        from .src._numba_zoom import _zoom4d_nearest as numba_zoom
+    else:
+        from .src._numba_zoom import _zoom4d_linear as numba_zoom
+
+    return numba_zoom
+
+
 def zoom(
     x: np.ndarray,
     scale_factor: AxesParams,
@@ -231,18 +248,13 @@ def _zoom(
         src_zoom = _choose_cython_zoom(ndim, order, backend.fast)
 
     if backend.name == 'Numba':
-        # TODO: support order=0 for `Numba` backend
-        if order == 0:
-            raise NotImplementedError('`order=0` for `Numba` backend is not yet supported :(')
         from numba import get_num_threads, njit, set_num_threads
-
-        from .src._numba_zoom import _zoom3d as numba_zoom3d, _zoom4d as numba_zoom4d
 
         old_num_threads = get_num_threads()
         set_num_threads(num_threads)
 
         njit_kwargs = {kwarg: getattr(backend, kwarg) for kwarg in backend.__dataclass_fields__.keys()}
-        src_zoom = njit(**njit_kwargs)(numba_zoom3d if ndim <= 3 else numba_zoom4d)
+        src_zoom = njit(**njit_kwargs)(_choose_numba_zoom(ndim, order))
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
 
