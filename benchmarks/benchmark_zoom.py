@@ -21,19 +21,20 @@ from .common import discard_arg
 
 
 class ZoomSuite:
-    params = [zoom_configs, ('float32', 'float64'), [1, 2, 3, 4]]
-    param_names = ['backend', 'dtype', 'ndim']
+    params = [[0, 1], zoom_configs, ('float32', 'float64'), [1, 2, 3, 4]]
+    param_names = ['order', 'backend', 'dtype', 'ndim']
 
+    @discard_arg(1)
     @discard_arg(1)
     def setup(self, dtype, ndim):
         self.image = np.random.randn(2**24).astype(dtype).reshape([2 ** (24 // ndim) for _ in range(ndim)])
 
     @discard_arg(-1)
     @discard_arg(-1)
-    def time_zoom(self, backend):
-        zoom(self.image, 2, backend=backend)
+    def time_zoom(self, order, backend):
+        zoom(self.image, 2, order=order, backend=backend)
 
     @discard_arg(-1)
     @discard_arg(-1)
-    def peakmem_zoom(self, backend):
-        zoom(self.image, 2, backend=backend)
+    def peakmem_zoom(self, order, backend):
+        zoom(self.image, 2, order=order, backend=backend)
