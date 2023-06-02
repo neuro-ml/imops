@@ -213,8 +213,7 @@ def _zoom(
 
     ndim = input.ndim
     dtype = input.dtype
-    # TODO: how to accurately convert Python number to NumPy number?
-    cval = np.array([cval]).astype(dtype)[0]
+    cval = np.dtype(dtype).type(cval)
     zoom = fill_by_indices(np.ones(input.ndim, 'float64'), zoom, range(input.ndim))
     num_threads = normalize_num_threads(num_threads, backend)
 
