@@ -11,7 +11,6 @@ import numpy as np
 from imops.radon import inverse_radon, radon
 
 
-# TODO: Remove this crutch as soon as updated radon.py appears in the master
 try:
     from imops.testing import sample_ct, sk_iradon, sk_radon
 except ImportError:
@@ -54,44 +53,45 @@ except ImportError:
         return x
 
 
-from .common import discard_arg
+from .common import NUMS_THREADS_TO_BENCHMARK, discard_arg
 
 
 class RadonSuite:
     # TODO: Add `Scipy` backend to radon-s
     scipy_backend = 'Scipy()'
-    params = [radon_configs + [scipy_backend], ('float32', 'float64')]
-    param_names = ['backend', 'dtype']
+    params = [radon_configs + [scipy_backend], ('float32', 'float64'), NUMS_THREADS_TO_BENCHMARK]
+    param_names = ['backend', 'dtype', 'num_threads']
     timeout = 300
 
     @discard_arg(1)
+    @discard_arg(-1)
     def setup(self, dtype):
         self.image = sample_ct(256, 256).astype(dtype)
 
     @discard_arg(2)
-    def time_radon(self, backend):
+    def time_radon(self, backend, num_threads):
         if backend == self.scipy_backend:
             sk_radon(self.image)
         else:
-            radon(self.image, axes=(1, 2), backend=backend)
+            radon(self.image, axes=(1, 2), num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
-    def time_inverse_radon(self, backend):
+    def time_inverse_radon(self, backend, num_threads):
         if backend == self.scipy_backend:
             sk_iradon(self.image)
         else:
-            inverse_radon(self.image, axes=(1, 2), theta=256, backend=backend)
+            inverse_radon(self.image, axes=(1, 2), theta=256, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
-    def peakmem_radon(self, backend):
+    def peakmem_radon(self, backend, num_threads):
         if backend == self.scipy_backend:
             sk_radon(self.image)
         else:
-            radon(self.image, axes=(1, 2), backend=backend)
+            radon(self.image, axes=(1, 2), num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
-    def peakmem_inverse_radon(self, backend):
+    def peakmem_inverse_radon(self, backend, num_threads):
         if backend == self.scipy_backend:
             sk_iradon(self.image)
         else:
-            inverse_radon(self.image, axes=(1, 2), theta=256, backend=backend)
+            inverse_radon(self.image, axes=(1, 2), theta=256, num_threads=num_threads, backend=backend)

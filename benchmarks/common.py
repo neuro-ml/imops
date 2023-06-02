@@ -1,3 +1,6 @@
+NUMS_THREADS_TO_BENCHMARK = list(range(1, 9))
+
+
 def discard_arg(idx: int):
     def inner(f):
         def wrapper(*args):

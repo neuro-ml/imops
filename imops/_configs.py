@@ -9,6 +9,10 @@ numeric_configs = [
     Scipy(),
     *[Cython(fast) for fast in [False, True]],
 ]
+measure_configs = [
+    Scipy(),
+    *[Cython(fast) for fast in [False, True]],
+]
 morphology_configs = [
     Scipy(),
     *[Cython(fast) for fast in [False, True]],

@@ -1,5 +1,10 @@
+from typing import Union
+
 import numpy as np
 from numba import njit, prange
+
+
+float_or_int = Union[float, int]
 
 
 def _interp1d(
@@ -92,14 +97,9 @@ def get_slope(x1: np.ndarray, y1: np.ndarray, x2: np.ndarray, y2: np.ndarray) ->
 
 
 @njit(nogil=True)
-def adjusted_coef(old_n: int, new_n: int) -> float:
-    if new_n == 1:
-        return old_n
-    return (np.float64(old_n) - 1) / (np.float64(new_n) - 1)
-
-
-@njit(nogil=True)
-def get_pixel3d(input: np.ndarray, rows: int, cols: int, dims: int, r: int, c: int, d: int, cval: float) -> float:
+def get_pixel3d(
+    input: np.ndarray, rows: int, cols: int, dims: int, r: int, c: int, d: int, cval: float_or_int
+) -> float_or_int:
     if 0 <= r < rows and 0 <= c < cols and 0 <= d < dims:
         return input[r, c, d]
 
@@ -107,7 +107,45 @@ def get_pixel3d(input: np.ndarray, rows: int, cols: int, dims: int, r: int, c: i
 
 
 @njit(nogil=True)
-def interpolate3d(input: np.ndarray, rows: int, cols: int, dims: int, r: int, c: int, d: int, cval: float) -> float:
+def get_pixel4d(
+    input: np.ndarray,
+    dim1: int,
+    dim2: int,
+    dim3: int,
+    dim4: int,
+    c1: int,
+    c2: int,
+    c3: int,
+    c4: int,
+    cval: float_or_int,
+) -> float_or_int:
+    if 0 <= c1 < dim1 and 0 <= c2 < dim2 and 0 <= c3 < dim3 and 0 <= c4 < dim4:
+        return input[c1, c2, c3, c4]
+
+    return cval
+
+
+@njit(nogil=True)
+def adjusted_coef(old_n: int, new_n: int) -> float:
+    if new_n == 1:
+        return old_n
+    return (np.float64(old_n) - 1) / (np.float64(new_n) - 1)
+
+
+@njit(nogil=True)
+def distance3d(x1: float, y1: float, z1: float, x2: float, y2: float, z2: float) -> float:
+    return ((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2) ** 0.5
+
+
+@njit(nogil=True)
+def distance4d(x1: float, y1: float, z1: float, d1: float, x2: float, y2: float, z2: float, d2: float) -> float:
+    return ((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2 + (d1 - d2) ** 2) ** 0.5
+
+
+@njit(nogil=True)
+def interpolate3d_linear(
+    input: np.ndarray, rows: int, cols: int, dims: int, r: float, c: float, d: float, cval: float
+) -> float:
     minr = int(r)
     minc = int(c)
     mind = int(d)
@@ -139,59 +177,58 @@ def interpolate3d(input: np.ndarray, rows: int, cols: int, dims: int, r: int, c:
     return c0 * (1 - dd) + c1 * dd
 
 
-def _zoom3d(input: np.ndarray, zoom: np.ndarray, cval: float) -> np.ndarray:
-    contiguous_input = np.ascontiguousarray(input)
+@njit(nogil=True)
+def interpolate3d_nearest(
+    input: np.ndarray, rows: int, cols: int, dims: int, r: float, c: float, d: float, cval: float_or_int
+) -> float_or_int:
+    min_distance = 3.0
+    i_nearest, j_nearest, k_nearest = -1, -1, -1
 
-    old_rows, old_cols, old_dims = input.shape
-    row_coef, col_coef, dim_coef = zoom
+    minr = int(r)
+    minc = int(c)
+    mind = int(d)
+    maxr = minr + 1
+    maxc = minc + 1
+    maxd = mind + 1
 
-    new_shape = (round(old_rows * row_coef), round(old_cols * col_coef), round(old_dims * dim_coef))
-    new_rows, new_cols, new_dims = new_shape
+    for i in range(2):
+        curr = maxr if i else minr
+        if curr >= rows:
+            continue
+        for j in range(2):
+            curc = maxc if j else minc
+            if curc >= cols:
+                continue
+            for k in range(2):
+                curd = maxd if k else mind
+                if curd >= dims:
+                    continue
 
-    zoomed = np.zeros(new_shape, dtype=input.dtype)
+                distance = distance3d(r, c, d, curr, curc, curd)
 
-    adjusted_row_coef = adjusted_coef(old_rows, new_rows)
-    adjusted_col_coef = adjusted_coef(old_cols, new_cols)
-    adjusted_dim_coef = adjusted_coef(old_dims, new_dims)
+                if distance <= min_distance:
+                    i_nearest = i
+                    j_nearest = j
+                    k_nearest = k
+                    min_distance = distance
 
-    for i in prange(new_rows):
-        for j in prange(new_cols):
-            for k in prange(new_dims):
-                zoomed[i, j, k] = interpolate3d(
-                    contiguous_input,
-                    old_rows,
-                    old_cols,
-                    old_dims,
-                    i * adjusted_row_coef,
-                    j * adjusted_col_coef,
-                    k * adjusted_dim_coef,
-                    cval,
-                )
+    if i_nearest == -1 or j_nearest == -1 or k_nearest == -1:
+        return cval
 
-    return zoomed
+    return get_pixel3d(
+        input,
+        rows,
+        cols,
+        dims,
+        maxr if i_nearest else minr,
+        maxc if j_nearest else minc,
+        maxd if k_nearest else mind,
+        cval,
+    )
 
 
 @njit(nogil=True)
-def get_pixel4d(
-    input: np.ndarray,
-    dim1: int,
-    dim2: int,
-    dim3: int,
-    dim4: int,
-    c1: int,
-    c2: int,
-    c3: int,
-    c4: int,
-    cval: float,
-) -> float:
-    if 0 <= c1 < dim1 and 0 <= c2 < dim2 and 0 <= c3 < dim3 and 0 <= c4 < dim4:
-        return input[c1, c2, c3, c4]
-
-    return cval
-
-
-@njit(nogil=True)
-def interpolate4d(
+def interpolate4d_linear(
     input: np.ndarray,
     dim1: int,
     dim2: int,
@@ -254,7 +291,137 @@ def interpolate4d(
     return c0_ * (1 - dc4) + c1_ * dc4
 
 
-def _zoom4d(input: np.ndarray, zoom: np.ndarray, cval: float) -> np.ndarray:
+@njit(nogil=True)
+def interpolate4d_nearest(
+    input: np.ndarray,
+    dim1: int,
+    dim2: int,
+    dim3: int,
+    dim4: int,
+    c1: float,
+    c2: float,
+    c3: float,
+    c4: float,
+    cval: float_or_int,
+) -> float_or_int:
+    min_distance = 3.0
+    i1_nearest, i2_nearest, i3_nearest, i4_nearest = -1, -1, -1, -1
+    minc1 = int(c1)
+    minc2 = int(c2)
+    minc3 = int(c3)
+    minc4 = int(c4)
+    maxc1 = minc1 + 1
+    maxc2 = minc2 + 1
+    maxc3 = minc3 + 1
+    maxc4 = minc4 + 1
+
+    for i1 in range(2):
+        curc1 = maxc1 if i1 else minc1
+        if curc1 >= dim1:
+            continue
+        for i2 in range(2):
+            curc2 = maxc2 if i2 else minc2
+            if curc2 >= dim2:
+                continue
+            for i3 in range(2):
+                curc3 = maxc3 if i3 else minc3
+                if curc3 >= dim3:
+                    continue
+                for i4 in range(2):
+                    curc4 = maxc4 if i4 else minc4
+                    if curc4 >= dim4:
+                        continue
+
+                    distance = distance4d(c1, c2, c3, c4, curc1, curc2, curc3, curc4)
+                    if distance <= min_distance:
+                        i1_nearest = i1
+                        i2_nearest = i2
+                        i3_nearest = i3
+                        i4_nearest = i4
+                        min_distance = distance
+
+    if i1_nearest == -1 or i2_nearest == -1 or i3_nearest == -1 or i4_nearest == -1:
+        return cval
+
+    return get_pixel4d(
+        input,
+        dim1,
+        dim2,
+        dim3,
+        dim4,
+        maxc1 if i1_nearest else minc1,
+        maxc2 if i2_nearest else minc2,
+        maxc3 if i3_nearest else minc3,
+        maxc4 if i4_nearest else minc4,
+        cval,
+    )
+
+
+def _zoom3d_linear(input: np.ndarray, zoom: np.ndarray, cval: float) -> np.ndarray:
+    contiguous_input = np.ascontiguousarray(input)
+
+    old_rows, old_cols, old_dims = input.shape
+    row_coef, col_coef, dim_coef = zoom
+
+    new_shape = (round(old_rows * row_coef), round(old_cols * col_coef), round(old_dims * dim_coef))
+    new_rows, new_cols, new_dims = new_shape
+
+    zoomed = np.zeros(new_shape, dtype=input.dtype)
+
+    adjusted_row_coef = adjusted_coef(old_rows, new_rows)
+    adjusted_col_coef = adjusted_coef(old_cols, new_cols)
+    adjusted_dim_coef = adjusted_coef(old_dims, new_dims)
+
+    for i in prange(new_rows):
+        for j in prange(new_cols):
+            for k in prange(new_dims):
+                zoomed[i, j, k] = interpolate3d_linear(
+                    contiguous_input,
+                    old_rows,
+                    old_cols,
+                    old_dims,
+                    i * adjusted_row_coef,
+                    j * adjusted_col_coef,
+                    k * adjusted_dim_coef,
+                    cval,
+                )
+
+    return zoomed
+
+
+def _zoom3d_nearest(input: np.ndarray, zoom: np.ndarray, cval: float_or_int) -> np.ndarray:
+    contiguous_input = np.ascontiguousarray(input)
+
+    old_rows, old_cols, old_dims = input.shape
+    row_coef, col_coef, dim_coef = zoom
+
+    new_shape = (round(old_rows * row_coef), round(old_cols * col_coef), round(old_dims * dim_coef))
+    new_rows, new_cols, new_dims = new_shape
+
+    zoomed = np.zeros(new_shape, dtype=input.dtype)
+
+    adjusted_row_coef = adjusted_coef(old_rows, new_rows)
+    adjusted_col_coef = adjusted_coef(old_cols, new_cols)
+    adjusted_dim_coef = adjusted_coef(old_dims, new_dims)
+
+    for i in prange(new_rows):
+        for j in prange(new_cols):
+            for k in prange(new_dims):
+                zoomed[i, j, k] = interpolate3d_nearest(
+                    contiguous_input,
+                    old_rows,
+                    old_cols,
+                    old_dims,
+                    i * adjusted_row_coef,
+                    j * adjusted_col_coef,
+                    k * adjusted_dim_coef,
+                    cval,
+                )
+
+    return zoomed
+
+
+def _zoom4d_linear(input: np.ndarray, zoom: np.ndarray, cval: float) -> np.ndarray:
     contiguous_input = np.ascontiguousarray(input)
 
     old_dim1, old_dim2, old_dim3, old_dim4 = input.shape
@@ -279,7 +446,48 @@ def _zoom4d(input: np.ndarray, zoom: np.ndarray, cval: float) -> np.ndarray:
         for i2 in prange(new_dim2):
             for i3 in prange(new_dim3):
                 for i4 in prange(new_dim4):
-                    zoomed[i1, i2, i3, i4] = interpolate4d(
+                    zoomed[i1, i2, i3, i4] = interpolate4d_linear(
+                        contiguous_input,
+                        old_dim1,
+                        old_dim2,
+                        old_dim3,
+                        old_dim4,
+                        i1 * adjusted_dim1_coef,
+                        i2 * adjusted_dim2_coef,
+                        i3 * adjusted_dim3_coef,
+                        i4 * adjusted_dim4_coef,
+                        cval,
+                    )
+
+    return zoomed
+
+
+def _zoom4d_nearest(input: np.ndarray, zoom: np.ndarray, cval: float_or_int) -> np.ndarray:
+    contiguous_input = np.ascontiguousarray(input)
+
+    old_dim1, old_dim2, old_dim3, old_dim4 = input.shape
+    dim1_coef, dim2_coef, dim3_coef, dim4_coef = zoom
+
+    new_shape = (
+        round(old_dim1 * dim1_coef),
+        round(old_dim2 * dim2_coef),
+        round(old_dim3 * dim3_coef),
+        round(old_dim4 * dim4_coef),
+    )
+    new_dim1, new_dim2, new_dim3, new_dim4 = new_shape
+
+    zoomed = np.zeros(new_shape, dtype=input.dtype)
+
+    adjusted_dim1_coef = adjusted_coef(old_dim1, new_dim1)
+    adjusted_dim2_coef = adjusted_coef(old_dim2, new_dim2)
+    adjusted_dim3_coef = adjusted_coef(old_dim3, new_dim3)
+    adjusted_dim4_coef = adjusted_coef(old_dim4, new_dim4)
+
+    for i1 in prange(new_dim1):
+        for i2 in prange(new_dim2):
+            for i3 in prange(new_dim3):
+                for i4 in prange(new_dim4):
+                    zoomed[i1, i2, i3, i4] = interpolate4d_nearest(
                         contiguous_input,
                         old_dim1,
                         old_dim2,

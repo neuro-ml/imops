@@ -16,6 +16,7 @@ from libc.math cimport floor
 ctypedef cython.floating FLOAT
 ctypedef np.uint8_t uint8
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef inline FLOAT interpolate(FLOAT x, FLOAT* ys, FLOAT radius, FLOAT right_limit) nogil:
@@ -36,6 +37,7 @@ cdef inline FLOAT interpolate(FLOAT x, FLOAT* ys, FLOAT radius, FLOAT right_limi
 
     return val
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef FLOAT accumulate(FLOAT x, FLOAT y, FLOAT* sinuses, FLOAT* cosinuses, FLOAT* ys,
@@ -46,6 +48,7 @@ cdef FLOAT accumulate(FLOAT x, FLOAT y, FLOAT* sinuses, FLOAT* cosinuses, FLOAT*
     for k in range(0, size):
         accumulator += interpolate(y * cosinuses[k] - x * sinuses[k], ys + k * image_size, radius, right_limit)
     return accumulator
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

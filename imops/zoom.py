@@ -6,10 +6,19 @@ import numpy as np
 from scipy.ndimage import zoom as _scipy_zoom
 
 from .backend import BackendLike, resolve_backend
-from .src._fast_zoom import _zoom3d as cython_fast_zoom3d, _zoom4d as cython_fast_zoom4d
-from .src._zoom import _zoom3d as cython_zoom3d, _zoom4d as cython_zoom4d
+from .src._fast_zoom import (
+    _zoom3d_linear as cython_fast_zoom3d_linear,
+    _zoom3d_nearest as cython_fast_zoom3d_nearest,
+    _zoom4d_linear as cython_fast_zoom4d_linear,
+    _zoom4d_nearest as cython_fast_zoom4d_nearest,
+)
+from .src._zoom import (
+    _zoom3d_linear as cython_zoom3d_linear,
+    _zoom3d_nearest as cython_zoom3d_nearest,
+    _zoom4d_linear as cython_zoom4d_linear,
+    _zoom4d_nearest as cython_zoom4d_nearest,
+)
 from .utils import (
-    FAST_MATH_WARNING,
     AxesLike,
     AxesParams,
     broadcast_axis,
@@ -27,11 +36,37 @@ def scipy_zoom(*args, grid_mode, **kwargs):
 scipy_zoom = scipy_zoom if python_version()[:3] == '3.6' else _scipy_zoom
 
 
-def _choose_cython_zoom(ndim: int, fast: bool) -> Callable:
-    if ndim <= 3:
-        return cython_fast_zoom3d if fast else cython_zoom3d
+def _choose_cython_zoom(ndim: int, order: int, fast: bool) -> Callable:
+    assert ndim <= 4, ndim
+    assert order in (0, 1), order
 
-    return cython_fast_zoom4d if fast else cython_zoom4d
+    if ndim <= 3:
+        if order == 0:
+            return cython_fast_zoom3d_nearest if fast else cython_zoom3d_nearest
+
+        return cython_fast_zoom3d_linear if fast else cython_zoom3d_linear
+
+    if order == 0:
+        return cython_fast_zoom4d_nearest if fast else cython_zoom4d_nearest
+
+    return cython_fast_zoom4d_linear if fast else cython_zoom4d_linear
+
+
+def _choose_numba_zoom(ndim: int, order: int) -> Callable:
+    assert ndim <= 4, ndim
+    assert order in (0, 1), order
+
+    if ndim <= 3:
+        if order == 0:
+            from .src._numba_zoom import _zoom3d_nearest as numba_zoom
+        else:
+            from .src._numba_zoom import _zoom3d_linear as numba_zoom
+    elif order == 0:
+        from .src._numba_zoom import _zoom4d_nearest as numba_zoom
+    else:
+        from .src._numba_zoom import _zoom4d_linear as numba_zoom
+
+    return numba_zoom
 
 
 def zoom(
@@ -46,7 +81,8 @@ def zoom(
     """
     Rescale `x` according to `scale_factor` along the `axis`.
 
-    Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim <= 4 and order = 1.
+    Uses a fast parallelizable implementation for fp32 / fp64 (and int16-32-64 if order == 0) inputs,
+    ndim <= 4 and order = 0 or 1.
 
     Parameters
     ----------
@@ -99,7 +135,8 @@ def zoom_to_shape(
     """
     Rescale `x` to match `shape` along the `axis`.
 
-    Uses a fast parallelizable implementation for fp32 / fp64 inputs, ndim <= 4 and order = 1.
+    Uses a fast parallelizable implementation for fp32 / fp64 (and int16-32-64 if order == 0) inputs,
+    ndim <= 4 and order = 0 or 1.
 
     Parameters
     ----------
@@ -160,7 +197,7 @@ def _zoom(
     backend: BackendLike = None,
 ) -> np.ndarray:
     """
-    Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 inputs.
+    Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 (and int16-32-64 if order == 0) inputs.
 
     Works faster only for ndim <= 4. Shares interface with `scipy.ndimage.zoom`
     except for
@@ -172,10 +209,11 @@ def _zoom(
     """
     backend = resolve_backend(backend)
     if backend.name not in ('Scipy', 'Numba', 'Cython'):
-        raise ValueError(f'Unsupported backend "{backend.name}"')
+        raise ValueError(f'Unsupported backend "{backend.name}".')
 
     ndim = input.ndim
     dtype = input.dtype
+    cval = np.dtype(dtype).type(cval)
     zoom = fill_by_indices(np.ones(input.ndim, 'float64'), zoom, range(input.ndim))
     num_threads = normalize_num_threads(num_threads, backend)
 
@@ -185,16 +223,20 @@ def _zoom(
         )
 
     if (
-        dtype not in (np.float32, np.float64)
+        (order not in (0, 1))
+        or (
+            dtype not in (np.float32, np.float64)
+            if order == 1
+            else dtype not in (np.float32, np.float64, np.int16, np.int32, np.int64)
+        )
         or ndim > 4
         or output is not None
-        or order != 1
         or mode != 'constant'
         or grid_mode
     ):
         warn(
-            'Fast zoom is only supported for ndim<=4, dtype=float32 or float64, output=None, '
-            "order=1, mode='constant', grid_mode=False. Falling back to scipy's implementation.",
+            'Fast zoom is only supported for ndim<=4, dtype=fp32 or fp64 (and int16-32-64 if order == 0), output=None, '
+            "order=0 or 1, mode='constant', grid_mode=False. Falling back to scipy's implementation.",
         )
 
         return scipy_zoom(
@@ -202,20 +244,16 @@ def _zoom(
         )
 
     if backend.name == 'Cython':
-        if backend.fast:
-            warn(FAST_MATH_WARNING)
-        src_zoom = _choose_cython_zoom(ndim, backend.fast)
+        src_zoom = _choose_cython_zoom(ndim, order, backend.fast)
 
     if backend.name == 'Numba':
         from numba import get_num_threads, njit, set_num_threads
-
-        from .src._numba_zoom import _zoom3d as numba_zoom3d, _zoom4d as numba_zoom4d
 
         old_num_threads = get_num_threads()
         set_num_threads(num_threads)
 
         njit_kwargs = {kwarg: getattr(backend, kwarg) for kwarg in backend.__dataclass_fields__.keys()}
-        src_zoom = njit(**njit_kwargs)(numba_zoom3d if ndim <= 3 else numba_zoom4d)
+        src_zoom = njit(**njit_kwargs)(_choose_numba_zoom(ndim, order))
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
 

@@ -17,23 +17,28 @@ except ModuleNotFoundError:
 
 from imops.interp1d import interp1d
 
-from .common import discard_arg
+from .common import NUMS_THREADS_TO_BENCHMARK, discard_arg
 
 
 class Interp1dSuite:
-    params = [interp1d_configs, ('float32', 'float64')]
-    param_names = ['backend', 'dtype']
+    params = [interp1d_configs, ('float32', 'float64'), NUMS_THREADS_TO_BENCHMARK]
+    param_names = ['backend', 'dtype', 'num_threads']
 
     @discard_arg(1)
+    @discard_arg(-1)
     def setup(self, dtype):
         self.image = np.random.randn(256, 256, 256).astype(dtype)
         self.x = np.random.randn(256).astype(dtype)
         self.x_new = np.random.randn(256).astype(dtype)
 
     @discard_arg(2)
-    def time_interp1d(self, backend):
-        interp1d(self.x, self.image, bounds_error=False, fill_value='extrapolate', backend=backend)(self.x_new)
+    def time_interp1d(self, backend, num_threads):
+        interp1d(
+            self.x, self.image, bounds_error=False, fill_value='extrapolate', num_threads=num_threads, backend=backend
+        )(self.x_new)
 
     @discard_arg(2)
-    def peakmem_interp1d(self, backend):
-        interp1d(self.x, self.image, bounds_error=False, fill_value='extrapolate', backend=backend)(self.x_new)
+    def peakmem_interp1d(self, backend, num_threads):
+        interp1d(
+            self.x, self.image, bounds_error=False, fill_value='extrapolate', num_threads=num_threads, backend=backend
+        )(self.x_new)

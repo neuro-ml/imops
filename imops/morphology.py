@@ -11,7 +11,7 @@ from .src._fast_morphology import (
     _binary_erosion as cython_fast_binary_erosion,
 )
 from .src._morphology import _binary_dilation as cython_binary_dilation, _binary_erosion as cython_binary_erosion
-from .utils import FAST_MATH_WARNING, composition_args, normalize_num_threads
+from .utils import composition_args, normalize_num_threads
 
 
 def morphology_op_wrapper(
@@ -43,9 +43,6 @@ def morphology_op_wrapper(
                 "Falling back to scipy's implementation."
             )
             src_op(image, footprint)
-
-        if backend.fast:
-            warn(FAST_MATH_WARNING)
 
         if footprint.ndim != ndim:
             raise ValueError('Input image and footprint number of dimensions must be the same.')
