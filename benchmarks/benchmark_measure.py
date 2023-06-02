@@ -9,7 +9,7 @@ except ImportError:
 
 from imops.measure import center_of_mass, label
 
-from .common import discard_arg
+from .common import NUMS_THREADS_TO_BENCHMARK, discard_arg
 
 
 class LabelSuite:
@@ -30,7 +30,7 @@ class LabelSuite:
 
 
 class CenterOfMassSuite:
-    params = [measure_configs, ('bool', 'float64'), list(range(1, 9))]
+    params = [measure_configs, ('bool', 'float64'), NUMS_THREADS_TO_BENCHMARK]
     param_names = ['backend', 'dtype', 'num_threads']
 
     @discard_arg(1)
