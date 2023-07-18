@@ -2,6 +2,5 @@ numpy>=1.7,<2.0.0; python_version < '3.8'
 numpy>=1.22,<2.0.0; python_version >= '3.8'
 scipy>=1.0,<2.0.0
 dataclasses; python_version < '3.7'
-Cython
 connected-components-3d
 fastremap
