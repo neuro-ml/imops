@@ -25,15 +25,6 @@ classifiers = [
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
 ]
-dependencies = [
-    "numpy>=1.7,<2.0.0; python_version < '3.8'",
-    "numpy>=1.22,<2.0.0; python_version >= '3.8'",
-    'scipy>=1.0,<2.0.0',
-    "dataclasses; python_version < '3.7'",
-    'Cython<3.0.0',
-    'connected-components-3d',
-    'fastremap',
-]
 
 [options]
 include_package_data = true
@@ -78,3 +69,4 @@ imops = ['py.typed']
 
 [tool.setuptools.dynamic]
 version = {attr = 'imops.__version__.__version__'}
+dependencies = { file = ['requirements.txt'] }
