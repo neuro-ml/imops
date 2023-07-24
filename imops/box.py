@@ -84,6 +84,7 @@ def mask_to_box(mask: np.ndarray) -> Box:
 
 @returns_box
 def dilate_box(box: Box, delta: int, shape: AxesLike) -> Box:
+    """Dilate box by `delta` across all dimensions but not exceeding `shape`."""
     assert delta > 0
     assert isinstance(delta, int)
 
