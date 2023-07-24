@@ -22,7 +22,7 @@ def morphology_op_wrapper(
     ) -> np.ndarray:
         backend = resolve_backend(backend)
         if backend.name not in {x.name for x in backend2src_op.keys()}:
-            raise ValueError(f'Unsupported backend "{backend.name}"')
+            raise ValueError(f'Unsupported backend "{backend.name}".')
 
         ndim = image.ndim
         num_threads = normalize_num_threads(num_threads, backend)
@@ -30,7 +30,15 @@ def morphology_op_wrapper(
         if footprint is None:
             footprint = generate_binary_structure(ndim, 1)
         elif not footprint.size:
-            raise RuntimeError('Footprint must not be empty')
+            raise RuntimeError('Footprint must not be empty.')
+
+        if not image.any():
+            warn(f'{op_name} is applied to the fully False mask (mask.any() == False).')
+            return image
+
+        if image.all():
+            warn(f'{op_name} is applied to the fully True mask (mask.all() == True).')
+            return image
 
         src_op = backend2src_op[backend]
 
