@@ -165,8 +165,8 @@ class interp1d:
         # TODO: Figure out how to properly handle multiple type signatures in Cython and remove `.astype`-s
         out = self.src_interp1d(
             self.y,
-            self.x.astype(np.float64),
-            x_new.astype(np.float64),
+            self.x.astype(np.float64, copy=False),
+            x_new.astype(np.float64, copy=False),
             self.bounds_error,
             0.0 if extrapolate else self.fill_value,
             extrapolate,
@@ -177,7 +177,7 @@ class interp1d:
         if self.backend.name == 'Numba':
             set_num_threads(old_num_threads)
 
-        out = out.astype(max(self.y.dtype, self.x.dtype, x_new.dtype, key=lambda x: x.type(0).itemsize))
+        out = out.astype(max(self.y.dtype, self.x.dtype, x_new.dtype, key=lambda x: x.type(0).itemsize), copy=False)
 
         if self.n_dummy:
             out = out[(0,) * self.n_dummy]

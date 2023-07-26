@@ -95,7 +95,7 @@ def label(
             label_image, background=background, return_num=True, connectivity=connectivity
         )
         if dtype is not None:
-            labeled_image = labeled_image.astype(dtype)
+            labeled_image = labeled_image.astype(dtype, copy=False)
     else:
         if ndim == 1:
             label_image = label_image[None]
@@ -198,7 +198,7 @@ def center_of_mass(
         if labels.dtype != index.dtype:
             raise ValueError(f'`labels` and `index` must have same dtype, got {labels.dtype} and {index.dtype}.')
 
-        if len(index) != len(unique(index.astype(int))):
+        if len(index) != len(unique(index.astype(int, copy=False))):
             raise ValueError('`index` should consist of unique values.')
 
         if num_threads > 1:

@@ -61,7 +61,7 @@ def morphology_op_wrapper(
             image = image[(None,) * n_dummy]
             footprint = footprint[(None,) * n_dummy]
 
-        out = src_op(image.astype(bool), footprint.astype(bool), num_threads)
+        out = src_op(image.astype(bool, copy=False), footprint.astype(bool, copy=False), num_threads)
 
         if n_dummy:
             out = out[(0,) * n_dummy]

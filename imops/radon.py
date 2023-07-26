@@ -180,8 +180,8 @@ def inverse_radon(
     inside_circle = (squared[:, None] + squared[None, :]) <= radius**2
 
     dtype = sinogram.dtype
-    filtered_sinogram = filtered_sinogram.astype(dtype)
-    theta, xs = np.deg2rad(theta, dtype=dtype), xs.astype(dtype)
+    filtered_sinogram = filtered_sinogram.astype(dtype, copy=False)
+    theta, xs = np.deg2rad(theta, dtype=dtype), xs.astype(dtype, copy=False)
 
     num_threads = normalize_num_threads(num_threads, backend)
 
