@@ -92,7 +92,7 @@ cdef int init_filter_offsets(
         offsets_size *= (a_shape[i] if a_shape[i] < f_shape[i] else f_shape[i])
 
     offsets[0] = <int*>malloc(offsets_size * footprint_size * sizeof(int))
-    if offsets[0] == 0:
+    if offsets[0] == NULL:
         abort()
 
     for i in range(3):
