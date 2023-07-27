@@ -92,7 +92,7 @@ def binary_dilation(
     image: np.ndarray
         input image
     footprint: np.ndarray
-        the neighborhood expressed as a 2-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
+        the neighborhood expressed as a n-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
     num_threads: int
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
@@ -133,7 +133,7 @@ def binary_erosion(
     image: np.ndarray
         input image
     footprint: np.ndarray
-        the neighborhood expressed as a 2-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
+        the neighborhood expressed as a n-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
     num_threads: int
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
@@ -174,7 +174,7 @@ def binary_closing(
     image: np.ndarray
         input image
     footprint: np.ndarray
-        the neighborhood expressed as a 2-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
+        the neighborhood expressed as a n-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
     num_threads: int
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
@@ -215,7 +215,7 @@ def binary_opening(
     image: np.ndarray
         input image
     footprint: np.ndarray
-        the neighborhood expressed as a 2-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
+        the neighborhood expressed as a n-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
     num_threads: int
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
