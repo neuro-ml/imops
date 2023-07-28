@@ -6,6 +6,7 @@ from scipy.ndimage import generate_binary_structure
 from skimage.morphology import binary_dilation as scipy_binary_dilation, binary_erosion as scipy_binary_erosion
 
 from .backend import BackendLike, Cython, Scipy, resolve_backend
+from .box import mask_to_box
 from .src._fast_morphology import (
     _binary_dilation as cython_fast_binary_dilation,
     _binary_erosion as cython_fast_binary_erosion,
@@ -76,36 +77,36 @@ def boxed_morphology(border_value: bool):
         def wrapper(input, footprint, *args, **kwargs):
             if 'border_value' in kwargs and kwargs['border_value'] != border_value:
                 return func(input, footprint, *args, **kwargs)
-        
+
             if not footprint.any() or not input.any():
                 return func(input, footprint, *args, **kwargs)
-        
+
             box = mask_to_box(input)
             a_shape = np.asarray(input.shape)
             f_shape = np.asarray(footprint.shape)
-        
+
             if border_value and (box[0] - f_shape < 0).any() or (box[1] + f_shape >= a_shape).any():
                 return func(input, footprint, *args, **kwargs)
 
             kwargs['border_value'] = False
-            
+
             orgn = f_shape // 2 - (1 - f_shape % 2)
             low = f_shape - orgn - 1
             high = orgn
             low = np.maximum(box[0] - low, 0)
             high = np.minimum(box[1] + high, a_shape)
             slices = tuple(map(slice, low, high))
-            
+
             cropped = np.ascontiguousarray(input[slices])
             output_cropped = func(cropped, footprint, *args, **kwargs)
             output = np.zeros(input.shape, dtype=np.uint8)
             output[slices] = output_cropped
-        
+
             return output
 
-        return decorator
-        
-    return wrapper
+        return wrapper
+
+    return decorator
 
 
 _binary_dilation = morphology_op_wrapper(
@@ -122,8 +123,8 @@ def binary_dilation(
     image: np.ndarray,
     footprint: np.ndarray = None,
     num_threads: int = -1,
-    border_value: bool = False
-    backend: BackendLike = None
+    border_value: bool = False,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Fast parallelizable binary morphological dilation of an image
@@ -171,7 +172,7 @@ def binary_erosion(
     footprint: np.ndarray = None,
     num_threads: int = -1,
     border_value: bool = True,
-    backend: BackendLike = None
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Fast parallelizable binary morphological erosion of an image
