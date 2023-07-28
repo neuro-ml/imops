@@ -20,7 +20,8 @@
         },
         "env_nobuild": {
             "OMP_NUM_THREADS": "8",
-            "NUMBA_NUM_THREADS": "8"
+            "NUMBA_NUM_THREADS": "8",
+            "REAL_IMAGES_PATH": ""
         }
     },
     "env_dir": ".asv/env",

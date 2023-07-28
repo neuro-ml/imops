@@ -310,10 +310,20 @@ def _binary_operation(
     return np.asarray(output)
 
 
-def _binary_erosion(np.uint8_t[:, :, :] input, np.uint8_t[:, :, :] footprint, Py_ssize_t num_threads):
-    return _binary_operation(input, footprint, num_threads, True, False)
+def _binary_erosion(
+    np.uint8_t[:, :, :] input,
+    np.uint8_t[:, :, :] footprint,
+    Py_ssize_t num_threads,
+    np.uint8_t border_value = True
+):
+    return _binary_operation(input, footprint, num_threads, border_value, False)
 
 
-def _binary_dilation(np.uint8_t[:, :, :] input, np.uint8_t[:, :, :] footprint, Py_ssize_t num_threads):
+def _binary_dilation(
+    np.uint8_t[:, :, :] input,
+    np.uint8_t[:, :, :] footprint,
+    Py_ssize_t num_threads,
+    np.uint8_t border_value = False
+):
     inverted_footprint = np.array(footprint[::-1, ::-1, ::-1])
-    return _binary_operation(input, inverted_footprint, num_threads, False, True)
+    return _binary_operation(input, inverted_footprint, num_threads, border_value, True)
