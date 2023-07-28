@@ -20,7 +20,7 @@ def discard_arg(idx: int):
 class IMAGE_TYPE_BENCHMARK(Enum):
     RAND = 1
     LUNGS = 2
-    BRONCH = 3
+    BRONCHI = 3
 
 
 IMAGE_TYPES_BENCHMARK = list(IMAGE_TYPE_BENCHMARK)

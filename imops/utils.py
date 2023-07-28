@@ -104,3 +104,19 @@ def composition_args(f: Callable, g: Callable) -> Callable:
         return f(g(*args), *args[1:])
 
     return inner
+
+
+def morphology_composition_args(f, g):
+    def wrapper(
+        image: np.ndarray,
+        footprint: np.ndarray,
+        num_threads: int,
+        box: bool,
+        out: np.ndarray
+    ):
+        temp = np.zeros(image.shape, dtype=bool)
+        temp = g(image, footprint, num_threads, box, temp)
+
+        return f(temp, footprint, num_threads, box, out)
+
+    return wrapper

@@ -255,12 +255,12 @@ def _binary_operation(
     np.uint8_t[:, :, :] input,
     np.uint8_t[:, :, :] footprint,
     Py_ssize_t num_threads,
+    np.uint8_t[:, :, :] out,
     np.uint8_t border_value,
     np.uint8_t is_dilation
 ):
     cdef np.uint8_t[:, :, ::1] c_input = np.ascontiguousarray(input)
     cdef np.uint8_t[:, :, ::1] c_footprint = np.ascontiguousarray(footprint)
-    cdef np.uint8_t[:, :, ::1] output = np.zeros_like(input, dtype=np.uint8)
 
     cdef int f_shape[3]
     cdef int a_shape[3]
@@ -296,7 +296,7 @@ def _binary_operation(
             start = chunk * task + _mod
 
         worker(
-            &c_input[0, 0, 0], &c_footprint[0, 0, 0], &output[0, 0, 0],
+            &c_input[0, 0, 0], &c_footprint[0, 0, 0], &out[0, 0, 0],
             a_shape, a_strides, f_shape,
             footprint_size,
             offsets, border_flag_value,
@@ -307,23 +307,25 @@ def _binary_operation(
 
     free(offsets)
 
-    return np.asarray(output)
+    return np.asarray(out)
 
 
 def _binary_erosion(
     np.uint8_t[:, :, :] input,
     np.uint8_t[:, :, :] footprint,
     Py_ssize_t num_threads,
+    np.uint8_t[:, :, :] out,
     np.uint8_t border_value = True
 ):
-    return _binary_operation(input, footprint, num_threads, border_value, False)
+    return _binary_operation(input, footprint, num_threads, out, border_value, False)
 
 
 def _binary_dilation(
     np.uint8_t[:, :, :] input,
     np.uint8_t[:, :, :] footprint,
     Py_ssize_t num_threads,
+    np.uint8_t[:, :, :] out,
     np.uint8_t border_value = False
 ):
     inverted_footprint = np.array(footprint[::-1, ::-1, ::-1])
-    return _binary_operation(input, inverted_footprint, num_threads, border_value, True)
+    return _binary_operation(input, inverted_footprint, num_threads, out, border_value, True)
