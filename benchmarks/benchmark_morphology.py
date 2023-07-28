@@ -19,9 +19,7 @@ from imops.morphology import (
     binary_closing,
     binary_dilation,
     binary_erosion,
-    binary_opening,
-    boxed_binary_dilation,
-    boxed_binary_erosion,
+    binary_opening
 )
 
 from .common import IMAGE_TYPE_BENCHMARK, IMAGE_TYPES_BENCHMARK, NUMS_THREADS_TO_BENCHMARK, discard_arg
@@ -55,47 +53,39 @@ class MorphologySuite:
     @discard_arg(2)
     def time_erosion(self, backend, num_threads, image_type, box):
         im = self.images[image_type]
-        func = boxed_binary_erosion if box else binary_erosion
-        func(im, num_threads=num_threads, backend=backend)
+        binary_erosion(im, num_threads=num_threads, backend=backend, box=box)
 
     @discard_arg(2)
     def time_dilation(self, backend, num_threads, image_type, box):
         im = self.images[image_type]
-        func = boxed_binary_dilation if box else binary_dilation
-        func(im, num_threads=num_threads, backend=backend)
+        binary_dilation(im, num_threads=num_threads, backend=backend, box=box)
 
     @discard_arg(2)
-    @discard_arg(5)
-    def time_opening(self, backend, num_threads, image_type):
+    def time_opening(self, backend, num_threads, image_type, box):
         im = self.images[image_type]
-        binary_opening(im, num_threads=num_threads, backend=backend)
+        binary_opening(im, num_threads=num_threads, backend=backend, box=box)
 
     @discard_arg(2)
-    @discard_arg(5)
-    def time_closing(self, backend, num_threads, image_type):
+    def time_closing(self, backend, num_threads, image_type, box):
         im = self.images[image_type]
-        binary_closing(im, num_threads=num_threads, backend=backend)
+        binary_closing(im, num_threads=num_threads, backend=backend, box=box)
 
     @discard_arg(2)
     def peakmem_erosion(self, backend, num_threads, image_type, box):
         im = self.images[image_type]
-        func = boxed_binary_erosion if box else binary_erosion
-        func(im, num_threads=num_threads, backend=backend)
+        binary_erosion(im, num_threads=num_threads, backend=backend, box=box)
 
     @discard_arg(2)
     def peakmem_dilation(self, backend, num_threads, image_type, box):
         im = self.images[image_type]
-        func = boxed_binary_dilation if box else binary_dilation
-        func(im, num_threads=num_threads, backend=backend)
+        binary_dilation(im, num_threads=num_threads, backend=backend, box=box)
 
     @discard_arg(2)
-    @discard_arg(5)
-    def peakmem_opening(self, backend, num_threads, image_type):
+    def peakmem_opening(self, backend, num_threads, image_type, box):
         im = self.images[image_type]
-        binary_opening(im, num_threads=num_threads, backend=backend)
+        binary_opening(im, num_threads=num_threads, backend=backend, box=box)
 
     @discard_arg(2)
-    @discard_arg(5)
-    def peakmem_closing(self, backend, num_threads, image_type):
+    def peakmem_closing(self, backend, num_threads, image_type, box):
         im = self.images[image_type]
-        binary_closing(im, num_threads=num_threads, backend=backend)
+        binary_closing(im, num_threads=num_threads, backend=backend, box=box)
