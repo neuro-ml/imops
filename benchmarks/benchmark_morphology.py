@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -35,18 +36,19 @@ class MorphologySuite:
     @discard_arg(4)
     @discard_arg(5)
     def setup(self, dtype):
-        rand_image = np.random.randint(0, 5 if dtype == 'int64' else 2, (512, 512, 512)).astype(dtype)
-        if 'REAL_IMAGES_PATH' in os.environ:
-            real_images_path = os.environ['REAL_IMAGES_PATH']
-            lungs_image = np.load(os.path.join(real_images_path, 'lungs.npy'))
-            bronch_image = np.load(os.path.join(real_images_path, 'bronch.npy'))
-        else:
-            lungs_image = np.random.randint(0, 5 if dtype == 'int64' else 2, (512, 512, 512)).astype(dtype)
-            bronch_image = np.random.randint(0, 5 if dtype == 'int64' else 2, (512, 512, 512)).astype(dtype)
+        assert 'REAL_IMAGES_PATH' in os.environ
+        real_images_path = os.environ['REAL_IMAGES_PATH']
+        assert real_images_path, 'Set "REAL_IMAGES_PATH" environment variable (see asv.conf.json).'
+        real_images_path = Path(real_images_path)
+
+        lungs_image = np.load(real_images_path / 'lungs.npy').astype(dtype, copy=False)
+        bronchi_image = np.load(real_images_path / 'bronchi.npy').astype(dtype, copy=False)
+        rand_image = np.random.randint(0, 5 if dtype == 'int64' else 2, (512, 512, 512)).astype(dtype, copy=False)
+
         self.images = {
             IMAGE_TYPE_BENCHMARK.RAND: rand_image,
             IMAGE_TYPE_BENCHMARK.LUNGS: lungs_image,
-            IMAGE_TYPE_BENCHMARK.BRONCH: bronch_image,
+            IMAGE_TYPE_BENCHMARK.BRONCHI: bronchi_image,
         }
 
     # FIXME: generalize this code somehow
