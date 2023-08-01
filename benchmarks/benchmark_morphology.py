@@ -15,19 +15,14 @@ except ModuleNotFoundError:
         *[Cython(fast) for fast in [False, True]],
     ]
 
-from imops.morphology import (
-    binary_closing,
-    binary_dilation,
-    binary_erosion,
-    binary_opening
-)
+from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening
 
 from .common import IMAGE_TYPE_BENCHMARK, IMAGE_TYPES_BENCHMARK, NUMS_THREADS_TO_BENCHMARK, discard_arg
 
 
 class MorphologySuite:
     params = [morphology_configs, ('bool', 'int64'), NUMS_THREADS_TO_BENCHMARK, IMAGE_TYPES_BENCHMARK, (False, True)]
-    param_names = ['backend', 'dtype', 'num_threads', 'image_type', 'box']
+    param_names = ['backend', 'dtype', 'num_threads', 'image_type', 'boxed']
 
     @discard_arg(1)
     @discard_arg(3)
@@ -51,41 +46,41 @@ class MorphologySuite:
 
     # FIXME: generalize this code somehow
     @discard_arg(2)
-    def time_erosion(self, backend, num_threads, image_type, box):
+    def time_erosion(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_erosion(im, num_threads=num_threads, backend=backend, box=box)
+        binary_erosion(im, num_threads=num_threads, backend=backend, boxed=boxed)
 
     @discard_arg(2)
-    def time_dilation(self, backend, num_threads, image_type, box):
+    def time_dilation(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_dilation(im, num_threads=num_threads, backend=backend, box=box)
+        binary_dilation(im, num_threads=num_threads, backend=backend, boxed=boxed)
 
     @discard_arg(2)
-    def time_opening(self, backend, num_threads, image_type, box):
+    def time_opening(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_opening(im, num_threads=num_threads, backend=backend, box=box)
+        binary_opening(im, num_threads=num_threads, backend=backend, boxed=boxed)
 
     @discard_arg(2)
-    def time_closing(self, backend, num_threads, image_type, box):
+    def time_closing(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_closing(im, num_threads=num_threads, backend=backend, box=box)
+        binary_closing(im, num_threads=num_threads, backend=backend, boxed=boxed)
 
     @discard_arg(2)
-    def peakmem_erosion(self, backend, num_threads, image_type, box):
+    def peakmem_erosion(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_erosion(im, num_threads=num_threads, backend=backend, box=box)
+        binary_erosion(im, num_threads=num_threads, backend=backend, boxed=boxed)
 
     @discard_arg(2)
-    def peakmem_dilation(self, backend, num_threads, image_type, box):
+    def peakmem_dilation(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_dilation(im, num_threads=num_threads, backend=backend, box=box)
+        binary_dilation(im, num_threads=num_threads, backend=backend, boxed=boxed)
 
     @discard_arg(2)
-    def peakmem_opening(self, backend, num_threads, image_type, box):
+    def peakmem_opening(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_opening(im, num_threads=num_threads, backend=backend, box=box)
+        binary_opening(im, num_threads=num_threads, backend=backend, boxed=boxed)
 
     @discard_arg(2)
-    def peakmem_closing(self, backend, num_threads, image_type, box):
+    def peakmem_closing(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_closing(im, num_threads=num_threads, backend=backend, box=box)
+        binary_closing(im, num_threads=num_threads, backend=backend, boxed=boxed)

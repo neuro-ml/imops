@@ -5,8 +5,6 @@ from typing import Callable, Sequence, Tuple
 
 import numpy as np
 
-from .utils import AxesLike
-
 
 # Immutable numpy array
 Box = np.ndarray
@@ -83,9 +81,17 @@ def mask_to_box(mask: np.ndarray) -> Box:
 
 
 @returns_box
-def dilate_box(box: Box, delta: int, shape: AxesLike) -> Box:
-    """Dilate box by `delta` across all dimensions but not exceeding `shape`."""
-    assert delta > 0
-    assert isinstance(delta, int)
+def shape_to_box(shape: Tuple) -> Box:
+    return make_box([(0,) * len(shape), shape])  # fmt: skip
 
-    return np.clip(box + [[-delta], [delta]], [0] * len(shape), shape)
+
+def box_to_shape(box: Box) -> Tuple:
+    return tuple(box[1] - box[0])
+
+
+@returns_box
+def change_box(box: Box, deltas: np.ndarray) -> Box:
+    """Change box by `deltas`."""
+    assert box.shape[1] == deltas.shape[0]
+
+    return box + [-deltas, deltas]
