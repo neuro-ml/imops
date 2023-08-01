@@ -100,6 +100,8 @@ def morphology_op_wrapper(
 
 
 def boxed_morphology(func, op_name) -> Callable:
+    # TODO: for consistency support exotic footprints which alter border pixels in Scikit-Image different from the
+    # current implementation, e.g. footrint [[1, 1], [1, 0]] sets border pixel to 1 for `binary_erosion`
     def wrapped(
         image: np.ndarray,
         footprint: np.ndarray,
@@ -161,11 +163,13 @@ def binary_dilation(
         input image
     footprint: np.ndarray
         the neighborhood expressed as a n-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
-    output: np.darray
-        array of the same shape as input, into which the output is placed. By default, a new array is created
+    output: np.ndarray
+        array of the same shape as input, into which the output is placed (must be C-contiguous). By default, a new
+        array is created
     boxed: bool
         if True, dilation is performed on cropped image which may speed up computation depedning on how localized True
-        pixels are
+        pixels are. This may induce differences with Scikit-Image implementation at border pixels if footprint is
+        exotic (has even shape or center pixel is False)
     num_threads: int
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
@@ -211,11 +215,13 @@ def binary_erosion(
         input image
     footprint: np.ndarray
         the neighborhood expressed as a n-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
-    output: np.darray
-        array of the same shape as input, into which the output is placed. By default, a new array is created
+    output: np.ndarray
+        array of the same shape as input, into which the output is placed (must be C-contiguous). By default, a new
+        array is created
     boxed: bool
         if True, erosion is performed on cropped image which may speed up computation depedning on how localized True
-        pixels are
+        pixels are. This may induce differences with Scikit-Image implementation at border pixels if footprint is
+        exotic (has even shape or center pixel is False)
     num_threads: int
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
@@ -261,11 +267,13 @@ def binary_closing(
         input image
     footprint: np.ndarray
         the neighborhood expressed as a n-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
-    output: np.darray
-        array of the same shape as input, into which the output is placed. By default, a new array is created
+    output: np.ndarray
+        array of the same shape as input, into which the output is placed (must be C-contiguous). By default, a new
+        array is created
     boxed: bool
         if True, closing is performed on cropped image which may speed up computation depedning on how localized True
-        pixels are
+        pixels are. This may induce differences with Scikit-Image implementation at border pixels if footprint is
+        exotic (has even shape or center pixel is False)
     num_threads: int
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
@@ -274,12 +282,12 @@ def binary_closing(
 
     Returns
     -------
-    closing: np.ndarray
+    closed: np.ndarray
         the result of morphological closing
 
     Examples
     --------
-    >>> closing = binary_closing(x)
+    >>> closed = binary_closing(x)
     """
 
     return _binary_closing(image, footprint, output, boxed, num_threads, backend)
@@ -312,11 +320,13 @@ def binary_opening(
         input image
     footprint: np.ndarray
         the neighborhood expressed as a n-D array of 1's and 0's. If None, use a cross-shaped footprint (connectivity=1)
-    output: np.darray
-        array of the same shape as input, into which the output is placed. By default, a new array is created
+    output: np.ndarray
+        array of the same shape as input, into which the output is placed (must be C-contiguous). By default, a new
+        array is created
     boxed: bool
         if True, opening is performed on cropped image which may speed up computation depedning on how localized True
-        pixels are
+        pixels are. This may induce differences with Scikit-Image implementation at border pixels if footprint is
+        exotic (has even shape or center pixel is False)
     num_threads: int
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
@@ -325,12 +335,12 @@ def binary_opening(
 
     Returns
     -------
-    opening: np.ndarray
+    opened: np.ndarray
         the result of morphological opening
 
     Examples
     --------
-    >>> opening = binary_opening(x)
+    >>> opened = binary_opening(x)
     """
 
     return _binary_opening(image, footprint, output, boxed, num_threads, backend)
