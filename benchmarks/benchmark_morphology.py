@@ -24,9 +24,9 @@ class MorphologySuite:
     param_names = ['backend', 'dtype', 'num_threads', 'image_type', 'boxed']
 
     @discard_arg(1)
-    @discard_arg(3)
-    @discard_arg(4)
-    @discard_arg(5)
+    @discard_arg(2)
+    @discard_arg(-1)
+    @discard_arg(-1)
     def setup(self, dtype):
         real_images_path = Path(__file__).parent / 'data'
 
