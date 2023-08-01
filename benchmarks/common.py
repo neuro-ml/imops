@@ -1,7 +1,13 @@
 from enum import Enum
+from gzip import GzipFile
+
+from numpy import load
 
 
-NUMS_THREADS_TO_BENCHMARK = list(range(1, 9))
+class IMAGE_TYPE_BENCHMARK(Enum):
+    RAND = 1
+    LUNGS = 2
+    BRONCHI = 3
 
 
 def discard_arg(idx: int):
@@ -17,10 +23,10 @@ def discard_arg(idx: int):
     return inner
 
 
-class IMAGE_TYPE_BENCHMARK(Enum):
-    RAND = 1
-    LUNGS = 2
-    BRONCHI = 3
+def load_npy_gz(path):
+    with GzipFile(path, 'rb') as f:
+        return load(f)
 
 
 IMAGE_TYPES_BENCHMARK = list(IMAGE_TYPE_BENCHMARK)
+NUMS_THREADS_TO_BENCHMARK = list(range(1, 9))

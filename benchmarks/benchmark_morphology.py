@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import numpy as np
@@ -17,7 +16,7 @@ except ModuleNotFoundError:
 
 from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening
 
-from .common import IMAGE_TYPE_BENCHMARK, IMAGE_TYPES_BENCHMARK, NUMS_THREADS_TO_BENCHMARK, discard_arg
+from .common import IMAGE_TYPE_BENCHMARK, IMAGE_TYPES_BENCHMARK, NUMS_THREADS_TO_BENCHMARK, discard_arg, load_npy_gz
 
 
 class MorphologySuite:
@@ -29,13 +28,10 @@ class MorphologySuite:
     @discard_arg(4)
     @discard_arg(5)
     def setup(self, dtype):
-        assert 'REAL_IMAGES_PATH' in os.environ
-        real_images_path = os.environ['REAL_IMAGES_PATH']
-        assert real_images_path, 'Set "REAL_IMAGES_PATH" environment variable (see asv.conf.json).'
-        real_images_path = Path(real_images_path)
+        real_images_path = Path(__file__).parent / 'data'
 
-        lungs_image = np.load(real_images_path / 'lungs.npy').astype(dtype, copy=False)
-        bronchi_image = np.load(real_images_path / 'bronchi.npy').astype(dtype, copy=False)
+        lungs_image = load_npy_gz(real_images_path / 'lungs.npy.gz').astype(dtype, copy=False)
+        bronchi_image = load_npy_gz(real_images_path / 'bronchi.npy.gz').astype(dtype, copy=False)
         rand_image = np.random.randint(0, 5 if dtype == 'int64' else 2, (512, 512, 512)).astype(dtype, copy=False)
 
         self.images = {
