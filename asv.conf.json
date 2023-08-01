@@ -11,7 +11,7 @@
     "matrix": {
         "req": {
             "numpy": [],
-            "Cython": [],
+            "Cython": ["0.29.36"],
             "scipy": [],
             "scikit-image": [],
             "numba": [],
