@@ -9,6 +9,9 @@ class IMAGE_TYPE_BENCHMARK(Enum):
     LUNGS = 2
     BRONCHI = 3
 
+    def __repr__(self):
+        return self.name
+
 
 def discard_arg(idx: int):
     def inner(f):
