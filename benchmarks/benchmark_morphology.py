@@ -44,39 +44,63 @@ class MorphologySuite:
     @discard_arg(2)
     def time_erosion(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_erosion(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        try:
+            binary_erosion(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        except TypeError:
+            binary_erosion(im, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def time_dilation(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_dilation(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        try:
+            binary_dilation(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        except TypeError:
+            binary_dilation(im, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def time_opening(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_opening(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        try:
+            binary_opening(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        except TypeError:
+            binary_opening(im, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def time_closing(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_closing(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        try:
+            binary_closing(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        except TypeError:
+            binary_closing(im, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def peakmem_erosion(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_erosion(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        try:
+            binary_erosion(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        except TypeError:
+            binary_erosion(im, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def peakmem_dilation(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_dilation(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        try:
+            binary_dilation(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        except TypeError:
+            binary_dilation(im, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def peakmem_opening(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_opening(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        try:
+            binary_opening(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        except TypeError:
+            binary_opening(im, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def peakmem_closing(self, backend, num_threads, image_type, boxed):
         im = self.images[image_type]
-        binary_closing(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        try:
+            binary_closing(im, num_threads=num_threads, backend=backend, boxed=boxed)
+        except TypeError:
+            binary_closing(im, num_threads=num_threads, backend=backend)
