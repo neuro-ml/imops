@@ -62,8 +62,10 @@ def box_to_shape(box: Box) -> Tuple:
 
 
 @returns_box
-def change_box(box: Box, deltas: np.ndarray) -> Box:
-    """Change box by `deltas`."""
-    assert box.shape[1] == deltas.shape[0]
-
-    return box + [-deltas, deltas]
+def add_margin(box: Box, margin) -> Box:
+    """
+    Returns a box with size increased by the ``margin`` (need to be broadcastable to the box)
+    compared to the input ``box``.
+    """
+    margin = np.broadcast_to(margin, box.shape)
+    return box[0] - margin[0], box[1] + margin[1]

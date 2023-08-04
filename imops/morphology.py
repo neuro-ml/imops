@@ -6,7 +6,7 @@ from scipy.ndimage import generate_binary_structure
 from skimage.morphology import binary_dilation as scipy_binary_dilation, binary_erosion as scipy_binary_erosion
 
 from .backend import BackendLike, Cython, Scipy, resolve_backend
-from .box import box_to_shape, change_box, mask_to_box, shape_to_box
+from .box import add_margin, box_to_shape, mask_to_box, shape_to_box
 from .crop import crop_to_box
 from .pad import restore_crop
 from .src._fast_morphology import (
@@ -112,21 +112,21 @@ def boxed_morphology(func, op_name) -> Callable:
 
         image_box = shape_to_box(image.shape)
         tight_box = mask_to_box(image)
-        supp_box = change_box(tight_box, 2 * box_delta)
+        supp_box = add_margin(tight_box, 2 * box_delta)
 
         # TODO: generalize to "anisotropic" images
         # TODO: make separate class for `Box` and implement comparison operators?
         if (supp_box[0] < image_box[0]).any() or (image_box[1] < supp_box[1]).any():
             return func(image, footprint, output, num_threads)
 
-        final_crop_box = change_box(tight_box, box_delta)
+        final_crop_box = add_margin(tight_box, box_delta)
 
         supp_image = crop_to_box(image, supp_box)
         supp_output = np.empty_like(supp_image, dtype=bool)
 
         cropped = crop_to_box(
             func(supp_image, footprint, supp_output, num_threads),
-            change_box(shape_to_box(box_to_shape(supp_box)), -box_delta),  # crop border values of supp_box
+            add_margin(shape_to_box(box_to_shape(supp_box)), -box_delta),  # crop border values of supp_box
         )
 
         output = restore_crop(cropped, final_crop_box, image.shape, False)
