@@ -60,6 +60,18 @@ def test_numba_num_threads(order):
         zoom(inp, 2, order=order, num_threads=2, backend='Numba')
 
 
+def test_callable_fill_value(backend, order):
+    inp = np.random.randn(64, 64, 64)
+    scale = np.random.uniform(0.5, 1.5, size=inp.ndim)
+
+    out = zoom(inp, scale, fill_value=np.min, order=order, backend=backend)
+    without_borders = np.index_exp[:-1, :-1, :-1]
+
+    allclose(
+        scipy_zoom(inp, scale, cval=np.min(inp), order=order)[without_borders], out[without_borders], err_msg=f'{scale}'
+    )
+
+
 def test_shape(backend, order):
     inp = np.random.rand(3, 10, 10) * 2 + 3
     shape = inp.shape

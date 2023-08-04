@@ -120,6 +120,7 @@ def zoom(
     if callable(fill_value):
         fill_value = fill_value(x)
 
+    # TODO: does `fill_value/cval` change anythng?
     return _zoom(x, scale_factor, order=order, cval=fill_value, num_threads=num_threads, backend=backend)
 
 

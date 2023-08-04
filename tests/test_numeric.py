@@ -98,7 +98,7 @@ def test_stress_sum(backend, num_threads, dtype):
 
 def test_stress_pointwise_mul(backend, num_threads, dtype):
     for _ in range(32):
-        shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
 
         nums1 = (32 * np.random.randn(*shape)).astype(dtype)
         nums2 = (32 * np.random.randn(*shape)).astype(dtype)
@@ -114,7 +114,7 @@ def test_stress_pointwise_mul(backend, num_threads, dtype):
 
 def test_broadcast_pointwise_mul(backend, num_threads, dtype):
     for _ in range(32):
-        shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
 
         nums1 = (32 * np.random.randn(*[x if np.random.binomial(1, 0.7) else 1 for x in shape])).astype(dtype)
         nums2 = (32 * np.random.randn(*[x if np.random.binomial(1, 0.7) else 1 for x in shape])).astype(dtype)
