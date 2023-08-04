@@ -1,41 +1,13 @@
 import itertools
 from copy import copy
 from functools import wraps
-from typing import Callable, Sequence, Tuple
+from typing import Callable, Tuple
 
 import numpy as np
 
 
 # Immutable numpy array
 Box = np.ndarray
-
-
-def check_len(*args) -> None:
-    lengths = list(map(len, args))
-    if any(length != lengths[0] for length in lengths):
-        raise ValueError(f'Arguments of equal length are required: {", ".join(map(str, lengths))}')
-
-
-def build_slices(start: Sequence[int], stop: Sequence[int] = None, step: Sequence[int] = None) -> Tuple[slice, ...]:
-    """
-    Returns a tuple of slices built from `start` and `stop` with `step`.
-
-    Examples
-    --------
-    >>> build_slices([1, 2, 3], [4, 5, 6])
-    (slice(1, 4), slice(2, 5), slice(3, 6))
-    >>> build_slices([10, 11])
-    (slice(10), slice(11))
-    """
-
-    check_len(*filter(lambda x: x is not None, [start, stop, step]))
-    args = [
-        start,
-        stop if stop is not None else [None for _ in start],
-        step if step is not None else [None for _ in start],
-    ]
-
-    return tuple(map(slice, *args))
 
 
 def make_box(iterable) -> Box:
