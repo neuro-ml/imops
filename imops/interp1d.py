@@ -91,21 +91,21 @@ class interp1d:
             )
             self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
         else:
+            if len(x) != y.shape[axis]:
+                raise ValueError(
+                    f'x and y arrays must be equal in length along interpolation axis: {len(x)} vs {y.shape[axis]}.'
+                )
+
             if bounds_error and fill_value == 'extrapolate':
                 raise ValueError('Cannot extrapolate and raise at the same time.')
 
-            if fill_value == 'extrapolate' and len(x) < 2 or len(y) < 2:
+            if fill_value == 'extrapolate' and len(x) < 2 or y.shape[axis] < 2:
                 raise ValueError('x and y arrays must have at least 2 entries.')
 
             if fill_value == 'extrapolate':
                 self.bounds_error = False
             else:
                 self.bounds_error = True if bounds_error is None else bounds_error
-
-            if len(x) != y.shape[axis]:
-                raise ValueError(
-                    f'x and y arrays must be equal in length along interpolation axis: {len(x)} vs {y.shape[axis]}.'
-                )
 
             self.axis = axis
 
