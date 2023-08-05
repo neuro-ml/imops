@@ -6,7 +6,7 @@ from numpy.testing import assert_allclose as allclose
 from scipy.interpolate import interp1d as scipy_interp1d
 
 from imops._configs import interp1d_configs
-from imops.backend import Backend
+from imops.backend import Backend, Scipy
 from imops.interp1d import interp1d
 
 
@@ -38,6 +38,21 @@ def test_single_threaded_warning():
 
     with pytest.warns(UserWarning):
         interp1d(x, y, axis=0, fill_value=0, num_threads=2, backend='Scipy')(x)
+
+
+def test_extrapolate_error(backend):
+    x = np.array([0.0])
+    y = np.array([1.0])
+
+    if backend != Scipy():
+        with pytest.raises(ValueError):
+            interp1d(x, y, fill_value='extrapolate', backend=backend)
+
+    x = np.array([1.0, 2.0, 3.0])
+    y = np.array([1.0, 2.0, 3.0])
+
+    with pytest.raises(ValueError):
+        interp1d(x, y, fill_value='extrapolate', bounds_error=True, backend=backend)
 
 
 def test_numba_num_threads():

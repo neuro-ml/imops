@@ -264,6 +264,13 @@ def test_center_of_mass(num_threads, backend, dtype):
         allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-4)
 
 
+def test_scipy_warning(num_threads, backend, dtype):
+    inp = np.random.randn(32, 32, 32, 32).astype(dtype)
+
+    with pytest.warns(UserWarning):
+        center_of_mass(inp, num_threads=num_threads, backend=backend)
+
+
 def test_labeled_center_of_mass(backend, dtype, label_dtype):
     for _ in range(32):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
