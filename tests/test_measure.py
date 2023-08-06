@@ -314,7 +314,7 @@ def test_labels_shape_mismatch(backend):
 
 def test_not_unique_index(backend):
     inp = np.random.randn(32, 32, 32)
-    labels = np.random.randint(0, 4, size=(1, 2, 3))
+    labels = np.random.randint(0, 4, size=(32, 32, 32))
     index = np.array([1, 1, 2])
 
     if backend != Scipy():
