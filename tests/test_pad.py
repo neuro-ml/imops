@@ -133,6 +133,13 @@ def test_restore_crop():
     assert (restore_crop(crop_to_box(x, box), box, x.shape)).shape == x.shape
 
 
+def test_restore_crop_invalid_box():
+    x = np.ones((2, 3, 4))
+
+    with pytest.raises(ValueError):
+        restore_crop(x, np.array([[0, 0, 0], [1, 1, 1]]), [4, 4, 4])
+
+
 def test_pad_to_divisible():
     x = np.zeros((4, 8, 12))
 
@@ -149,3 +156,10 @@ def test_pad_to_divisible():
 
     y = pad_to_divisible(x, 4, remainder=2)
     assert_eq(y, np.zeros((6, 6)))
+
+
+def test_negative_padding():
+    x = np.zeros((3, 4, 5))
+
+    with pytest.raises(ValueError):
+        pad(x, padding=-1)

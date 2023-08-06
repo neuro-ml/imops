@@ -9,7 +9,7 @@ from scipy.ndimage import center_of_mass as scipy_center_of_mass
 from skimage.measure import label as sk_label
 
 from imops._configs import measure_configs
-from imops.backend import Backend
+from imops.backend import Backend, Scipy
 from imops.measure import center_of_mass, label
 
 
@@ -108,6 +108,23 @@ def test_zeros(connectivity, ndim):
         label(inp, connectivity=connectivity),
         err_msg=f'{connectivity, ndim}',
     )
+
+
+def test_out_dtype(connectivity, ndim):
+    connectivity = min(connectivity, ndim)
+
+    for dtype in [np.uint16, np.uint32, np.uint64]:
+
+        inp = np.zeros(np.random.randint(32, 64, size=ndim))
+        if ndim == 4:
+            inp = inp.astype(bool)
+
+        out = label(inp, connectivity=connectivity, dtype=dtype)
+        assert_eq(
+            sk_label(inp, connectivity=connectivity).astype(dtype),
+            out,
+            err_msg=f'{connectivity, ndim, dtype}',
+        )
 
 
 def test_multiple_output():
@@ -269,6 +286,40 @@ def test_scipy_warning(num_threads, backend, dtype):
 
     with pytest.warns(UserWarning):
         center_of_mass(inp, num_threads=num_threads, backend=backend)
+
+
+def test_labels_index_dtype(backend):
+    inp = np.random.randn(32, 32, 32)
+    labels = np.random.randint(0, 4, size=inp.shape)
+    index = np.array([False, True])
+
+    if backend != Scipy():
+        with pytest.raises(ValueError):
+            center_of_mass(inp, labels=labels, index=index, backend=backend)
+
+
+def test_labels_shape_mismatch(backend):
+    inp = np.random.randn(32, 32, 32)
+    labels = np.random.randint(0, 4, size=(1, 2, 3))
+    index = np.array([0, 1, 2])
+
+    with pytest.raises(ValueError):
+        center_of_mass(inp, labels=labels, index=index, backend=backend)
+
+    labels = np.random.randint(0, 4, size=(1, 2))
+
+    with pytest.raises(ValueError):
+        center_of_mass(inp, labels=labels, index=index, backend=backend)
+
+
+def test_not_unique_index(backend):
+    inp = np.random.randn(32, 32, 32)
+    labels = np.random.randint(0, 4, size=(1, 2, 3))
+    index = np.array([1, 1, 2])
+
+    if backend != Scipy():
+        with pytest.raises(ValueError):
+            center_of_mass(inp, labels=labels, index=index, backend=backend)
 
 
 def test_labeled_center_of_mass(backend, dtype, label_dtype):

@@ -74,6 +74,27 @@ def test_empty(pair, backend):
         imops_op(np.ones(1), np.array([]))
 
 
+def test_wrong_footprint(pair, backend):
+    imops_op = pair[1]
+
+    inp = np.ones((3, 4, 5))
+    footprint = np.ones((1, 2))
+
+    if backend != 'Scipy':
+        with pytest.raises(ValueError):
+            imops_op(inp, footprint=footprint, backend=backend)
+
+
+def test_scipy_warning(pair, backend):
+    imops_op = pair[1]
+
+    inp = np.ones((3, 4, 5, 6))
+
+    if backend != 'Scipy':
+        with pytest.warns(UserWarning):
+            imops_op(inp, backend=backend)
+
+
 def test_stress(pair, backend, footprint_shape_modifier, boxed):
     # FIXME
     def take_by_coords(array, coords):

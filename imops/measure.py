@@ -195,6 +195,9 @@ def center_of_mass(
         is_sequence = isinstance(index, (Sequence, np.ndarray))
         index = np.array([index] if not is_sequence else index)
 
+        if labels.shape != array.shape:
+            raise ValueError(f'`array` and `labels` must be the same shape, got {array.shape} and {labels.shape}.')
+
         if labels.dtype != index.dtype:
             raise ValueError(f'`labels` and `index` must have same dtype, got {labels.dtype} and {index.dtype}.')
 
