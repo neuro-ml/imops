@@ -80,7 +80,7 @@ def test_wrong_footprint(pair, backend):
     inp = np.ones((3, 4, 5))
     footprint = np.ones((1, 2))
 
-    if backend != 'Scipy':
+    if backend != Scipy():
         with pytest.raises(ValueError):
             imops_op(inp, footprint=footprint, backend=backend)
 
@@ -90,7 +90,7 @@ def test_scipy_warning(pair, backend):
 
     inp = np.ones((3, 4, 5, 6))
 
-    if backend != 'Scipy':
+    if backend != Scipy():
         with pytest.warns(UserWarning):
             imops_op(inp, backend=backend)
 
