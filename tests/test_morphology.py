@@ -95,6 +95,41 @@ def test_scipy_warning(pair, backend):
             imops_op(inp, backend=backend)
 
 
+def test_output_shape_mismatch(pair, backend, boxed):
+    imops_op = pair[1]
+    boxed = boxed and backend != Scipy()
+
+    inp = np.ones((3, 4, 5))
+    output = np.empty((3, 4, 6), dtype=bool)
+
+    with pytest.raises(ValueError):
+        imops_op(inp, output=output, backend=backend, boxed=boxed)
+
+
+def test_output_c_contiguity_mismatch(pair, backend, boxed):
+    imops_op = pair[1]
+    boxed = boxed and backend != Scipy()
+
+    inp = np.ones((3, 4, 5))
+    output = np.empty((6, 8, 10), dtype=bool)[::2, ::2, ::2]
+
+    with pytest.raises(ValueError):
+        imops_op(inp, output=output, backend=backend, boxed=boxed)
+
+
+def test_trivial_input_warning(pair, backend, boxed):
+    imops_op = pair[1]
+
+    inp = np.ones((3, 4, 5)).astype(bool)
+
+    if backend != Scipy():
+        with pytest.warns(UserWarning):
+            imops_op(inp, backend=backend, boxed=boxed)
+
+        with pytest.warns(UserWarning):
+            imops_op((1 - inp).astype(bool), backend=backend, boxed=boxed)
+
+
 def test_stress(pair, backend, footprint_shape_modifier, boxed):
     # FIXME
     def take_by_coords(array, coords):
