@@ -21,6 +21,7 @@ np.random.seed(1337)
 # FIXME: fix inconsistency
 # rtol=1e-6 as there is still some inconsistency
 allclose = partial(allclose, rtol=1e-6)
+n_samples = 8
 
 
 @dataclass
@@ -35,6 +36,11 @@ def backend(request):
 
 @pytest.fixture(params=[0, 1])
 def order(request):
+    return request.param
+
+
+@pytest.fixture(params=[np.float32, np.float64, bool, np.int16, np.int32, np.int64])
+def dtype(request):
     return request.param
 
 
@@ -82,44 +88,59 @@ def test_shape(backend, order):
     assert zoom(inp, (4, 3), axis=(1, 2), order=order, backend=backend).shape == (3, 40, 30)
 
 
-def test_identity(backend, order):
-    for i in range(16):
+def test_identity(backend, order, dtype):
+    if order == 1 and dtype not in (np.float32, np.float64):
+        return
+
+    for i in range(n_samples):
         shape = np.random.randint(2, 32, size=np.random.randint(1, ZOOM_SRC_DIM + 1))
         inp = np.random.randn(*shape)
+        if dtype == bool:
+            inp = inp > 0
+        else:
+            inp = inp.astype(dtype)
 
         allclose(inp, zoom(inp, 1, order=order, backend=backend), err_msg=f'{i, shape}')
 
 
-def test_dtype(backend, order):
-    in_dtypes = [np.float32, np.float64] + (order == 0) * [np.int16, np.int32, np.int64]
-    for inp_dtype in in_dtypes:
-        for scale_dtype in (np.int32, np.float32, np.float64):
-            for i in range(4):
-                shape = np.random.randint(2, 32, size=np.random.randint(1, ZOOM_SRC_DIM + 1))
-                inp = (10 * np.random.randn(*shape)).astype(inp_dtype)
-                inp_copy = np.copy(inp)
-                scale = np.random.uniform(0.5, 1.5, size=inp.ndim).astype(scale_dtype)
+def test_dtype(backend, order, dtype):
+    if order == 1 and dtype not in (np.float32, np.float64):
+        return
 
-                without_borders = np.index_exp[:-1, :-1, :-1, :-1, :-1][: inp.ndim]
+    for scale_dtype in (np.int32, np.float32, np.float64):
+        for i in range(n_samples):
+            shape = np.random.randint(2, 32, size=np.random.randint(1, ZOOM_SRC_DIM + 1))
+            inp = np.random.randn(*shape)
+            if dtype == bool:
+                inp = inp > 0
+            else:
+                inp = inp.astype(dtype)
+            inp_copy = np.copy(inp)
+            scale = np.random.uniform(0.5, 1.5, size=inp.ndim).astype(scale_dtype)
 
-                out = zoom(inp, scale, order=order, backend=backend)
-                desired_out = scipy_zoom(inp, scale, order=order)
+            without_borders = np.index_exp[:-1, :-1, :-1, :-1, :-1][: inp.ndim]
 
-                allclose(out[without_borders], desired_out[without_borders], err_msg=f'{i, inp_dtype, scale_dtype}')
-                assert (
-                    out.dtype == desired_out.dtype == inp_dtype
-                ), f'{i, out.dtype, desired_out.dtype, inp_dtype, scale_dtype}'
+            out = zoom(inp, scale, order=order, backend=backend)
+            desired_out = scipy_zoom(inp, scale, order=order)
 
-                allclose(inp, inp_copy, err_msg=f'{i, inp_dtype, scale_dtype}')
-                assert (
-                    inp.dtype == inp_copy.dtype == inp_dtype
-                ), f'{i, inp.dtype, inp_copy.dtype, inp_dtype, scale_dtype}'
+            allclose(out[without_borders], desired_out[without_borders], err_msg=f'{i, dtype, scale_dtype}')
+            assert out.dtype == desired_out.dtype == dtype, f'{i, out.dtype, desired_out.dtype, dtype, scale_dtype}'
+
+            allclose(inp, inp_copy, err_msg=f'{i, dtype, scale_dtype}')
+            assert inp.dtype == inp_copy.dtype == dtype, f'{i, inp.dtype, inp_copy.dtype, dtype, scale_dtype}'
 
 
-def test_scale_types(backend, order):
+def test_scale_types(backend, order, dtype):
+    if order == 1 and dtype not in (np.float32, np.float64):
+        return
+
     scales = [2, 2.0, (2, 2, 2), [2, 2, 2], np.array([2, 2, 2])]
 
     inp = np.random.randn(64, 64, 64)
+    if dtype == bool:
+        inp = inp > 0
+    else:
+        inp = inp.astype(dtype)
     prev = None
 
     for scale in scales:
@@ -131,9 +152,17 @@ def test_scale_types(backend, order):
         prev = out
 
 
-def test_contiguity_awareness(backend, order):
+def test_contiguity_awareness(backend, order, dtype):
+    if order == 1 and dtype not in (np.float32, np.float64):
+        return
+
     for i in range(ZOOM_SRC_DIM):
         inp = np.random.randn(*(32,) * (ZOOM_SRC_DIM - i))
+        if dtype == bool:
+            inp = inp > 0
+        else:
+            inp = inp.astype(dtype)
+
         scale = np.random.uniform(0.5, 1.5, size=inp.ndim)
 
         zoom(inp, scale, order=order, backend=backend)
@@ -156,8 +185,17 @@ def test_contiguity_awareness(backend, order):
             assert get_c_contiguous_permutaion(permuted) is not None, f"Didn't find permutation for {i, permutation}"
 
 
-def test_nocontiguous(backend, order):
-    inp = np.random.randn(64, 64, 64)[::2]
+def test_nocontiguous(backend, order, dtype):
+    if order == 1 and dtype not in (np.float32, np.float64):
+        return
+
+    inp = np.random.randn(64, 64, 64)
+    if dtype == bool:
+        inp = inp > 0
+    else:
+        inp = inp.astype(dtype)
+    inp = inp[::2]
+
     scale = 2
 
     desired_out = scipy_zoom(inp, scale, order=order)
@@ -170,11 +208,18 @@ def test_nocontiguous(backend, order):
             allclose(zoom(inp, 2, order=order, backend=backend)[without_borders], desired_out[without_borders])
 
 
-def test_thin(backend, order):
+def test_thin(backend, order, dtype):
+    if order == 1 and dtype not in (np.float32, np.float64):
+        return
+
     for i in range(ZOOM_SRC_DIM):
-        for j in range(16):
+        for j in range(n_samples):
             shape = [1 if k < i else np.random.randint(2, 32) for k in range(ZOOM_SRC_DIM + 1)]
             inp = np.random.randn(*shape)
+            if dtype == bool:
+                inp = inp > 0
+            else:
+                inp = inp.astype(dtype)
             scale = np.random.uniform(0.5, 1.5, size=len(shape))
 
             without_borders = np.index_exp[
@@ -190,11 +235,18 @@ def test_thin(backend, order):
             )
 
 
-def test_stress(backend, order):
+def test_stress(backend, order, dtype):
     """Make sure that our zoom-s are consistent with scipy's"""
-    for i in range(32):
+    if order == 1 and dtype not in (np.float32, np.float64):
+        return
+
+    for i in range(n_samples):
         shape = np.random.randint(16, 32, size=np.random.randint(1, ZOOM_SRC_DIM + 1))
         inp = np.random.randn(*shape)
+        if dtype == bool:
+            inp = inp > 0
+        else:
+            inp = inp.astype(dtype)
         scale = np.random.uniform(0.5, 2, size=inp.ndim if np.random.binomial(1, 0.5) else 1)
         if len(scale) == 1:
             scale = scale[0]

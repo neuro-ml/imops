@@ -228,7 +228,7 @@ def _zoom(
         or (
             dtype not in (np.float32, np.float64)
             if order == 1
-            else dtype not in (np.float32, np.float64, np.int16, np.int32, np.int64)
+            else dtype not in (bool, np.float32, np.float64, np.int16, np.int32, np.int64)
         )
         or ndim > 4
         or output is not None
@@ -239,7 +239,6 @@ def _zoom(
             'Fast zoom is only supported for ndim<=4, dtype=fp32 or fp64 (and int16-32-64 if order == 0), output=None, '
             "order=0 or 1, mode='constant', grid_mode=False. Falling back to scipy's implementation.",
         )
-
         return scipy_zoom(
             input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
