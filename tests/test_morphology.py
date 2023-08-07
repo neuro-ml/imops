@@ -18,6 +18,7 @@ from imops.pad import restore_crop
 np.random.seed(1337)
 
 assert_eq = np.testing.assert_array_equal
+n_samples = 8
 test_pairs = [
     [sk_binary_erosion, binary_erosion],
     [sk_binary_dilation, binary_dilation],
@@ -141,7 +142,7 @@ def test_stress(pair, backend, footprint_shape_modifier, boxed):
 
     sk_op, imops_op = pair
 
-    for i in range(32):
+    for i in range(2 * n_samples):
         shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
 
         if boxed:

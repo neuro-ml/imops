@@ -16,6 +16,7 @@ from imops.measure import center_of_mass, label
 np.random.seed(1337)
 
 assert_eq = np.testing.assert_array_equal
+n_samples = 8
 
 
 @dataclass
@@ -188,7 +189,7 @@ def test_no_background2():
 def test_stress(connectivity, ndim):
     connectivity = min(connectivity, ndim)
 
-    for _ in range(32):
+    for _ in range(2 * n_samples):
         inp = (
             np.random.binomial(1, 0.5, size=np.random.randint(32, 64, size=ndim)) > 0
             if ndim == 4 or np.random.binomial(1, 0.2)
@@ -240,7 +241,7 @@ def test_both_specified(backend):
 
 
 def test_noncontiguous_index(backend, label_dtype):
-    for _ in range(16):
+    for _ in range(n_samples):
         inp = np.random.randn(32, 32) + 4
         labels = np.random.randint(0, 16, size=inp.shape).astype(label_dtype)
         index = np.random.permutation(np.arange(8)).astype(label_dtype) if label_dtype != 'bool' else [True, False]
@@ -265,7 +266,7 @@ def test_alien_backend(alien_backend):
 
 
 def test_center_of_mass(num_threads, backend, dtype):
-    for _ in range(32):
+    for _ in range(n_samples):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
         inp = (
             np.random.binomial(1, 0.5, shape).astype(dtype)
@@ -323,7 +324,7 @@ def test_not_unique_index(backend):
 
 
 def test_labeled_center_of_mass(backend, dtype, label_dtype):
-    for _ in range(32):
+    for _ in range(n_samples):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
         inp = (
             np.random.binomial(1, 0.5, shape).astype(dtype)

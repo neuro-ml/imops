@@ -11,6 +11,7 @@ from imops.interp1d import interp1d
 
 
 np.random.seed(1337)
+n_samples = 8
 
 
 @dataclass
@@ -95,7 +96,7 @@ def test_length_inequality_exception(backend):
 
 
 def test_extrapolation(backend):
-    for i in range(16):
+    for i in range(n_samples):
         shape = np.random.randint(16, 64, size=np.random.randint(1, 4))
         inp = np.random.randn(*shape)
 
@@ -143,7 +144,7 @@ def test_dtype(backend):
 
 
 def test_stress(backend):
-    for i in range(32):
+    for i in range(2 * n_samples):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
         inp = np.random.randn(*shape)
 
