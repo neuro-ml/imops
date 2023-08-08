@@ -186,7 +186,7 @@ def center_of_mass(
 
     ndim = array.ndim
     if ndim > 3:
-        warn("Fast center-of-mass is only supported for ndim<=4. Falling back to scipy's implementation.")
+        warn("Fast center-of-mass is only supported for ndim<=3. Falling back to scipy's implementation.")
         return scipy_center_of_mass(array, labels, index)
 
     if labels is None:
