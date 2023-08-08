@@ -2044,7 +2044,7 @@ Remaining ratio of padding will be applied on the right sides</p>
   <div class="doc doc-contents first">
   
       <p>Rescale <code>x</code> according to <code>scale_factor</code> along the <code>axis</code>.</p>
-<p>Uses a fast parallelizable implementation for fp32 / fp64 (and int16-32-64 if order == 0) inputs,
+<p>Uses a fast parallelizable implementation for fp32 / fp64 (and bool-int16-32-64 if order == 0) inputs,
 ndim &lt;= 4 and order = 0 or 1.</p>
 
 
@@ -2260,7 +2260,7 @@ cpu count + num_threads + 1 threads will be used</p>
 <a id="__codelineno-0-81" name="__codelineno-0-81"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <a id="__codelineno-0-82" name="__codelineno-0-82"></a><span class="sd">    Rescale `x` according to `scale_factor` along the `axis`.</span>
 <a id="__codelineno-0-83" name="__codelineno-0-83"></a>
-<a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">    Uses a fast parallelizable implementation for fp32 / fp64 (and int16-32-64 if order == 0) inputs,</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">    Uses a fast parallelizable implementation for fp32 / fp64 (and bool-int16-32-64 if order == 0) inputs,</span>
 <a id="__codelineno-0-85" name="__codelineno-0-85"></a><span class="sd">    ndim &lt;= 4 and order = 0 or 1.</span>
 <a id="__codelineno-0-86" name="__codelineno-0-86"></a>
 <a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="sd">    Parameters</span>
@@ -2321,7 +2321,7 @@ cpu count + num_threads + 1 threads will be used</p>
   <div class="doc doc-contents first">
   
       <p>Rescale <code>x</code> to match <code>shape</code> along the <code>axis</code>.</p>
-<p>Uses a fast parallelizable implementation for fp32 / fp64 (and int16-32-64 if order == 0) inputs,
+<p>Uses a fast parallelizable implementation for fp32 / fp64 (and bool-int16-32-64 if order == 0) inputs,
 ndim &lt;= 4 and order = 0 or 1.</p>
 
 
@@ -2542,7 +2542,7 @@ cpu count + num_threads + 1 threads will be used</p>
 <a id="__codelineno-0-136" name="__codelineno-0-136"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <a id="__codelineno-0-137" name="__codelineno-0-137"></a><span class="sd">    Rescale `x` to match `shape` along the `axis`.</span>
 <a id="__codelineno-0-138" name="__codelineno-0-138"></a>
-<a id="__codelineno-0-139" name="__codelineno-0-139"></a><span class="sd">    Uses a fast parallelizable implementation for fp32 / fp64 (and int16-32-64 if order == 0) inputs,</span>
+<a id="__codelineno-0-139" name="__codelineno-0-139"></a><span class="sd">    Uses a fast parallelizable implementation for fp32 / fp64 (and bool-int16-32-64 if order == 0) inputs,</span>
 <a id="__codelineno-0-140" name="__codelineno-0-140"></a><span class="sd">    ndim &lt;= 4 and order = 0 or 1.</span>
 <a id="__codelineno-0-141" name="__codelineno-0-141"></a>
 <a id="__codelineno-0-142" name="__codelineno-0-142"></a><span class="sd">    Parameters</span>
@@ -5037,7 +5037,7 @@ used</p>
 <a id="__codelineno-0-186" name="__codelineno-0-186"></a>
 <a id="__codelineno-0-187" name="__codelineno-0-187"></a>    <span class="n">ndim</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">ndim</span>
 <a id="__codelineno-0-188" name="__codelineno-0-188"></a>    <span class="k">if</span> <span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-<a id="__codelineno-0-189" name="__codelineno-0-189"></a>        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Fast center-of-mass is only supported for ndim&lt;=4. Falling back to scipy&#39;s implementation.&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-189" name="__codelineno-0-189"></a>        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Fast center-of-mass is only supported for ndim&lt;=3. Falling back to scipy&#39;s implementation.&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-190" name="__codelineno-0-190"></a>        <span class="k">return</span> <span class="n">scipy_center_of_mass</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
 <a id="__codelineno-0-191" name="__codelineno-0-191"></a>
 <a id="__codelineno-0-192" name="__codelineno-0-192"></a>    <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
