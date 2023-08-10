@@ -5,7 +5,9 @@
 
 # Imops
 
-Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines. Docs are [here](https://neuro-ml.github.io/imops/). Benchmarks are [here](WAITING FOR BENCHMARKS).
+Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines.
+[Documentation](https://neuro-ml.github.io/imops/)
+[Benchmarks](https://neuro-ml.github.io/imops/benchmarks/)
 
 # Install
 
@@ -117,7 +119,7 @@ Available backends:
 
 # How fast is it?
 
-We use [`airspeed velocity`](https://asv.readthedocs.io/en/stable/) to benchmark our code. All results are available [here](WAITING FOR BENCHMARKS).
+We use [`airspeed velocity`](https://asv.readthedocs.io/en/stable/) to benchmark our code. All results are available [here](https://neuro-ml.github.io/imops/benchmarks/).
 
 # Acknowledgements
 
