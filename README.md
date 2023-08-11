@@ -6,9 +6,8 @@
 # Imops
 
 Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines.
-
-- [Documentation](https://neuro-ml.github.io/imops/)
-- [Benchmarks](https://neuro-ml.github.io/imops/benchmarks/)
+[Documentation](https://neuro-ml.github.io/imops/)
+[Benchmarks](https://neuro-ml.github.io/imops/benchmarks/)
 
 # Install
 
@@ -16,6 +15,24 @@ Efficient parallelizable algorithms for multidimensional arrays to speed up your
 pip install imops  # default install with Cython backend
 pip install imops[numba]  # additionally install Numba backend
 ```
+
+# How Fast is it?
+
+Time comparisons (ms) for Intel(R) Xeon(R) Silver 4114 CPU @ 2.20GHz using 8 threads. All inputs are C-contiguous NumPy arrays. For morphology functions `bool` dtype is used and `float64` for all others.
+| function / backend   |  Scipy()  |  Cython(fast=False)  |  Cython(fast=True)  |  Numba()  |
+|:----------------------:|:-----------:|:----------------------:|:---------------------:|:-----------:|
+| `zoom(..., order=0)` |   2072    |         1114         |         **867**         |   3590    |
+| `zoom(..., order=1)` |   6527    |         596          |         **575**         |   3757    |
+| `interp1d`           |    780    |         149          |         **146**         |    420    |
+| `radon`              |   59711   |         5982         |        **4837**         |      -     |
+| `inverse_radon`      |   52928   |         8254         |        **6535**         |         -  |
+| `binary_dilation`    |   2207    |         310          |         **298**         |        -   |
+| `binary_erosion`     |   2296    |         326          |         **304**         |        -   |
+| `binary_closing`     |   4158    |         544          |         **469**         |        -   |
+| `binary_opening`     |   4410    |         567          |         **522**         |        -   |
+| `center_of_mass`     |   2237    |          **64**          |         **64**          |        -   |
+
+We use [`airspeed velocity`](https://asv.readthedocs.io/en/stable/) to benchmark our code. For detailed results visit [benchmark page](https://neuro-ml.github.io/imops/benchmarks/).
 
 # Features
 
@@ -105,10 +122,9 @@ with imops_backend('Cython'):  # sets Cython backend via context manager
 ```
 Note that for `Numba` backend setting `num_threads` argument has no effect for now and you should use `NUMBA_NUM_THREADS` environment variable.
 Available backends:
-|                   | Scipy   | Cython  | Numba   |
-|-------------------|---------|---------|---------|
+|         function / backend            | Scipy   | Cython  | Numba   |
+|:-------------------:|:---------:|:---------:|:---------:|
 | `zoom`            | &check; | &check; | &check; |
-| `zoom_to_shape`   | &check; | &check; | &check; |
 | `interp1d`        | &check; | &check; | &check; |
 | `radon`           | &cross; | &check; | &cross; |
 | `inverse_radon`   | &cross; | &check; | &cross; |
@@ -117,10 +133,6 @@ Available backends:
 | `binary_closing`  | &check; | &check; | &cross; |
 | `binary_opening`  | &check; | &check; | &cross; |
 | `center_of_mass`  | &check; | &check; | &cross; |
-
-# How fast is it?
-
-We use [`airspeed velocity`](https://asv.readthedocs.io/en/stable/) to benchmark our code. All results are available [here](https://neuro-ml.github.io/imops/benchmarks/).
 
 # Acknowledgements
 
