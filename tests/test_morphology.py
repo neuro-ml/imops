@@ -10,24 +10,31 @@ from skimage.morphology import (
 )
 
 from imops._configs import morphology_configs
-from imops.backend import Backend
+from imops.backend import Backend, Scipy
 from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening
+from imops.pad import restore_crop
 
 
 np.random.seed(1337)
 
 assert_eq = np.testing.assert_array_equal
+n_samples = 8
 test_pairs = [
-    [sk_binary_dilation, binary_dilation],
     [sk_binary_erosion, binary_erosion],
-    [sk_binary_closing, binary_closing],
+    [sk_binary_dilation, binary_dilation],
     [sk_binary_opening, binary_opening],
+    [sk_binary_closing, binary_closing],
 ]
 
 
 @dataclass
 class Alien7(Backend):
     pass
+
+
+@pytest.fixture(params=[False, True], ids=['boxed=False', 'boxed=True'])
+def boxed(request):
+    return request.param
 
 
 @pytest.fixture(params=morphology_configs, ids=map(str, morphology_configs))
@@ -68,20 +75,107 @@ def test_empty(pair, backend):
         imops_op(np.ones(1), np.array([]))
 
 
-def test_stress(pair, backend, footprint_shape_modifier):
+def test_wrong_footprint(pair, backend):
+    imops_op = pair[1]
+
+    inp = np.ones((3, 4, 5))
+    footprint = np.ones((1, 2))
+
+    if backend != Scipy():
+        with pytest.raises(ValueError):
+            imops_op(inp, footprint=footprint, backend=backend)
+
+
+def test_scipy_warning(pair, backend):
+    imops_op = pair[1]
+
+    inp = np.ones((3, 4, 5, 6))
+
+    if backend != Scipy():
+        with pytest.warns(UserWarning):
+            imops_op(inp, backend=backend)
+
+
+def test_output_shape_mismatch(pair, backend, boxed):
+    imops_op = pair[1]
+    boxed = boxed and backend != Scipy()
+
+    inp = np.ones((3, 4, 5))
+    output = np.empty((3, 4, 6), dtype=bool)
+
+    with pytest.raises(ValueError):
+        imops_op(inp, output=output, backend=backend, boxed=boxed)
+
+
+def test_output_c_contiguity_mismatch(pair, backend, boxed):
+    imops_op = pair[1]
+    boxed = boxed and backend != Scipy()
+
+    inp = np.ones((3, 4, 5))
+    output = np.empty((6, 8, 10), dtype=bool)[::2, ::2, ::2]
+
+    with pytest.raises(ValueError):
+        imops_op(inp, output=output, backend=backend, boxed=boxed)
+
+
+def test_trivial_input_warning(pair, backend, boxed):
+    imops_op = pair[1]
+
+    inp = np.ones((3, 4, 5)).astype(bool)
+
+    if backend != Scipy():
+        with pytest.warns(UserWarning):
+            imops_op(inp, backend=backend, boxed=boxed)
+
+        with pytest.warns(UserWarning):
+            imops_op((1 - inp).astype(bool), backend=backend, boxed=boxed)
+
+
+def test_stress(pair, backend, footprint_shape_modifier, boxed):
+    # FIXME
+    def take_by_coords(array, coords):
+        copy_array = np.copy(array)
+        for coord in coords:
+            copy_array = copy_array[coord]
+
+        return copy_array
+
     sk_op, imops_op = pair
 
-    for i in range(32):
+    for i in range(2 * n_samples):
         shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
-        inp = np.random.binomial(1, 0.5, shape)
+
+        if boxed:
+            box_size = np.asarray([np.random.randint(s // 3, s + 1) for s in shape])
+            box_pos = np.asarray([np.random.randint(0, s - bs + 1) for bs, s in zip(box_size, shape)])
+            box_coord = np.array([box_pos, box_pos + box_size])
+            inp = np.random.binomial(1, 0.7, box_size)
+            inp = restore_crop(inp, box_coord, shape, 0)
+        else:
+            inp = np.random.binomial(1, 0.5, shape)
 
         footprint_shape = footprint_shape_modifier(np.random.randint(1, 4, size=inp.ndim))
         footprint = np.random.binomial(1, 0.5, footprint_shape) if np.random.binomial(1, 0.5, 1) else None
 
+        if backend == Scipy() and boxed:
+            with pytest.raises(ValueError):
+                imops_op(inp, footprint, backend=backend, boxed=boxed)
+            return
+
+        if (
+            boxed
+            and footprint is not None
+            and (
+                ((np.asarray(footprint.shape) % 2) == 0).any()
+                or take_by_coords(footprint, np.asarray(footprint.shape) // 2) != 1
+            )
+        ):
+            return
+
         desired_out = sk_op(inp, footprint)
 
         assert_eq(
-            imops_op(inp, footprint, backend=backend),
+            imops_op(inp, footprint, backend=backend, boxed=boxed),
             desired_out,
-            err_msg=f'{i, shape, footprint}',
+            err_msg=f'{i, shape, footprint, box_coord if boxed else None}',
         )

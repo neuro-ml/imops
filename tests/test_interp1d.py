@@ -6,11 +6,12 @@ from numpy.testing import assert_allclose as allclose
 from scipy.interpolate import interp1d as scipy_interp1d
 
 from imops._configs import interp1d_configs
-from imops.backend import Backend
+from imops.backend import Backend, Scipy
 from imops.interp1d import interp1d
 
 
 np.random.seed(1337)
+n_samples = 8
 
 
 @dataclass
@@ -38,6 +39,21 @@ def test_single_threaded_warning():
 
     with pytest.warns(UserWarning):
         interp1d(x, y, axis=0, fill_value=0, num_threads=2, backend='Scipy')(x)
+
+
+def test_extrapolate_error(backend):
+    x = np.array([0.0])
+    y = np.array([1.0])
+
+    if backend != Scipy():
+        with pytest.raises(ValueError):
+            interp1d(x, y, fill_value='extrapolate', backend=backend)
+
+    x = np.array([1.0, 2.0, 3.0])
+    y = np.array([1.0, 2.0, 3.0])
+
+    with pytest.raises(ValueError):
+        interp1d(x, y, fill_value='extrapolate', bounds_error=True, backend=backend)
 
 
 def test_numba_num_threads():
@@ -80,7 +96,7 @@ def test_length_inequality_exception(backend):
 
 
 def test_extrapolation(backend):
-    for i in range(16):
+    for i in range(n_samples):
         shape = np.random.randint(16, 64, size=np.random.randint(1, 4))
         inp = np.random.randn(*shape)
 
@@ -128,7 +144,7 @@ def test_dtype(backend):
 
 
 def test_stress(backend):
-    for i in range(32):
+    for i in range(2 * n_samples):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
         inp = np.random.randn(*shape)
 

@@ -5,7 +5,9 @@
 
 # Imops
 
-Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines. Docs are [here](https://neuro-ml.github.io/imops/).
+Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines.
+- [Documentation](https://neuro-ml.github.io/imops/)
+- [Benchmarks](https://neuro-ml.github.io/imops/benchmarks/)
 
 # Install
 
@@ -14,15 +16,33 @@ pip install imops  # default install with Cython backend
 pip install imops[numba]  # additionally install Numba backend
 ```
 
+# How fast is it?
+
+Time comparisons (ms) for Intel(R) Xeon(R) Silver 4114 CPU @ 2.20GHz using 8 threads. All inputs are C-contiguous NumPy arrays. For morphology functions `bool` dtype is used and `float64` for all others.
+| function / backend   |  Scipy()  |  Cython(fast=False)  |  Cython(fast=True)  |  Numba()  |
+|:----------------------:|:-----------:|:----------------------:|:---------------------:|:-----------:|
+| `zoom(..., order=0)` |   2072    |         1114         |         **867**         |   3590    |
+| `zoom(..., order=1)` |   6527    |         596          |         **575**         |   3757    |
+| `interp1d`           |    780    |         149          |         **146**         |    420    |
+| `radon`              |   59711   |         5982         |        **4837**         |      -     |
+| `inverse_radon`      |   52928   |         8254         |        **6535**         |         -  |
+| `binary_dilation`    |   2207    |         310          |         **298**         |        -   |
+| `binary_erosion`     |   2296    |         326          |         **304**         |        -   |
+| `binary_closing`     |   4158    |         544          |         **469**         |        -   |
+| `binary_opening`     |   4410    |         567          |         **522**         |        -   |
+| `center_of_mass`     |   2237    |          **64**          |         **64**          |        -   |
+
+We use [`airspeed velocity`](https://asv.readthedocs.io/en/stable/) to benchmark our code. For detailed results visit [benchmark page](https://neuro-ml.github.io/imops/benchmarks/).
+
 # Features
 
-## Fast Radon transform
+### Fast Radon transform
 
 ```python
 from imops import radon, inverse_radon
 ```
 
-## Fast linear/bilinear/trilinear zoom
+### Fast 0/1-order zoom
 
 ```python
 from imops import zoom, zoom_to_shape
@@ -33,20 +53,20 @@ y = zoom(x, 2, axis=[0, 1])
 # without the need to compute the scale factor
 z = zoom_to_shape(x, (4, 120, 67))
 ```
-Works faster only for `ndim<=3, dtype=float32 or float64, output=None, order=1, mode='constant', grid_mode=False`
-## Fast 1d linear interpolation
+Works faster only for `ndim<=4, dtype=float32 or float64 (and bool-int16-32-64 if order == 0), output=None, order=0 or 1, mode='constant', grid_mode=False`
+### Fast 1d linear interpolation
 
 ```python
 from imops import interp1d  # same as `scipy.interpolate.interp1d`
 ```
-Works faster only for `ndim<=3, dtype=float32 or float64, order=1 or 'linear'`
-## Fast binary morphology
+Works faster only for `ndim<=3, dtype=float32 or float64, order=1`
+### Fast binary morphology
 
 ```python
 from imops import binary_dilation, binary_erosion, binary_opening, binary_closing
 ```
 These functions mimic `scikit-image` counterparts
-## Padding
+### Padding
 
 ```python
 from imops import pad, pad_to_shape
@@ -59,7 +79,7 @@ y = pad(x, 10, axis=[0, 1])
 z = pad_to_shape(x, (4, 120, 67), ratio=0.25)
 ```
 
-## Cropping
+### Cropping
 
 ```python
 from imops import crop_to_shape
@@ -71,7 +91,7 @@ from imops import crop_to_shape
 z = crop_to_shape(x, (4, 120, 67), ratio=0.25)
 ```
 
-## Labeling
+### Labeling
 
 ```python
 from imops import label
@@ -81,7 +101,7 @@ labeled, num_components = label(x, background=1, return_num=True)
 ```
 
 # Backends
-For `zoom`, `zoom_to_shape`, `interp1d`, `radon`, `inverse_radon` you can specify which backend to use. Backend can be specified by a string or by an instance of `Backend` class. The latter allows you to customize some backend options:
+For all heavy image routines except `label` you can specify which backend to use. Backend can be specified by a string or by an instance of `Backend` class. The latter allows you to customize some backend options:
 ```python
 from imops import Cython, Numba, Scipy, zoom
 
@@ -102,10 +122,9 @@ with imops_backend('Cython'):  # sets Cython backend via context manager
 ```
 Note that for `Numba` backend setting `num_threads` argument has no effect for now and you should use `NUMBA_NUM_THREADS` environment variable.
 Available backends:
-|                   | Scipy   | Cython  | Numba   |
-|-------------------|---------|---------|---------|
+|         function / backend            | Scipy   | Cython  | Numba   |
+|:-------------------:|:---------:|:---------:|:---------:|
 | `zoom`            | &check; | &check; | &check; |
-| `zoom_to_shape`   | &check; | &check; | &check; |
 | `interp1d`        | &check; | &check; | &check; |
 | `radon`           | &cross; | &check; | &cross; |
 | `inverse_radon`   | &cross; | &check; | &cross; |
@@ -113,6 +132,7 @@ Available backends:
 | `binary_erosion`  | &check; | &check; | &cross; |
 | `binary_closing`  | &check; | &check; | &cross; |
 | `binary_opening`  | &check; | &check; | &cross; |
+| `center_of_mass`  | &check; | &check; | &cross; |
 
 # Acknowledgements
 

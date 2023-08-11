@@ -5,7 +5,19 @@ from setuptools import Extension
 from setuptools.command.build_py import build_py
 
 
-class NumpyImport:
+class NumpyImport(dict):
+    """Hacky way to return Numpy's include path with lazy import."""
+
+    # Must be json-serializable due to
+    # https://github.com/cython/cython/blob/6ad6ca0e9e7d030354b7fe7d7b56c3f6e6a4bc23/Cython/Compiler/ModuleNode.py#L773
+    def __init__(self):
+        return super().__init__(self, description=self.__doc__)
+
+    # Must be hashable due to
+    # https://github.com/cython/cython/blob/6ad6ca0e9e7d030354b7fe7d7b56c3f6e6a4bc23/Cython/Compiler/Main.py#L307
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         import numpy as np
 

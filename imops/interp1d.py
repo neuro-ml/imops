@@ -91,21 +91,21 @@ class interp1d:
             )
             self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
         else:
+            if len(x) != y.shape[axis]:
+                raise ValueError(
+                    f'x and y arrays must be equal in length along interpolation axis: {len(x)} vs {y.shape[axis]}.'
+                )
+
             if bounds_error and fill_value == 'extrapolate':
                 raise ValueError('Cannot extrapolate and raise at the same time.')
 
-            if fill_value == 'extrapolate' and len(x) < 2 or len(y) < 2:
+            if fill_value == 'extrapolate' and len(x) < 2 or y.shape[axis] < 2:
                 raise ValueError('x and y arrays must have at least 2 entries.')
 
             if fill_value == 'extrapolate':
                 self.bounds_error = False
             else:
                 self.bounds_error = True if bounds_error is None else bounds_error
-
-            if len(x) != y.shape[axis]:
-                raise ValueError(
-                    f'x and y arrays must be equal in length along interpolation axis: {len(x)} vs {y.shape[axis]}.'
-                )
 
             self.axis = axis
 
@@ -165,8 +165,8 @@ class interp1d:
         # TODO: Figure out how to properly handle multiple type signatures in Cython and remove `.astype`-s
         out = self.src_interp1d(
             self.y,
-            self.x.astype(np.float64),
-            x_new.astype(np.float64),
+            self.x.astype(np.float64, copy=False),
+            x_new.astype(np.float64, copy=False),
             self.bounds_error,
             0.0 if extrapolate else self.fill_value,
             extrapolate,
@@ -177,7 +177,7 @@ class interp1d:
         if self.backend.name == 'Numba':
             set_num_threads(old_num_threads)
 
-        out = out.astype(max(self.y.dtype, self.x.dtype, x_new.dtype, key=lambda x: x.type(0).itemsize))
+        out = out.astype(max(self.y.dtype, self.x.dtype, x_new.dtype, key=lambda x: x.type(0).itemsize), copy=False)
 
         if self.n_dummy:
             out = out[(0,) * self.n_dummy]

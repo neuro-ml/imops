@@ -9,13 +9,14 @@ from scipy.ndimage import center_of_mass as scipy_center_of_mass
 from skimage.measure import label as sk_label
 
 from imops._configs import measure_configs
-from imops.backend import Backend
+from imops.backend import Backend, Scipy
 from imops.measure import center_of_mass, label
 
 
 np.random.seed(1337)
 
 assert_eq = np.testing.assert_array_equal
+n_samples = 8
 
 
 @dataclass
@@ -110,6 +111,23 @@ def test_zeros(connectivity, ndim):
     )
 
 
+def test_out_dtype(connectivity, ndim):
+    connectivity = min(connectivity, ndim)
+
+    for dtype in [np.uint16, np.uint32, np.uint64]:
+
+        inp = np.zeros(np.random.randint(32, 64, size=ndim))
+        if ndim == 4:
+            inp = inp.astype(bool)
+
+        out = label(inp, connectivity=connectivity, dtype=dtype)
+        assert_eq(
+            sk_label(inp, connectivity=connectivity).astype(dtype),
+            out,
+            err_msg=f'{connectivity, ndim, dtype}',
+        )
+
+
 def test_multiple_output():
     inp = np.array(
         [
@@ -171,7 +189,7 @@ def test_no_background2():
 def test_stress(connectivity, ndim):
     connectivity = min(connectivity, ndim)
 
-    for _ in range(32):
+    for _ in range(2 * n_samples):
         inp = (
             np.random.binomial(1, 0.5, size=np.random.randint(32, 64, size=ndim)) > 0
             if ndim == 4 or np.random.binomial(1, 0.2)
@@ -223,7 +241,7 @@ def test_both_specified(backend):
 
 
 def test_noncontiguous_index(backend, label_dtype):
-    for _ in range(16):
+    for _ in range(n_samples):
         inp = np.random.randn(32, 32) + 4
         labels = np.random.randint(0, 16, size=inp.shape).astype(label_dtype)
         index = np.random.permutation(np.arange(8)).astype(label_dtype) if label_dtype != 'bool' else [True, False]
@@ -248,7 +266,7 @@ def test_alien_backend(alien_backend):
 
 
 def test_center_of_mass(num_threads, backend, dtype):
-    for _ in range(32):
+    for _ in range(n_samples):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
         inp = (
             np.random.binomial(1, 0.5, shape).astype(dtype)
@@ -264,8 +282,49 @@ def test_center_of_mass(num_threads, backend, dtype):
         allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-4)
 
 
+def test_scipy_warning(num_threads, backend, dtype):
+    inp = np.random.randn(32, 32, 32, 32).astype(dtype)
+
+    with pytest.warns(UserWarning):
+        center_of_mass(inp, num_threads=num_threads, backend=backend)
+
+
+def test_labels_index_dtype(backend):
+    inp = np.random.randn(32, 32, 32)
+    labels = np.random.randint(0, 4, size=inp.shape)
+    index = np.array([False, True])
+
+    if backend != Scipy():
+        with pytest.raises(ValueError):
+            center_of_mass(inp, labels=labels, index=index, backend=backend)
+
+
+def test_labels_shape_mismatch(backend):
+    inp = np.random.randn(32, 32, 32)
+    labels = np.random.randint(0, 4, size=(1, 2, 3))
+    index = np.array([0, 1, 2])
+
+    with pytest.raises(ValueError):
+        center_of_mass(inp, labels=labels, index=index, backend=backend)
+
+    labels = np.random.randint(0, 4, size=(1, 2))
+
+    with pytest.raises(ValueError):
+        center_of_mass(inp, labels=labels, index=index, backend=backend)
+
+
+def test_not_unique_index(backend):
+    inp = np.random.randn(32, 32, 32)
+    labels = np.random.randint(0, 4, size=(32, 32, 32))
+    index = np.array([1, 1, 2])
+
+    if backend != Scipy():
+        with pytest.raises(ValueError):
+            center_of_mass(inp, labels=labels, index=index, backend=backend)
+
+
 def test_labeled_center_of_mass(backend, dtype, label_dtype):
-    for _ in range(32):
+    for _ in range(n_samples):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
         inp = (
             np.random.binomial(1, 0.5, shape).astype(dtype)

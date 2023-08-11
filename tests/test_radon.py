@@ -31,10 +31,17 @@ def test_alien_backend(alien_backend):
     sinogram = sk_radon(image)
 
     with pytest.raises(ValueError):
-        radon(image, axes=(1, 2), backend=backend)
+        radon(image, axes=(1, 2), backend=alien_backend)
 
     with pytest.raises(ValueError):
         inverse_radon(sinogram, axes=(1, 2), backend=alien_backend)
+
+
+def test_nonsquare_image(backend):
+    image = sample_ct(16, 64)
+
+    with pytest.raises(ValueError):
+        radon(image, axes=(0, 1), backend=backend)
 
 
 def test_inverse_radon(backend):

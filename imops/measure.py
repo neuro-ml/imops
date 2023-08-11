@@ -95,7 +95,7 @@ def label(
             label_image, background=background, return_num=True, connectivity=connectivity
         )
         if dtype is not None:
-            labeled_image = labeled_image.astype(dtype)
+            labeled_image = labeled_image.astype(dtype, copy=False)
     else:
         if ndim == 1:
             label_image = label_image[None]
@@ -186,7 +186,7 @@ def center_of_mass(
 
     ndim = array.ndim
     if ndim > 3:
-        warn("Fast center-of-mass is only supported for ndim<=4. Falling back to scipy's implementation.")
+        warn("Fast center-of-mass is only supported for ndim<=3. Falling back to scipy's implementation.")
         return scipy_center_of_mass(array, labels, index)
 
     if labels is None:
@@ -195,10 +195,13 @@ def center_of_mass(
         is_sequence = isinstance(index, (Sequence, np.ndarray))
         index = np.array([index] if not is_sequence else index)
 
+        if labels.shape != array.shape:
+            raise ValueError(f'`array` and `labels` must be the same shape, got {array.shape} and {labels.shape}.')
+
         if labels.dtype != index.dtype:
             raise ValueError(f'`labels` and `index` must have same dtype, got {labels.dtype} and {index.dtype}.')
 
-        if len(index) != len(unique(index.astype(int))):
+        if len(index) != len(unique(index.astype(int, copy=False))):
             raise ValueError('`index` should consist of unique values.')
 
         if num_threads > 1:

@@ -1,41 +1,13 @@
 import itertools
 from copy import copy
 from functools import wraps
-from typing import Callable, Sequence, Tuple
+from typing import Callable, Tuple
 
 import numpy as np
 
 
 # Immutable numpy array
 Box = np.ndarray
-
-
-def check_len(*args) -> None:
-    lengths = list(map(len, args))
-    if any(length != lengths[0] for length in lengths):
-        raise ValueError(f'Arguments of equal length are required: {", ".join(map(str, lengths))}')
-
-
-def build_slices(start: Sequence[int], stop: Sequence[int] = None, step: Sequence[int] = None) -> Tuple[slice, ...]:
-    """
-    Returns a tuple of slices built from `start` and `stop` with `step`.
-
-    Examples
-    --------
-    >>> build_slices([1, 2, 3], [4, 5, 6])
-    (slice(1, 4), slice(2, 5), slice(3, 6))
-    >>> build_slices([10, 11])
-    (slice(10), slice(11))
-    """
-
-    check_len(*filter(lambda x: x is not None, [start, stop, step]))
-    args = [
-        start,
-        stop if stop is not None else [None for _ in start],
-        step if step is not None else [None for _ in start],
-    ]
-
-    return tuple(map(slice, *args))
 
 
 def make_box(iterable) -> Box:
@@ -78,3 +50,22 @@ def mask_to_box(mask: np.ndarray) -> Box:
         stop.insert(0, right + 1)
 
     return start, stop
+
+
+@returns_box
+def shape_to_box(shape: Tuple) -> Box:
+    return make_box([(0,) * len(shape), shape])  # fmt: skip
+
+
+def box_to_shape(box: Box) -> Tuple:
+    return tuple(box[1] - box[0])
+
+
+@returns_box
+def add_margin(box: Box, margin) -> Box:
+    """
+    Returns a box with size increased by the ``margin`` (need to be broadcastable to the box)
+    compared to the input ``box``.
+    """
+    margin = np.broadcast_to(margin, box.shape)
+    return box[0] - margin[0], box[1] + margin[1]
