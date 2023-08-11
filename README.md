@@ -16,7 +16,7 @@ pip install imops  # default install with Cython backend
 pip install imops[numba]  # additionally install Numba backend
 ```
 
-# How Fast is it?
+# How fast is it?
 
 Time comparisons (ms) for Intel(R) Xeon(R) Silver 4114 CPU @ 2.20GHz using 8 threads. All inputs are C-contiguous NumPy arrays. For morphology functions `bool` dtype is used and `float64` for all others.
 | function / backend   |  Scipy()  |  Cython(fast=False)  |  Cython(fast=True)  |  Numba()  |
