@@ -20,7 +20,7 @@ jobs:
 
       - id: get_version
         name: Get the release version
-        uses: battila7/get-version-action@v2
+        uses: Simply007/get-version-action@v2
 
       - name: Check the version
         run: |
