@@ -1,4 +1,5 @@
 import os
+from contextlib import contextmanager
 from itertools import permutations
 from typing import Callable, Optional, Sequence, Tuple, Union
 from warnings import warn
@@ -12,13 +13,41 @@ AxesLike = Union[int, Sequence[int]]
 AxesParams = Union[float, Sequence[float]]
 
 ZOOM_SRC_DIM = 4
+IMOPS_NUM_THREADS = None
+
+
+def set_num_threads(num_threads: int) -> int:
+    global IMOPS_NUM_THREADS
+    current = IMOPS_NUM_THREADS
+    IMOPS_NUM_THREADS = num_threads
+    return current
+
+
+@contextmanager
+def imops_num_threads(num_threads: int):
+    previous = set_num_threads(num_threads)
+    try:
+        yield
+    finally:
+        set_num_threads(previous)
 
 
 def normalize_num_threads(num_threads: int, backend: Backend):
+    global IMOPS_NUM_THREADS
     if backend.name in SINGLE_THREADED_BACKENDS:
-        if num_threads != -1:
+        if num_threads != -1 or IMOPS_NUM_THREADS is not None:
             warn(f'"{backend.name}" backend is single-threaded. Setting `num_threads` has no effect.')
         return 1
+
+    num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend.name]
+    # here we also handle the case `num_threads_var`=" " gracefully
+    env_num_threads = os.environ.get(num_threads_var_name, '').strip()
+
+    if IMOPS_NUM_THREADS is not None:
+        max_threads = IMOPS_NUM_THREADS
+    else:
+        max_threads = int(env_num_threads) if env_num_threads else len(os.sched_getaffinity(0))
+
     if num_threads >= 0:
         # FIXME
         if backend.name == 'Numba':
@@ -26,12 +55,7 @@ def normalize_num_threads(num_threads: int, backend: Backend):
                 'Setting `num_threads` has no effect with "Numba" backend. '
                 'Use `NUMBA_NUM_THREADS` environment variable.'
             )
-        return num_threads
-
-    num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend.name]
-    # here we also handle the case `num_threads_var`=" " gracefully
-    env_num_threads = os.environ.get(num_threads_var_name, '').strip()
-    max_threads = int(env_num_threads) if env_num_threads else len(os.sched_getaffinity(0))
+        return min(num_threads, max_threads)
 
     return max_threads + num_threads + 1
 

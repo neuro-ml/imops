@@ -1,4 +1,4 @@
-import contextlib
+from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Dict, Type, Union
 
@@ -51,7 +51,7 @@ def set_backend(backend: BackendLike) -> Backend:
     return current
 
 
-@contextlib.contextmanager
+@contextmanager
 def imops_backend(backend: BackendLike):
     previous = set_backend(backend)
     try:
