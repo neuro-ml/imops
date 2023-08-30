@@ -8,6 +8,7 @@
     "environment_type": "conda",
     "show_commit_url": "https://github.com/neuro-ml/imops/commit",
     "pythons": ["3.10"],
+    "conda_channels": ["defaults", "conda-forge"],
     "matrix": {
         "req": {
             "numpy": [],
