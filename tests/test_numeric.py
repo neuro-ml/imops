@@ -5,7 +5,7 @@ import pytest
 from numpy.testing import assert_allclose as allclose
 
 from imops._configs import numeric_configs
-from imops._numeric import _mul, _sum
+from imops._numeric import pointwise_add
 from imops.backend import Backend
 
 
@@ -25,7 +25,7 @@ def backend(request):
     return request.param
 
 
-@pytest.fixture(params=range(1, 9))
+@pytest.fixture(params=range(1, 8))
 def num_threads(request):
     return request.param
 
@@ -35,95 +35,92 @@ def dtype(request):
     return request.param
 
 
+@pytest.fixture(params=['uint16', 'uint32', 'uint64', 'float128', 'complex64'])
+def bad_dtype(request):
+    return request.param
+
+
 @pytest.mark.parametrize('alien_backend', ['', Alien8(), 'Alien9'], ids=['empty', 'Alien8', 'Alien9'])
 def test_alien_backend(alien_backend):
-    nums1 = np.random.randn(1337)
-    nums2 = np.random.randn(1337)
+    nums = np.random.randn(1337)
 
     with pytest.raises(ValueError):
-        _sum(nums1, backend=alien_backend)
-
-    with pytest.raises(ValueError):
-        _mul(nums1, nums2, backend=alien_backend)
+        pointwise_add(nums, 1, backend=alien_backend)
 
 
-def test_sum_ndim_mismatch(backend, num_threads, dtype):
-    with pytest.raises(ValueError):
-        _sum(np.ones((2, 2), dtype=dtype), num_threads=num_threads, backend=backend)
-
-
-def test_mul_size_mismatch(backend, num_threads, dtype):
-    with pytest.raises(ValueError):
-        _mul(np.ones(4, dtype=dtype), np.ones(2, dtype=dtype), num_threads=num_threads, backend=backend)
-    with pytest.raises(ValueError):
-        _mul(np.ones(3, dtype=dtype), np.ones(2, dtype=dtype), num_threads=num_threads, backend=backend)
-    with pytest.raises(ValueError):
-        _mul(np.array([]), np.ones(2, dtype=dtype), num_threads=num_threads, backend=backend)
-
-    with pytest.raises(ValueError):
-        _mul(np.ones((1, 2, 3)), np.ones((1, 2, 3, 4)), num_threads=num_threads, backend=backend)
-
-
-def test_empty_sum(backend, num_threads, dtype):
-    nums = np.array([], dtype=dtype)
-
-    out = _sum(nums, num_threads=num_threads, backend=backend)
-    desired_out = np.sum(nums)
-
-    assert_eq(out, desired_out)
-
-
-def test_empty_mul(backend, num_threads, dtype):
+def test_empty_add(backend, num_threads, dtype):
     nums1 = np.array([], dtype=dtype)
     nums2 = np.array([], dtype=dtype)
 
-    out = _mul(nums1, nums2, num_threads=num_threads, backend=backend)
-    desired_out = nums1 * nums2
+    out = pointwise_add(nums1, nums2, num_threads=num_threads, backend=backend)
+    desired_out = nums1 + nums2
 
     assert_eq(out, desired_out)
-    assert out.dtype == desired_out.dtype
 
 
-def test_stress_sum(backend, num_threads, dtype):
-    for _ in range(2 * n_samples):
-        nums = (32 * np.random.randn(np.random.randint(1, 10**4))).astype(dtype)
-
-        out = _sum(nums, num_threads=num_threads, backend=backend)
-        desired_out = np.sum(nums)
-
-        if dtype in ('int16', 'int32', 'int64'):
-            assert_eq(out, desired_out)
-        else:
-            allclose(out, desired_out, rtol=1e-2 if dtype == 'float32' else 1e-7)
-
-
-def test_stress_pointwise_mul(backend, num_threads, dtype):
+def test_stress_pointwise_add(backend, num_threads, dtype):
     for _ in range(2 * n_samples):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
 
         nums1 = (32 * np.random.randn(*shape)).astype(dtype)
-        nums2 = (32 * np.random.randn(*shape)).astype(dtype)
+        nums2 = (
+            (32 * np.random.randn(*shape)).astype(dtype)
+            if np.random.binomial(1, 0.5)
+            else np.dtype(dtype).type(32 * np.random.randn(1)[0])
+        )
 
-        out = _mul(nums1, nums2, num_threads=num_threads, backend=backend)
-        desired_out = nums1 * nums2
+        out = pointwise_add(nums1, nums2, num_threads=num_threads, backend=backend)
+        desired_out = nums1 + nums2
 
         if dtype in ('int16', 'int32', 'int64'):
             assert_eq(out, desired_out)
         else:
-            allclose(out, desired_out, rtol=1e-4 if dtype == 'float32' else 1e-7)
+            allclose(out, desired_out)
 
 
-def test_broadcast_pointwise_mul(backend, num_threads, dtype):
+def test_stress_pointwise_add_output(backend, num_threads, dtype):
     for _ in range(2 * n_samples):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
 
-        nums1 = (32 * np.random.randn(*[x if np.random.binomial(1, 0.7) else 1 for x in shape])).astype(dtype)
-        nums2 = (32 * np.random.randn(*[x if np.random.binomial(1, 0.7) else 1 for x in shape])).astype(dtype)
+        nums1 = (32 * np.random.randn(*shape)).astype(dtype)
+        old_nums1 = np.copy(nums1)
+        output = np.empty_like(nums1)
+        nums2 = (
+            (32 * np.random.randn(*shape)).astype(dtype)
+            if np.random.binomial(1, 0.5)
+            else np.dtype(dtype).type(32 * np.random.randn(1)[0])
+        )
 
-        out = _mul(nums1, nums2, num_threads=num_threads, backend=backend)
-        desired_out = nums1 * nums2
+        out = pointwise_add(nums1, nums2, output=output, num_threads=num_threads, backend=backend)
+        desired_out = nums1 + nums2
 
         if dtype in ('int16', 'int32', 'int64'):
             assert_eq(out, desired_out)
+            assert_eq(output, desired_out)
+            assert_eq(nums1, old_nums1)
         else:
-            allclose(out, desired_out, rtol=1e-4 if dtype == 'float32' else 1e-7)
+            allclose(out, desired_out)
+            allclose(output, desired_out)
+            allclose(nums1, old_nums1)
+
+
+def test_stress_pointwise_add_inplace(backend, num_threads, dtype):
+    for _ in range(2 * n_samples):
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+
+        nums1 = (32 * np.random.randn(*shape)).astype(dtype)
+        nums2 = (
+            (32 * np.random.randn(*shape)).astype(dtype)
+            if np.random.binomial(1, 0.5)
+            else np.dtype(dtype).type(32 * np.random.randn(1)[0])
+        )
+
+        desired_out = nums1 + nums2
+        out = pointwise_add(nums1, nums2, output=nums1, num_threads=num_threads, backend=backend)
+
+        if dtype in ('int16', 'int32', 'int64'):
+            assert_eq(out, desired_out)
+            assert_eq(nums1, desired_out)
+        else:
+            allclose(out, desired_out)
+            allclose(nums1, desired_out)
