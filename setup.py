@@ -47,7 +47,7 @@ class NumpyLibImport(str):
     def __radd__(self, left):
         import numpy as np
 
-        return left + '/'.join(np.get_include().split('/')[:-1]) + '/lib'
+        return left + str(Path(np.get_include()).parent / 'lib')
 
 
 with open(root / 'requirements.txt', encoding='utf-8') as file:
