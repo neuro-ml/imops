@@ -20,7 +20,7 @@ classifiers = [
 
 
 class NumpyImport(dict):
-    """Hacky way to return Numpy's include path with lazy import."""
+    """Hacky way to return Numpy's `include` path with lazy import."""
 
     # Must be json-serializable due to
     # https://github.com/cython/cython/blob/6ad6ca0e9e7d030354b7fe7d7b56c3f6e6a4bc23/Cython/Compiler/ModuleNode.py#L773
@@ -38,6 +38,16 @@ class NumpyImport(dict):
         return np.get_include()
 
     __fspath__ = __repr__
+
+
+# TODO: maybe needs fix for Cython>=3.0.0
+class NumpyLibImport(str):
+    """Hacky way to return Numpy's `lib` path with lazy import."""
+
+    def __radd__(self, left):
+        import numpy as np
+
+        return left + '/'.join(np.get_include().split('/')[:-1]) + '/lib'
 
 
 with open(root / 'requirements.txt', encoding='utf-8') as file:
@@ -60,6 +70,8 @@ ext_modules = [
         f'{name}.src._{prefix}{module}',
         [f'{name}/src/_{prefix}{module}.pyx'],
         include_dirs=[NumpyImport()],
+        library_dirs=[NumpyLibImport()],
+        libraries=['npymath', 'm'],
         extra_compile_args=args + additional_args,
         extra_link_args=args + additional_args,
         define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],

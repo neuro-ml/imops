@@ -30,7 +30,7 @@ def num_threads(request):
     return request.param
 
 
-@pytest.fixture(params=['int16', 'int32', 'int64', 'float32', 'float64'])
+@pytest.fixture(params=['int16', 'int32', 'int64', 'float16', 'float32', 'float64'])
 def dtype(request):
     return request.param
 
