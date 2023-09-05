@@ -19,16 +19,16 @@ class NumericSuite:
 
     @discard_arg(2)
     def time_add_array(self, backend, num_threads):
-        pointwise_add(self.nums_1d, self.nums2_3d, num_threads=num_threads, backend=backend)
+        pointwise_add(self.nums1_3d, self.nums2_3d, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def time_add_value(self, backend, num_threads):
-        pointwise_add(self.nums_1d, 1, num_threads=num_threads, backend=backend)
+        pointwise_add(self.nums1_3d, 1, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def peakmem_add_array(self, backend, num_threads):
-        pointwise_add(self.nums_1d, self.nums2_3d, num_threads=num_threads, backend=backend)
+        pointwise_add(self.nums1_3d, self.nums2_3d, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def peakmem_add_value(self, backend, num_threads):
-        pointwise_add(self.nums_1d, 1, num_threads=num_threads, backend=backend)
+        pointwise_add(self.nums1_3d, 1, num_threads=num_threads, backend=backend)
