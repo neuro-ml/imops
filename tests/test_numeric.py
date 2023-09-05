@@ -5,8 +5,8 @@ import pytest
 from numpy.testing import assert_allclose as allclose
 
 from imops._configs import numeric_configs
-from imops._numeric import pointwise_add
 from imops.backend import Backend
+from imops.numeric import pointwise_add
 
 
 np.random.seed(1337)
