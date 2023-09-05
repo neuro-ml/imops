@@ -27,7 +27,7 @@ from .utils import normalize_num_threads
 
 
 TYPES = (np.int16, np.int32, np.int64, np.float16, np.float32, np.float64)
-STR_TYPES = ('int16', 'int32', 'int64', 'float16', 'float32', 'float64')
+_STR_TYPES = ('int16', 'int32', 'int64', 'float16', 'float32', 'float64')
 
 
 # TODO: maybe dict is better?
@@ -74,7 +74,7 @@ def pointwise_add(
     is_fp16 = dtype == np.float16
 
     if dtype not in TYPES:
-        raise ValueError(f'Input array dtype must be one of {", ".join(STR_TYPES)}, got {dtype}.')
+        raise ValueError(f'Input array dtype must be one of {", ".join(_STR_TYPES)}, got {dtype}.')
 
     if output is None:
         output = np.empty_like(nums, dtype=dtype)
@@ -88,7 +88,7 @@ def pointwise_add(
         if dtype != summand.dtype:
             raise ValueError(f'Input and summand arrays must have same dtypes, got {dtype} vs {summand.dtype}.')
     elif not isinstance(summand, (*TYPES, *(int, float))):
-        raise ValueError(f'Summand dtype must be one of {", ".join(STR_TYPES)}, got {type(summand)}.')
+        raise ValueError(f'Summand dtype must be one of {", ".join(_STR_TYPES)}, got {type(summand)}.')
     else:
         summand = nums.dtype.type(summand)
 
