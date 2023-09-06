@@ -29,6 +29,11 @@ ctypedef fused NUM:
     double
 
 
+ctypedef fused NUM_AND_NPY_HALF:
+    NUM
+    npy_half
+
+
 # TODO: Generalize code below to n-d
 def _pointwise_add_array_3d(
     NUM[:, :, :] nums1,
@@ -171,3 +176,45 @@ def _pointwise_add_value_4d_fp16(
                                            npy_half_to_float(value)))
 
     return np.asarray(out)
+
+
+def _fill_3d(NUM_AND_NPY_HALF[:, :, :] nums, NUM_AND_NPY_HALF value, Py_ssize_t num_threads) -> None:
+    cdef Py_ssize_t rows = nums.shape[0], cols = nums.shape[1], dims = nums.shape[2]
+    cdef Py_ssize_t i, j, k
+
+    for i in prange(rows, nogil=True, num_threads=num_threads):
+        for j in prange(cols):
+            for k in prange(dims):
+                nums[i, j, k] = value
+
+
+def _fill_4d(NUM_AND_NPY_HALF[:, :, :, :] nums, NUM_AND_NPY_HALF value, Py_ssize_t num_threads) -> None:
+    cdef Py_ssize_t dim1 = nums.shape[0], dim2 = nums.shape[1], dim3 = nums.shape[2], dim4 = nums.shape[3]
+    cdef Py_ssize_t i1, i2, i3, i4
+
+    for i1 in prange(dim1, nogil=True, num_threads=num_threads):
+        for i2 in prange(dim2):
+            for i3 in prange(dim3):
+                for i4 in prange(dim4):
+                    nums[i1, i2, i3, i4] = value
+
+
+def _copy_3d(NUM_AND_NPY_HALF[:, :, :] nums1, NUM_AND_NPY_HALF[:, :, :] nums2, Py_ssize_t num_threads) -> None:
+    cdef Py_ssize_t rows = nums1.shape[0], cols = nums1.shape[1], dims = nums1.shape[2]
+    cdef Py_ssize_t i, j, k
+
+    for i in prange(rows, nogil=True, num_threads=num_threads):
+        for j in prange(cols):
+            for k in prange(dims):
+                nums2[i, j, k] = nums1[i, j, k]
+
+
+def _copy_4d(NUM_AND_NPY_HALF[:, :, :, :] nums1, NUM_AND_NPY_HALF[:, :, :, :] nums2, Py_ssize_t num_threads) -> None:
+    cdef Py_ssize_t dim1 = nums1.shape[0], dim2 = nums1.shape[1], dim3 = nums1.shape[2], dim4 = nums1.shape[3]
+    cdef Py_ssize_t i1, i2, i3, i4
+
+    for i1 in prange(dim1, nogil=True, num_threads=num_threads):
+        for i2 in prange(dim2):
+            for i3 in prange(dim3):
+                for i4 in prange(dim4):
+                    nums2[i1, i2, i3, i4] = nums1[i1, i2, i3, i4]

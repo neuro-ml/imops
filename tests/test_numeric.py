@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose as allclose
 
 from imops._configs import numeric_configs
 from imops.backend import Backend
-from imops.numeric import _STR_TYPES, pointwise_add
+from imops.numeric import _STR_TYPES, _fill, copy, full, pointwise_add
 
 
 np.random.seed(1337)
@@ -26,7 +26,7 @@ def backend(request):
     return request.param
 
 
-@pytest.fixture(params=range(1, 8))
+@pytest.fixture(params=range(1, 9))
 def num_threads(request):
     return request.param
 
@@ -149,3 +149,88 @@ def test_stress_pointwise_add_inplace(backend, num_threads, dtype):
         else:
             allclose(out, desired_out)
             allclose(nums1, desired_out)
+
+
+def test_stress_fill(backend, num_threads, dtype):
+    def sample_value(dtype):
+        x = dtype.type(32 * np.random.randn(1))
+        if isinstance(x, np.ndarray):
+            x = x[0]
+
+        dice = np.random.randint(3)
+
+        if dice == 0:
+            return x
+
+        if dice == 1:
+            return int(x)
+
+        return float(x)
+
+    for _ in range(n_samples):
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+
+        nums = (32 * np.random.randn(*shape)).astype(dtype)
+        nums_copy = np.copy(nums)
+
+        value = sample_value(nums.dtype)
+
+        _fill(nums, value, num_threads, backend)
+        nums_copy.fill(value)
+
+        if dtype in ('int16', 'int32', 'int64'):
+            assert_eq(nums, nums_copy)
+        else:
+            allclose(nums, nums_copy)
+
+
+def test_stress_full(backend, num_threads, dtype):
+    def sample_value(dtype):
+        x = dtype.type(32 * np.random.randn(1))
+        if isinstance(x, np.ndarray):
+            x = x[0]
+
+        dice = np.random.randint(3)
+
+        if dice == 0:
+            return x
+
+        if dice == 1:
+            return int(x)
+
+        return float(x)
+
+    for _ in range(n_samples):
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+        fill_value = sample_value(np.zeros(1, dtype=dtype).dtype)
+
+        nums = full(shape, fill_value, dtype, num_threads, backend)
+        desired_nums = np.full(shape, fill_value, dtype)
+
+        if dtype in ('int16', 'int32', 'int64'):
+            assert_eq(nums, desired_nums)
+        else:
+            allclose(nums, desired_nums)
+
+
+def test_stress_copy(backend, num_threads, dtype):
+    for _ in range(n_samples):
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+
+        nums = (32 * np.random.randn(*shape)).astype(dtype)
+        old_nums = np.copy(nums)
+        copy_nums = copy(nums, num_threads, backend)
+
+        if dtype in ('int16', 'int32', 'int64'):
+            assert_eq(old_nums, copy_nums)
+            assert_eq(nums, old_nums)
+        else:
+            allclose(old_nums, copy_nums)
+            allclose(nums, old_nums)
+
+        copy_nums[0] = 0
+
+        if dtype in ('int16', 'int32', 'int64'):
+            assert_eq(nums, old_nums)
+        else:
+            allclose(nums, old_nums)
