@@ -29,6 +29,8 @@ class NumpyImport(dict):
 class NumpyLibImport(str):
     """Hacky way to return Numpy's `lib` path with lazy import."""
 
+    # Exploit of https://github.com/pypa/setuptools/blob/1ef36f2d336e239bd8f83507cb9447e060b6ed60/setuptools/_distutils/
+    # unixccompiler.py#L276-L277
     def __radd__(self, left):
         import numpy as np
 
