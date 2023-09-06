@@ -40,7 +40,6 @@ class NumpyImport(dict):
     __fspath__ = __repr__
 
 
-# TODO: maybe needs fix for Cython>=3.0.0
 class NumpyLibImport(str):
     """Hacky way to return Numpy's `lib` path with lazy import."""
 
@@ -48,6 +47,9 @@ class NumpyLibImport(str):
         import numpy as np
 
         return left + str(Path(np.get_include()).parent / 'lib')
+
+    def __hash__(self):
+        return id(self)
 
 
 with open(root / 'requirements.txt', encoding='utf-8') as file:
@@ -60,6 +62,8 @@ version = runpy.run_path(root / name / '__version__.py')['__version__']
 # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
 # FIXME: code for cythonizing is duplicated in `_pyproject_build.py`
 modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom']
+modules_to_link_against_numpy_core_math_lib = ['numeric']
+
 for module in modules:
     src_dir = Path(__file__).parent / name / 'src'
     shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
@@ -70,8 +74,8 @@ ext_modules = [
         f'{name}.src._{prefix}{module}',
         [f'{name}/src/_{prefix}{module}.pyx'],
         include_dirs=[NumpyImport()],
-        library_dirs=[NumpyLibImport()],
-        libraries=['npymath', 'm'],
+        library_dirs=[NumpyLibImport()] if module in modules_to_link_against_numpy_core_math_lib else [],
+        libraries=['npymath', 'm'] if module in modules_to_link_against_numpy_core_math_lib else [],
         extra_compile_args=args + additional_args,
         extra_link_args=args + additional_args,
         define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
