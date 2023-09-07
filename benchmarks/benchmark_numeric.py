@@ -35,7 +35,7 @@ class NumericSuite:
         full(self.shape, 42, dtype, num_threads, backend)
 
     @discard_arg(2)
-    def time_fill(self, backend, dtype, num_threads):
+    def time_fill(self, backend, num_threads):
         _fill(self.empty_3d, 42, num_threads, backend)
 
     @discard_arg(2)
@@ -54,5 +54,5 @@ class NumericSuite:
         full(self.shape, 42, dtype, num_threads, backend)
 
     @discard_arg(2)
-    def peakmem_fill(self, backend, dtype, num_threads):
+    def peakmem_fill(self, backend, num_threads):
         _fill(self.empty_3d, 42, num_threads, backend)
