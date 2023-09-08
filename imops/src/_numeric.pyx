@@ -7,6 +7,7 @@
 
 import numpy as np
 
+cimport cython
 cimport numpy as np
 from libc.stdint cimport uint16_t
 
@@ -199,7 +200,8 @@ def _fill_4d(NUM_AND_NPY_HALF[:, :, :, :] nums, NUM_AND_NPY_HALF value, Py_ssize
                     nums[i1, i2, i3, i4] = value
 
 
-def _copy_3d(NUM_AND_NPY_HALF[:, :, :] nums1, NUM_AND_NPY_HALF[:, :, :] nums2, Py_ssize_t num_threads) -> None:
+# FIXME: somehow `const NUM_AND_NPY_HALF` is not working
+cpdef void _copy_3d(const cython.numeric[:, :, :] nums1, cython.numeric[:, :, :] nums2, Py_ssize_t num_threads):
     cdef Py_ssize_t rows = nums1.shape[0], cols = nums1.shape[1], dims = nums1.shape[2]
     cdef Py_ssize_t i, j, k
 
@@ -209,7 +211,7 @@ def _copy_3d(NUM_AND_NPY_HALF[:, :, :] nums1, NUM_AND_NPY_HALF[:, :, :] nums2, P
                 nums2[i, j, k] = nums1[i, j, k]
 
 
-def _copy_4d(NUM_AND_NPY_HALF[:, :, :, :] nums1, NUM_AND_NPY_HALF[:, :, :, :] nums2, Py_ssize_t num_threads) -> None:
+cpdef void _copy_4d(const cython.numeric[:, :, :, :] nums1, cython.numeric[:, :, :, :] nums2, Py_ssize_t num_threads):
     cdef Py_ssize_t dim1 = nums1.shape[0], dim2 = nums1.shape[1], dim3 = nums1.shape[2], dim4 = nums1.shape[3]
     cdef Py_ssize_t i1, i2, i3, i4
 
