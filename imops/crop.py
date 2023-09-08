@@ -43,10 +43,13 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
     ratio = fill_by_indices(np.zeros(ndim), ratio, axis)
     start = ((old_shape - new_shape) * ratio).astype(int)
 
+    # TODO: Create contiguous array?
     return x[tuple(map(slice, start, start + new_shape))]
 
 
-def crop_to_box(x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_values: AxesParams = None) -> np.ndarray:
+def crop_to_box(
+    x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_values: AxesParams = None, **copy_kwargs
+) -> np.ndarray:
     """
     Crop `x` according to `box` along `axis`.
 
@@ -86,9 +89,10 @@ def crop_to_box(x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_v
 
     slice_start = fill_by_indices(np.zeros(x.ndim, int), slice_start, axis)
     slice_stop = fill_by_indices(x.shape, slice_stop, axis)
+    # TODO: Create contiguous array?
     x = x[tuple(map(slice, slice_start, slice_stop))]
 
     if padding_values is not None and padding.any():
-        x = pad(x, padding, axis, padding_values)
+        x = pad(x, padding, axis, padding_values, **copy_kwargs)
 
     return x

@@ -36,9 +36,11 @@ from .utils import normalize_num_threads
 
 _TYPES = (np.int16, np.int32, np.int64, np.float16, np.float32, np.float64)
 _STR_TYPES = ('int16', 'int32', 'int64', 'float16', 'float32', 'float64')
+# TODO: Decide which value to use. Functions below are quite fast and simple, so parallelization overhead is noticeable.
+_NUMERIC_DEFAULT_NUM_THREADS = 4
 
 
-# TODO: maybe dict is better?
+# TODO: Maybe dict is better?
 def _choose_cython_pointwise_add(ndim: int, summand_is_array: bool, is_fp16: bool, fast: bool) -> Callable:
     assert ndim <= 4, ndim
 
@@ -88,7 +90,7 @@ def pointwise_add(
     nums: np.ndarray,
     summand: Union[np.array, int, float],
     output: np.ndarray = None,
-    num_threads: int = -1,
+    num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
 ) -> np.ndarray:
     backend = resolve_backend(backend)
@@ -147,7 +149,10 @@ def pointwise_add(
 
 
 def _fill(
-    nums: np.ndarray, value: Union[np.number, int, float], num_threads: int = -1, backend: BackendLike = None
+    nums: np.ndarray,
+    value: Union[np.number, int, float],
+    num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
+    backend: BackendLike = None,
 ) -> None:
     backend = resolve_backend(backend)
     if backend.name not in ('Scipy', 'Cython'):
@@ -155,12 +160,12 @@ def _fill(
 
     ndim = nums.ndim
     dtype = nums.dtype
-    is_fp16 = dtype == np.float16
 
     if dtype not in _TYPES or backend.name == 'Scipy' or ndim > 4:
         nums.fill(value)
         return
 
+    is_fp16 = dtype == np.float16
     num_threads = normalize_num_threads(num_threads, backend)
     src_fill = _choose_cython_fill(ndim, backend.fast)
     value = dtype.type(value)
@@ -183,7 +188,7 @@ def full(
     shape: Union[int, Sequence[int]],
     fill_value: Union[np.number, int, float],
     dtype: Union[type, str] = None,
-    num_threads: int = -1,
+    num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
 ) -> np.ndarray:
     nums = np.empty(shape, dtype=dtype)
@@ -196,34 +201,48 @@ def full(
     return nums
 
 
-def copy(nums: np.ndarray, num_threads: int = -1, backend: BackendLike = None) -> np.ndarray:
+def copy(
+    nums: np.ndarray,
+    output: np.ndarray = None,
+    num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
+    backend: BackendLike = None,
+) -> np.ndarray:
     backend = resolve_backend(backend)
 
     ndim = nums.ndim
     dtype = nums.dtype
-    is_fp16 = dtype == np.float16
+
+    if output is None:
+        output = np.empty_like(nums, dtype=dtype)
+    elif output.shape != nums.shape:
+        raise ValueError('Input array and output array shapes must be the same.')
+    elif dtype != output.dtype:
+        raise ValueError('Input array and output array dtypes must be the same.')
 
     if dtype not in _TYPES or backend.name == 'Scipy' or ndim > 4:
-        return np.copy(nums)
+        output = np.copy(nums)
+        return output
 
+    is_fp16 = dtype == np.float16
     num_threads = normalize_num_threads(num_threads, backend)
     src_copy = _choose_cython_copy(ndim, backend.fast)
-
-    new_nums = np.empty_like(nums)
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
 
     if n_dummy:
         nums = nums[(None,) * n_dummy]
-        new_nums = new_nums[(None,) * n_dummy]
+        output = output[(None,) * n_dummy]
 
     if is_fp16:
-        src_copy(nums.view(np.uint16), new_nums.view(np.uint16), num_threads)
+        src_copy(nums.view(np.uint16), output.view(np.uint16), num_threads)
     else:
-        src_copy(nums, new_nums, num_threads)
+        src_copy(nums, output, num_threads)
 
     if n_dummy:
         nums = nums[(0,) * n_dummy]
-        new_nums = new_nums[(0,) * n_dummy]
+        output = output[(0,) * n_dummy]
 
-    return new_nums
+    return output
+
+
+# TODO: add parallel astype?

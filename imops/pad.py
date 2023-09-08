@@ -2,6 +2,7 @@ from typing import Callable, Sequence, Union
 
 import numpy as np
 
+from .numeric import copy
 from .utils import AxesLike, AxesParams, axis_from_dim, broadcast_axis, broadcast_to_axis, fill_by_indices
 
 
@@ -10,6 +11,7 @@ def pad(
     padding: Union[AxesLike, Sequence[Sequence[int]]],
     axis: AxesLike = None,
     padding_values: Union[AxesParams, Callable] = 0,
+    **copy_kwargs,
 ) -> np.ndarray:
     """
     Pad `x` according to `padding` along the `axis`.
@@ -52,11 +54,11 @@ def pad(
 
     new_shape = np.array(x.shape) + np.sum(padding, axis=1)
     new_x = np.array(padding_values, dtype=x.dtype)
-    new_x = np.broadcast_to(new_x, new_shape).copy()
+    new_x = copy(np.broadcast_to(new_x, new_shape), **copy_kwargs)
 
     start = padding[:, 0]
     end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
-    new_x[tuple(map(slice, start, end))] = x
+    copy(x, new_x[tuple(map(slice, start, end))], **copy_kwargs)
 
     return new_x
 
@@ -67,6 +69,7 @@ def pad_to_shape(
     axis: AxesLike = None,
     padding_values: Union[AxesParams, Callable] = 0,
     ratio: AxesParams = 0.5,
+    **copy_kwargs,
 ) -> np.ndarray:
     """
     Pad `x` to match `shape` along the `axis`.
@@ -108,7 +111,7 @@ def pad_to_shape(
     start = (delta * ratio).astype(int)
     padding = np.array((start, delta - start)).T.astype(int)
 
-    return pad(x, padding, axis, padding_values=padding_values)
+    return pad(x, padding, axis, padding_values=padding_values, **copy_kwargs)
 
 
 def pad_to_divisible(
@@ -118,6 +121,7 @@ def pad_to_divisible(
     padding_values: Union[AxesParams, Callable] = 0,
     ratio: AxesParams = 0.5,
     remainder: AxesLike = 0,
+    **copy_kwargs,
 ) -> np.ndarray:
     """
     Pad `x` to be divisible by `divisor` along the `axis`.
@@ -157,11 +161,15 @@ def pad_to_divisible(
     assert np.all(remainder >= 0)
     shape = np.maximum(np.array(x.shape)[list(axis)], remainder)
 
-    return pad_to_shape(x, shape + (remainder - shape) % divisor, axis, padding_values, ratio)
+    return pad_to_shape(x, shape + (remainder - shape) % divisor, axis, padding_values, ratio, **copy_kwargs)
 
 
 def restore_crop(
-    x: np.ndarray, box: np.ndarray, shape: AxesLike, padding_values: Union[AxesParams, Callable] = 0
+    x: np.ndarray,
+    box: np.ndarray,
+    shape: AxesLike,
+    padding_values: Union[AxesParams, Callable] = 0,
+    **copy_kwargs,
 ) -> np.ndarray:
     """
     Pad `x` to match `shape`. The left padding is taken equal to `box`'s start.
@@ -203,7 +211,7 @@ def restore_crop(
         )
 
     padding = np.array([start, shape - stop], dtype=int).T
-    x = pad(x, padding, padding_values=padding_values)
+    x = pad(x, padding, padding_values=padding_values, **copy_kwargs)
     assert all(np.array(x.shape) == shape)
 
     return x

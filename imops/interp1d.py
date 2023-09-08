@@ -5,6 +5,7 @@ import numpy as np
 from scipy.interpolate import interp1d as scipy_interp1d
 
 from .backend import BackendLike, resolve_backend
+from .numeric import copy as _copy
 from .src._fast_zoom import _interp1d as cython_fast_interp1d
 from .src._zoom import _interp1d as cython_interp1d
 from .utils import normalize_num_threads
@@ -114,12 +115,12 @@ class interp1d:
 
             self.fill_value = fill_value
             self.scipy_interp1d = None
-            self.x = np.copy(x) if copy else x
+            self.x = _copy(x) if copy else x
             self.n_dummy = 3 - y.ndim
             self.y = y[(None,) * self.n_dummy] if self.n_dummy else y
 
             if copy:
-                self.y = np.copy(self.y)
+                self.y = _copy(self.y)
 
             self.assume_sorted = assume_sorted
 
