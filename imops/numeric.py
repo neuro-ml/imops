@@ -5,7 +5,9 @@ import numpy as np
 from .backend import BackendLike, resolve_backend
 from .src._fast_numeric import (
     _copy_3d as cython_fast_copy_3d,
+    _copy_3d_fp16 as cython_fast_copy_3d_fp16,
     _copy_4d as cython_fast_copy_4d,
+    _copy_4d_fp16 as cython_fast_copy_4d_fp16,
     _fill_3d as cython_fast_fill_3d,
     _fill_4d as cython_fast_fill_4d,
     _pointwise_add_array_3d as cython_fast_pointwise_add_array_3d,
@@ -19,7 +21,9 @@ from .src._fast_numeric import (
 )
 from .src._numeric import (
     _copy_3d as cython_copy_3d,
+    _copy_3d_fp16 as cython_copy_3d_fp16,
     _copy_4d as cython_copy_4d,
+    _copy_4d_fp16 as cython_copy_4d_fp16,
     _fill_3d as cython_fill_3d,
     _fill_4d as cython_fill_4d,
     _pointwise_add_array_3d as cython_pointwise_add_array_3d,
@@ -77,11 +81,17 @@ def _choose_cython_fill(ndim: int, fast: bool) -> Callable:
     return cython_fast_fill_4d if fast else cython_fill_4d
 
 
-def _choose_cython_copy(ndim: int, fast: bool) -> Callable:
+def _choose_cython_copy(ndim: int, is_fp16: bool, fast: bool) -> Callable:
     assert ndim <= 4, ndim
 
     if ndim <= 3:
+        if is_fp16:
+            return cython_fast_copy_3d_fp16 if fast else cython_copy_3d_fp16
+
         return cython_fast_copy_3d if fast else cython_copy_3d
+
+    if is_fp16:
+        return cython_fast_copy_4d_fp16 if fast else cython_copy_4d_fp16
 
     return cython_fast_copy_4d if fast else cython_copy_4d
 
@@ -225,7 +235,7 @@ def copy(
 
     is_fp16 = dtype == np.float16
     num_threads = normalize_num_threads(num_threads, backend)
-    src_copy = _choose_cython_copy(ndim, backend.fast)
+    src_copy = _choose_cython_copy(ndim, is_fp16, backend.fast)
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
 

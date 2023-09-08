@@ -7,7 +7,6 @@
 
 import numpy as np
 
-cimport cython
 cimport numpy as np
 from libc.stdint cimport uint16_t
 
@@ -201,7 +200,7 @@ def _fill_4d(NUM_AND_NPY_HALF[:, :, :, :] nums, NUM_AND_NPY_HALF value, Py_ssize
 
 
 # FIXME: somehow `const NUM_AND_NPY_HALF` is not working
-cpdef void _copy_3d(const cython.numeric[:, :, :] nums1, cython.numeric[:, :, :] nums2, Py_ssize_t num_threads):
+cpdef void _copy_3d(const NUM[:, :, :] nums1, NUM[:, :, :] nums2, Py_ssize_t num_threads):
     cdef Py_ssize_t rows = nums1.shape[0], cols = nums1.shape[1], dims = nums1.shape[2]
     cdef Py_ssize_t i, j, k
 
@@ -211,7 +210,28 @@ cpdef void _copy_3d(const cython.numeric[:, :, :] nums1, cython.numeric[:, :, :]
                 nums2[i, j, k] = nums1[i, j, k]
 
 
-cpdef void _copy_4d(const cython.numeric[:, :, :, :] nums1, cython.numeric[:, :, :, :] nums2, Py_ssize_t num_threads):
+cpdef void _copy_4d(const NUM[:, :, :, :] nums1, NUM[:, :, :, :] nums2, Py_ssize_t num_threads):
+    cdef Py_ssize_t dim1 = nums1.shape[0], dim2 = nums1.shape[1], dim3 = nums1.shape[2], dim4 = nums1.shape[3]
+    cdef Py_ssize_t i1, i2, i3, i4
+
+    for i1 in prange(dim1, nogil=True, num_threads=num_threads):
+        for i2 in prange(dim2):
+            for i3 in prange(dim3):
+                for i4 in prange(dim4):
+                    nums2[i1, i2, i3, i4] = nums1[i1, i2, i3, i4]
+
+
+cpdef void _copy_3d_fp16(const npy_half[:, :, :] nums1, npy_half[:, :, :] nums2, Py_ssize_t num_threads):
+    cdef Py_ssize_t rows = nums1.shape[0], cols = nums1.shape[1], dims = nums1.shape[2]
+    cdef Py_ssize_t i, j, k
+
+    for i in prange(rows, nogil=True, num_threads=num_threads):
+        for j in prange(cols):
+            for k in prange(dims):
+                nums2[i, j, k] = nums1[i, j, k]
+
+
+cpdef void _copy_4d_fp16(const npy_half[:, :, :, :] nums1, npy_half[:, :, :, :] nums2, Py_ssize_t num_threads):
     cdef Py_ssize_t dim1 = nums1.shape[0], dim2 = nums1.shape[1], dim3 = nums1.shape[2], dim4 = nums1.shape[3]
     cdef Py_ssize_t i1, i2, i3, i4
 
