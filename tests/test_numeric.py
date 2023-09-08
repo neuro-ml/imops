@@ -219,7 +219,7 @@ def test_stress_copy(backend, num_threads, dtype):
 
         nums = (32 * np.random.randn(*shape)).astype(dtype)
         old_nums = np.copy(nums)
-        copy_nums = copy(nums, num_threads, backend)
+        copy_nums = copy(nums, num_threads=num_threads, backend=backend)
 
         if dtype in ('int16', 'int32', 'int64'):
             assert_eq(old_nums, copy_nums)
