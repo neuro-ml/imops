@@ -56,7 +56,7 @@ def pad(
 
     new_shape = np.array(x.shape) + np.sum(padding, axis=1)
     new_x = np.array(padding_values, dtype=x.dtype)
-    new_x = copy(np.broadcast_to(new_x, new_shape), **copy_kwargs)
+    new_x = copy(np.broadcast_to(new_x, new_shape), order='C', **copy_kwargs)
 
     start = padding[:, 0]
     end = np.where(padding[:, 1] != 0, -padding[:, 1], None)

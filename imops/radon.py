@@ -80,7 +80,7 @@ def radon(
 
     if min_ != 0 or max_ != 0:
         # FIXME: how to accurately pass `num_threads` and `backend` arguments to `copy`?
-        image = copy(image)
+        image = copy(image, order='C')
         image[:, outside_circle] = 0
 
     # TODO: f(arange)?

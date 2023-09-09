@@ -252,6 +252,7 @@ def full(
     shape: Union[int, Sequence[int]],
     fill_value: Union[np.number, int, float],
     dtype: Union[type, str] = None,
+    order: str = 'C',
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
 ) -> np.ndarray:
@@ -268,6 +269,8 @@ def full(
         scalar to fill array with
     dtype: type | str
         desired dtype to which `fill_value` will be casted. If not specified, `np.array(fill_value).dtype` will be used
+    order: str
+        whether to store multidimensional data in C or F contiguous order in memory
     num_threads: int
         the number of threads to use for computation. Default = 4. If negative value passed
         cpu count + num_threads + 1 threads will be used
@@ -280,7 +283,7 @@ def full(
     >>> x = full((2, 3, 4), 1.5, dtype=int)  # same as np.ones((2, 3, 4), dtype=int)
     >>> x = full((2, 3, 4), 1, dtype='uint16')  # will fail because of unsupported uint16 dtype
     """
-    nums = np.empty(shape, dtype=dtype)
+    nums = np.empty(shape, dtype=dtype, order=order)
 
     if dtype is not None:
         fill_value = nums.dtype.type(fill_value)
@@ -293,6 +296,7 @@ def full(
 def copy(
     nums: np.ndarray,
     output: np.ndarray = None,
+    order: str = 'K',
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
 ) -> np.ndarray:
@@ -308,6 +312,9 @@ def copy(
     output: np.ndarray
         array of the same shape and dtype as input, into which the copy is placed. By default, a new
         array is created
+    order: str
+        controls the memory layout of the copy. `C` means C-order, `F` means F-order, `A` means `F` if a is Fortran
+        contiguous, `C` otherwise. `K` means match the layout of a as closely as possible
     num_threads: int
         the number of threads to use for computation. Default = 4. If negative value passed
         cpu count + num_threads + 1 threads will be used
@@ -331,14 +338,14 @@ def copy(
     dtype = nums.dtype
 
     if output is None:
-        output = np.empty_like(nums, dtype=dtype)
+        output = np.empty_like(nums, dtype=dtype, order=order)
     elif output.shape != nums.shape:
         raise ValueError('Input array and output array shapes must be the same.')
     elif dtype != output.dtype:
         raise ValueError('Input array and output array dtypes must be the same.')
 
     if dtype not in _TYPES or backend.name == 'Scipy' or ndim > 4:
-        output = np.copy(nums)
+        output = np.copy(nums, order=order)
         return output
 
     is_fp16 = dtype == np.float16
