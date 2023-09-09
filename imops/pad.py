@@ -60,7 +60,8 @@ def pad(
 
     start = padding[:, 0]
     end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
-    copy(x, new_x[tuple(map(slice, start, end))], **copy_kwargs)
+    # TODO: how to parallelize this?
+    new_x[tuple(map(slice, start, end))] = x
 
     return new_x
 

@@ -204,7 +204,7 @@ def test_stress_full(backend, num_threads, dtype):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
         fill_value = sample_value(np.zeros(1, dtype=dtype).dtype)
 
-        nums = full(shape, fill_value, dtype, num_threads, backend)
+        nums = full(shape, fill_value, dtype, num_threads=num_threads, backend=backend)
         desired_nums = np.full(shape, fill_value, dtype)
 
         if dtype in ('int16', 'int32', 'int64'):
