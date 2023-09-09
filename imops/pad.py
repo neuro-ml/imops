@@ -11,7 +11,7 @@ def pad(
     padding: Union[AxesLike, Sequence[Sequence[int]]],
     axis: AxesLike = None,
     padding_values: Union[AxesParams, Callable] = 0,
-    **copy_kwargs,
+    **copy_kwargs: dict,
 ) -> np.ndarray:
     """
     Pad `x` according to `padding` along the `axis`.
@@ -30,6 +30,8 @@ def pad(
     padding_values: Union[AxesParams, Callable]
         values to pad with, must be broadcastable to the resulting array.
         If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used
+    **copy_kwargs: dict
+        optional keyword arguments of `imops.numeric.copy` used in the function
 
     Returns
     -------
@@ -88,6 +90,8 @@ def pad_to_shape(
     ratio: AxesParams
         float or sequence of floats describing what proportion of padding to apply on the left sides of padding axes.
         Remaining ratio of padding will be applied on the right sides
+    **copy_kwargs: dict
+        optional keyword arguments of `imops.numeric.copy` used in the function
 
     Returns
     -------
@@ -141,6 +145,8 @@ def pad_to_divisible(
         Remaining ratio of padding will be applied on the right sides
     remainder: AxesLike
         `x` will be padded such that its shape gives the remainder `remainder` when divided by `divisor`
+    **copy_kwargs: dict
+        optional keyword arguments of `imops.numeric.copy` used in the function
 
     Returns
     -------
@@ -184,6 +190,8 @@ def restore_crop(
         shape to restore crop to
     padding_values: Union[AxesParams, Callable]
         values to pad with. If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used
+    **copy_kwargs: dict
+        optional keyword arguments of `imops.numeric.copy` used in the function
 
     Returns
     -------

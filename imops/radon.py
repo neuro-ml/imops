@@ -4,6 +4,7 @@ import numpy as np
 from scipy.fftpack import fft, ifft
 
 from .backend import BackendLike, resolve_backend
+from .numeric import copy
 from .src._backprojection import backprojection3d
 from .src._fast_backprojection import backprojection3d as fast_backprojection3d
 from .src._fast_radon import radon3d as fast_radon3d
@@ -78,7 +79,8 @@ def radon(
         )
 
     if min_ != 0 or max_ != 0:
-        image = image.copy()
+        # FIXME: how to accurately pass `num_threads` and `backend` arguments to `copy`?
+        image = copy(image)
         image[:, outside_circle] = 0
 
     # TODO: f(arange)?

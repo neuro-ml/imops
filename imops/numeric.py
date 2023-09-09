@@ -103,6 +103,37 @@ def pointwise_add(
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
 ) -> np.ndarray:
+    """
+    Perform pointwise addition between array and array or scalar.
+
+    Uses a fast parallelizable implementation for fp16-32-64 and int16-32-64 inputs and ndim <= 4.
+
+    Parameters
+    ----------
+    nums: np.ndarray
+        n-dimensional array
+    summand: np.ndarray | int | float
+        array of the same shape or scalar
+    output: np.ndarray
+        array of the same shape as input, into which the output is placed. By default, a new
+        array is created
+    num_threads: int
+        the number of threads to use for computation. Default = 4. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
+
+    Returns
+    -------
+    sum: np.ndarray
+        result of summation
+
+    Examples
+    --------
+    >>> sum = pointwise_add(x, 1, x)  # inplace addition
+    >>> sum = pointwise_add(x, 1, backend='Scipy')  # just `np.add`
+    >>> sum = pointwise_add(x.astype('float32'), x.astype('float16'))  # will fail because of different dtypes
+    """
     backend = resolve_backend(backend)
     if backend.name not in ('Scipy', 'Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
@@ -164,6 +195,29 @@ def _fill(
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
 ) -> None:
+    """
+    Fill the array with a scalar value.
+
+    Uses a fast parallelizable implementation for fp16-32-64 and int16-32-64 inputs and ndim <= 4.
+
+    Parameters
+    ----------
+    nums: np.ndarray
+        n-dimensional array
+    value: np.number | int | float
+        scalar
+    num_threads: int
+        the number of threads to use for computation. Default = 4. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
+
+    Examples
+    --------
+    >>> _fill(x, 1)
+    >>> _fill(np.empty((2, 3, 4)), 42)
+    >>> _fill(x.astype('uint16'), 3)  # will fail because of unsupported uint16 dtype
+    """
     backend = resolve_backend(backend)
     if backend.name not in ('Scipy', 'Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
@@ -201,6 +255,31 @@ def full(
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
 ) -> np.ndarray:
+    """
+    Return a new array of given shape and type, filled with `fill_value`.
+
+    Uses a fast parallelizable implementation for fp16-32-64 and int16-32-64 inputs and ndim <= 4.
+
+    Parameters
+    ----------
+    shape: int | Sequence[int]
+        desired shape
+    fill_value: np.number | int | float
+        scalar to fill array with
+    dtype: type | str
+        desired dtype to which `fill_value` will be casted. If not specified, `np.array(fill_value).dtype` will be used
+    num_threads: int
+        the number of threads to use for computation. Default = 4. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
+
+    Examples
+    --------
+    >>> x = full((2, 3, 4), 1.0)  # same as `np.ones((2, 3, 4))`
+    >>> x = full((2, 3, 4), 1.5, dtype=int)  # same as np.ones((2, 3, 4), dtype=int)
+    >>> x = full((2, 3, 4), 1, dtype='uint16')  # will fail because of unsupported uint16 dtype
+    """
     nums = np.empty(shape, dtype=dtype)
 
     if dtype is not None:
@@ -217,6 +296,35 @@ def copy(
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
 ) -> np.ndarray:
+    """
+    Return copy of the given array.
+
+    Uses a fast parallelizable implementation for fp16-32-64 and int16-32-64 inputs and ndim <= 4.
+
+    Parameters
+    ----------
+    nums: np.ndarray
+        n-dimensional array
+    output: np.ndarray
+        array of the same shape and dtype as input, into which the copy is placed. By default, a new
+        array is created
+    num_threads: int
+        the number of threads to use for computation. Default = 4. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
+
+    Returns
+    -------
+    copy: np.ndarray
+        copy of array
+
+    Examples
+    --------
+    >>> copied = copy(x)
+    >>> copied = copy(x, backend='Scipy')  # same as `np.copy`
+    >>> copy(x, output=y)  # copied into `y`
+    """
     backend = resolve_backend(backend)
 
     ndim = nums.ndim

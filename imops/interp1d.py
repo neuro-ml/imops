@@ -115,6 +115,7 @@ class interp1d:
 
             self.fill_value = fill_value
             self.scipy_interp1d = None
+            # FIXME: how to accurately pass `num_threads` and `backend` arguments to `copy`?
             self.x = _copy(x) if copy else x
             self.n_dummy = 3 - y.ndim
             self.y = y[(None,) * self.n_dummy] if self.n_dummy else y

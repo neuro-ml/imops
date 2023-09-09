@@ -63,6 +63,8 @@ def crop_to_box(
         axis along which `x` will be cropped
     padding_values: AxesParams
         values to pad with if box exceeds the input's limits
+    **copy_kwargs: dict
+        optional keyword arguments of `imops.numeric.copy` used in the function
 
     Returns
     -------
