@@ -75,7 +75,7 @@ class interp1d:
         num_threads: int = -1,
         backend: BackendLike = None,
     ) -> None:
-        backend = resolve_backend(backend)
+        backend = resolve_backend(backend, warn_stacklevel=3)
         if backend.name not in ('Scipy', 'Numba', 'Cython'):
             raise ValueError(f'Unsupported backend "{backend.name}".')
 
@@ -89,6 +89,7 @@ class interp1d:
             warn(
                 "Fast interpolation is only supported for ndim<=3, dtype=float32 or float64, order=1 or 'linear'. "
                 "Falling back to scipy's implementation.",
+                stacklevel=2,
             )
             self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
         else:
@@ -151,7 +152,7 @@ class interp1d:
             interpolated values. Shape is determined by replacing the interpolation axis in the original array with
             the shape of x
         """
-        num_threads = normalize_num_threads(self.num_threads, self.backend)
+        num_threads = normalize_num_threads(self.num_threads, self.backend, warn_stacklevel=3)
 
         if self.scipy_interp1d is not None:
             return self.scipy_interp1d(x_new)

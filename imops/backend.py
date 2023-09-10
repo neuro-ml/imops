@@ -26,7 +26,7 @@ BackendLike = Union[str, Backend, Type[Backend], None]
 AVAILABLE_BACKENDS: Dict[str, Type[Backend]] = {}
 
 
-def resolve_backend(value: BackendLike) -> Backend:
+def resolve_backend(value: BackendLike, warn_stacklevel: int = 1) -> Backend:
     if value is None:
         return DEFAULT_BACKEND
 
@@ -43,7 +43,7 @@ def resolve_backend(value: BackendLike) -> Backend:
         raise ValueError(f'Expected a `Backend` instance, got {value}.')
 
     if isinstance(value, Cython) and value.fast:
-        warn('`fast=True` has no effect for `Cython` backend for now.')
+        warn('`fast=True` has no effect for `Cython` backend for now.', stacklevel=warn_stacklevel)
 
     return value
 

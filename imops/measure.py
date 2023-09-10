@@ -90,7 +90,7 @@ def label(
         raise ValueError(f'Connectivity for {ndim}D image should be in [1, ..., {ndim}]. Got {connectivity}.')
 
     if ndim > 3:
-        warn("Fast label is only supported for ndim<=3, Falling back to scikit-image's implementation.")
+        warn("Fast label is only supported for ndim<=3, Falling back to scikit-image's implementation.", stacklevel=2)
         labeled_image, num_components = skimage_label(
             label_image, background=background, return_num=True, connectivity=connectivity
         )
@@ -174,19 +174,19 @@ def center_of_mass(
     if (labels is None) ^ (index is None):
         raise ValueError('`labels` and `index` should be both specified or both not specified.')
 
-    backend = resolve_backend(backend)
+    backend = resolve_backend(backend, warn_stacklevel=3)
 
     if backend.name not in ('Scipy', 'Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
-    num_threads = normalize_num_threads(num_threads, backend)
+    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
 
     if backend.name == 'Scipy':
         return scipy_center_of_mass(array, labels, index)
 
     ndim = array.ndim
     if ndim > 3:
-        warn("Fast center-of-mass is only supported for ndim<=3. Falling back to scipy's implementation.")
+        warn("Fast center-of-mass is only supported for ndim<=3. Falling back to scipy's implementation.", stacklevel=2)
         return scipy_center_of_mass(array, labels, index)
 
     if labels is None:
@@ -205,7 +205,7 @@ def center_of_mass(
             raise ValueError('`index` should consist of unique values.')
 
         if num_threads > 1:
-            warn('Using single-threaded implementation as `labels` and `index` are specified.')
+            warn('Using single-threaded implementation as `labels` and `index` are specified.', stacklevel=2)
 
         src_center_of_mass = _fast_labeled_center_of_mass if backend.fast else _labeled_center_of_mass
 

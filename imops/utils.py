@@ -32,11 +32,14 @@ def imops_num_threads(num_threads: int):
         set_num_threads(previous)
 
 
-def normalize_num_threads(num_threads: int, backend: Backend):
+def normalize_num_threads(num_threads: int, backend: Backend, warn_stacklevel: int = 1) -> int:
     global IMOPS_NUM_THREADS
     if backend.name in SINGLE_THREADED_BACKENDS:
         if num_threads != -1 or IMOPS_NUM_THREADS is not None:
-            warn(f'"{backend.name}" backend is single-threaded. Setting `num_threads` has no effect.')
+            warn(
+                f'"{backend.name}" backend is single-threaded. Setting `num_threads` has no effect.',
+                stacklevel=warn_stacklevel,
+            )
         return 1
 
     num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend.name]
@@ -53,7 +56,8 @@ def normalize_num_threads(num_threads: int, backend: Backend):
         if backend.name == 'Numba':
             warn(
                 'Setting `num_threads` has no effect with "Numba" backend. '
-                'Use `NUMBA_NUM_THREADS` environment variable.'
+                'Use `NUMBA_NUM_THREADS` environment variable.',
+                stacklevel=warn_stacklevel,
             )
         return min(num_threads, max_threads)
 

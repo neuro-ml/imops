@@ -134,13 +134,14 @@ def pointwise_add(
     >>> sum = pointwise_add(x, 1, backend='Scipy')  # just `np.add`
     >>> sum = pointwise_add(x.astype('float32'), x.astype('float16'))  # will fail because of different dtypes
     """
-    backend = resolve_backend(backend)
+    backend = resolve_backend(backend, warn_stacklevel=3)
     if backend.name not in ('Scipy', 'Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
     ndim = nums.ndim
     dtype = nums.dtype
     is_fp16 = dtype == np.float16
+    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
 
     if dtype not in _TYPES:
         raise ValueError(f'Input array dtype must be one of {", ".join(_STR_TYPES)}, got {dtype}.')
@@ -165,7 +166,6 @@ def pointwise_add(
         np.add(nums, summand, out=output)
         return output
 
-    num_threads = normalize_num_threads(num_threads, backend)
     src_pointwise_add = _choose_cython_pointwise_add(ndim, summand_is_array, is_fp16, backend.fast)
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
@@ -218,7 +218,7 @@ def _fill(
     >>> _fill(np.empty((2, 3, 4)), 42)
     >>> _fill(x.astype('uint16'), 3)  # will fail because of unsupported uint16 dtype
     """
-    backend = resolve_backend(backend)
+    backend = resolve_backend(backend, warn_stacklevel=3)
     if backend.name not in ('Scipy', 'Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
@@ -230,7 +230,7 @@ def _fill(
         return
 
     is_fp16 = dtype == np.float16
-    num_threads = normalize_num_threads(num_threads, backend)
+    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
     src_fill = _choose_cython_fill(ndim, backend.fast)
     value = dtype.type(value)
 
@@ -332,10 +332,11 @@ def copy(
     >>> copied = copy(x, backend='Scipy')  # same as `np.copy`
     >>> copy(x, output=y)  # copied into `y`
     """
-    backend = resolve_backend(backend)
+    backend = resolve_backend(backend, warn_stacklevel=3)
 
     ndim = nums.ndim
     dtype = nums.dtype
+    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
 
     if output is None:
         output = np.empty_like(nums, dtype=dtype, order=order)
@@ -349,7 +350,6 @@ def copy(
         return output
 
     is_fp16 = dtype == np.float16
-    num_threads = normalize_num_threads(num_threads, backend)
     src_copy = _choose_cython_copy(ndim, is_fp16, backend.fast)
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
