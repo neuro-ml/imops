@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 from imops.backend import Backend, Cython, Numba, Scipy, imops_backend, resolve_backend, set_backend
@@ -50,3 +52,10 @@ def test_existing_backend():
 def test_error_without_numba():
     with pytest.raises(ModuleNotFoundError):
         Numba()
+
+
+# TODO: come up with more comprehensive tests to check that imops doesn't affect global FPU state
+def test_not_affecting_subnormals():
+    import imops  # noqa: F401
+
+    assert sys.float_info.min / 2 != 0.0

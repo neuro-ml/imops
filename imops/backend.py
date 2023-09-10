@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Dict, Type, Union
+from warnings import warn
 
 
 class Backend:
@@ -40,6 +41,9 @@ def resolve_backend(value: BackendLike) -> Backend:
 
     if not isinstance(value, Backend):
         raise ValueError(f'Expected a `Backend` instance, got {value}.')
+
+    if isinstance(value, Cython) and value.fast:
+        warn('`fast=True` has no effect for `Cython` backend for now.')
 
     return value
 

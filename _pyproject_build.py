@@ -64,7 +64,10 @@ class PyprojectBuild(build_py):
             shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
 
         for module in modules:
-            for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']]):
+            # FIXME: import of `ffast-math` compiled modules changes global FPU state, so now `fast=True` will fallback
+            # to standard `-O2`` compiled versions until https://github.com/neuro-ml/imops/issues/37 is resolved
+            # for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
+            for prefix, additional_args in zip(['', 'fast_'], [[], []]):
                 self.distribution.ext_modules.append(
                     Extension(
                         f'{name}.src._{prefix}{module}',

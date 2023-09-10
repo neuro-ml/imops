@@ -83,7 +83,10 @@ ext_modules = [
         define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
     )
     for module in modules
-    for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
+    # FIXME: import of `ffast-math` compiled modules changes global FPU state, so now `fast=True` will just fallback to
+    # standard `-O2`` compiled versions until https://github.com/neuro-ml/imops/issues/37 is resolved
+    # for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
+    for prefix, additional_args in zip(['', 'fast_'], [[], []])
 ]
 
 setup(
