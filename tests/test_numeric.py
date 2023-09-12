@@ -273,7 +273,7 @@ def test_stress_full(backend, num_threads, dtype):
         fill_value = sample_value(np.zeros(1, dtype=dtype).dtype)
 
         nums = full(shape, fill_value, dtype, num_threads=num_threads, backend=backend)
-        desired_nums = np.full(shape, fill_value, dtype)
+        desired_nums = np.full(shape, fill_value, dtype if np.random.binomial(1, 0.5) else None)
 
         if dtype in ('int16', 'int32', 'int64'):
             assert_eq(nums, desired_nums)
@@ -287,7 +287,12 @@ def test_stress_copy(backend, num_threads, dtype):
 
         nums = (32 * np.random.randn(*shape)).astype(dtype)
         old_nums = np.copy(nums)
-        copy_nums = copy(nums, num_threads=num_threads, backend=backend)
+        copy_nums = copy(
+            nums,
+            output=None if np.random.binomial(1, 0.5) else np.empty_like(nums),
+            num_threads=num_threads,
+            backend=backend,
+        )
 
         if dtype in ('int16', 'int32', 'int64'):
             assert_eq(old_nums, copy_nums)
