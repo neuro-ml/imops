@@ -48,6 +48,12 @@ def test_alien_backend(alien_backend):
     with pytest.raises(ValueError):
         pointwise_add(nums, 1, backend=alien_backend)
 
+    with pytest.raises(ValueError):
+        _fill(nums, 42, backend=alien_backend)
+
+    with pytest.raises(ValueError):
+        copy(nums, backend=alien_backend)
+
 
 def test_empty_add(backend, num_threads, dtype):
     nums1 = np.array([], dtype=dtype)
@@ -72,15 +78,77 @@ def test_different_dtypes(backend):
 
 
 def test_bad_dtypes(backend, bad_dtype):
-    for dtype1, dtype2 in combinations(_STR_TYPES, 2):
-        for _ in range(n_samples):
-            shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+    for _ in range(n_samples):
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
 
-            nums1 = (32 * np.random.randn(*shape)).astype(dtype1)
-            nums2 = (32 * np.random.randn(*shape)).astype(dtype2)
+        nums = (32 * np.random.randn(*shape)).astype(bad_dtype)
 
-            with pytest.raises(ValueError):
-                pointwise_add(nums1, nums2, backend=backend)
+        with pytest.raises(ValueError):
+            pointwise_add(nums, 42, backend=backend)
+
+
+def test_bad_output_shape(backend, num_threads, dtype):
+    shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+    output_shape = np.random.randint(32, 64, size=len(shape))
+
+    while not (shape != output_shape).any():
+        output_shape = np.random.randint(32, 64, size=len(shape))
+
+    nums = (32 * np.random.randn(*shape)).astype(dtype)
+    output = np.empty(output_shape, dtype=dtype)
+
+    with pytest.raises(ValueError):
+        pointwise_add(nums, 42, output=output, num_threads=num_threads, backend=backend)
+
+
+def test_bad_output_dtype(backend, num_threads, dtype):
+    for output_dtype in _STR_TYPES:
+        if output_dtype == dtype:
+            continue
+
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+
+        nums = (32 * np.random.randn(*shape)).astype(dtype)
+        output = np.empty_like(nums, dtype=output_dtype)
+
+        with pytest.raises(ValueError):
+            pointwise_add(nums, 42, output=output, num_threads=num_threads, backend=backend)
+
+
+def test_bad_scalar_summand_dtype(backend, num_threads, dtype, bad_dtype):
+    shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+    nums = (32 * np.random.randn(*shape)).astype(dtype)
+
+    with pytest.raises(ValueError):
+        pointwise_add(nums, np.dtype(bad_dtype).type(42), num_threads=num_threads, backend=backend)
+
+
+def test_copy_bad_output_dtype(backend, num_threads, dtype):
+    for output_dtype in _STR_TYPES:
+        if output_dtype == dtype:
+            continue
+
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+
+        nums = (32 * np.random.randn(*shape)).astype(dtype)
+        output = np.empty_like(nums, dtype=output_dtype)
+
+        with pytest.raises(ValueError):
+            copy(nums, output=output, num_threads=num_threads, backend=backend)
+
+
+def test_copy_bad_output_shape(backend, num_threads, dtype):
+    shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+    output_shape = np.random.randint(32, 64, size=len(shape))
+
+    while not (shape != output_shape).any():
+        output_shape = np.random.randint(32, 64, size=len(shape))
+
+    nums = (32 * np.random.randn(*shape)).astype(dtype)
+    output = np.empty(output_shape, dtype=dtype)
+
+    with pytest.raises(ValueError):
+        copy(nums, output=output, num_threads=num_threads, backend=backend)
 
 
 def test_stress_pointwise_add(backend, num_threads, dtype):

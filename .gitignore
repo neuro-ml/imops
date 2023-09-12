@@ -6,3 +6,4 @@ imops/src/*.so
 imops/src/_fast*.pyx
 *.egg-info/
 .asv/
+dist/

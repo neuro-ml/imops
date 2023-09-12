@@ -138,10 +138,7 @@ def pointwise_add(
     if backend.name not in ('Scipy', 'Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
-    ndim = nums.ndim
     dtype = nums.dtype
-    is_fp16 = dtype == np.float16
-    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
 
     if dtype not in _TYPES:
         raise ValueError(f'Input array dtype must be one of {", ".join(_STR_TYPES)}, got {dtype}.')
@@ -149,9 +146,9 @@ def pointwise_add(
     if output is None:
         output = np.empty_like(nums, dtype=dtype)
     elif output.shape != nums.shape:
-        raise ValueError('Input array and output array shapes must be the same.')
+        raise ValueError(f'Input array and output array shapes must be the same, got {nums.shape} vs {output.shape}.')
     elif dtype != output.dtype:
-        raise ValueError('Input array and output array dtypes must be the same.')
+        raise ValueError(f'Input array and output array dtypes must be the same, got {dtype} vs {output.dtype}.')
 
     summand_is_array = isinstance(summand, np.ndarray)
     if summand_is_array:
@@ -162,10 +159,14 @@ def pointwise_add(
     else:
         summand = dtype.type(summand)
 
+    ndim = nums.ndim
+    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
+
     if backend.name == 'Scipy' or ndim > 4:
         np.add(nums, summand, out=output)
         return output
 
+    is_fp16 = dtype == np.float16
     src_pointwise_add = _choose_cython_pointwise_add(ndim, summand_is_array, is_fp16, backend.fast)
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
@@ -333,6 +334,8 @@ def copy(
     >>> copy(x, output=y)  # copied into `y`
     """
     backend = resolve_backend(backend, warn_stacklevel=3)
+    if backend.name not in ('Scipy', 'Cython'):
+        raise ValueError(f'Unsupported backend "{backend.name}".')
 
     ndim = nums.ndim
     dtype = nums.dtype
@@ -341,9 +344,9 @@ def copy(
     if output is None:
         output = np.empty_like(nums, dtype=dtype, order=order)
     elif output.shape != nums.shape:
-        raise ValueError('Input array and output array shapes must be the same.')
+        raise ValueError(f'Input array and output array shapes must be the same, got {nums.shape} vs {output.shape}.')
     elif dtype != output.dtype:
-        raise ValueError('Input array and output array dtypes must be the same.')
+        raise ValueError(f'Input array and output array dtypes must be the same, got {dtype} vs {output.dtype}.')
 
     if dtype not in _TYPES or backend.name == 'Scipy' or ndim > 4:
         output = np.copy(nums, order=order)
