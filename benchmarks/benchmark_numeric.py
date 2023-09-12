@@ -1,7 +1,7 @@
 import numpy as np
 
 from imops._configs import numeric_configs
-from imops.numeric import _fill, copy, full, pointwise_add
+from imops.numeric import copy, fill_, full, pointwise_add
 
 from .common import NUMS_THREADS_TO_BENCHMARK, discard_arg
 
@@ -35,8 +35,8 @@ class NumericSuite:
         full(self.shape, 42, dtype, num_threads, backend)
 
     @discard_arg(2)
-    def time_fill(self, backend, num_threads):
-        _fill(self.empty_3d, 42, num_threads, backend)
+    def time_fill_(self, backend, num_threads):
+        fill_(self.empty_3d, 42, num_threads, backend)
 
     @discard_arg(2)
     def peakmem_add_array(self, backend, num_threads):
@@ -54,5 +54,5 @@ class NumericSuite:
         full(self.shape, 42, dtype, num_threads, backend)
 
     @discard_arg(2)
-    def peakmem_fill(self, backend, num_threads):
-        _fill(self.empty_3d, 42, num_threads, backend)
+    def peakmem_fill_(self, backend, num_threads):
+        fill_(self.empty_3d, 42, num_threads, backend)

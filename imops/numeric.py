@@ -72,7 +72,7 @@ def _choose_cython_pointwise_add(ndim: int, summand_is_array: bool, is_fp16: boo
     return cython_fast_pointwise_add_value_4d if fast else cython_pointwise_add_value_4d
 
 
-def _choose_cython_fill(ndim: int, fast: bool) -> Callable:
+def _choose_cython_fill_(ndim: int, fast: bool) -> Callable:
     assert ndim <= 4, ndim
 
     if ndim <= 3:
@@ -190,7 +190,7 @@ def pointwise_add(
     return output
 
 
-def _fill(
+def fill_(
     nums: np.ndarray,
     value: Union[np.number, int, float],
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
@@ -215,9 +215,9 @@ def _fill(
 
     Examples
     --------
-    >>> _fill(x, 1)
-    >>> _fill(np.empty((2, 3, 4)), 42)
-    >>> _fill(x.astype('uint16'), 3)  # will fail because of unsupported uint16 dtype
+    >>> fill_(x, 1)
+    >>> fill_(np.empty((2, 3, 4)), 42)
+    >>> fill_(x.astype('uint16'), 3)  # will fail because of unsupported uint16 dtype
     """
     backend = resolve_backend(backend, warn_stacklevel=3)
     if backend.name not in ('Scipy', 'Cython'):
@@ -232,7 +232,7 @@ def _fill(
 
     is_fp16 = dtype == np.float16
     num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
-    src_fill = _choose_cython_fill(ndim, backend.fast)
+    src_fill_ = _choose_cython_fill_(ndim, backend.fast)
     value = dtype.type(value)
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
@@ -241,9 +241,9 @@ def _fill(
         nums = nums[(None,) * n_dummy]
 
     if is_fp16:
-        src_fill(nums.view(np.uint16), value.view(np.uint16), num_threads)
+        src_fill_(nums.view(np.uint16), value.view(np.uint16), num_threads)
     else:
-        src_fill(nums, value, num_threads)
+        src_fill_(nums, value, num_threads)
 
     if n_dummy:
         nums = nums[(0,) * n_dummy]
@@ -289,7 +289,7 @@ def full(
     if dtype is not None:
         fill_value = nums.dtype.type(fill_value)
 
-    _fill(nums, fill_value, num_threads, backend)
+    fill_(nums, fill_value, num_threads, backend)
 
     return nums
 

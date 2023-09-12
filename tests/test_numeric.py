@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose as allclose
 
 from imops._configs import numeric_configs
 from imops.backend import Backend
-from imops.numeric import _STR_TYPES, _fill, copy, full, pointwise_add
+from imops.numeric import _STR_TYPES, copy, fill_, full, pointwise_add
 
 
 np.random.seed(1337)
@@ -49,7 +49,7 @@ def test_alien_backend(alien_backend):
         pointwise_add(nums, 1, backend=alien_backend)
 
     with pytest.raises(ValueError):
-        _fill(nums, 42, backend=alien_backend)
+        fill_(nums, 42, backend=alien_backend)
 
     with pytest.raises(ValueError):
         copy(nums, backend=alien_backend)
@@ -219,7 +219,7 @@ def test_stress_pointwise_add_inplace(backend, num_threads, dtype):
             allclose(nums1, desired_out)
 
 
-def test_stress_fill(backend, num_threads, dtype):
+def test_stress_fill_(backend, num_threads, dtype):
     def sample_value(dtype):
         x = dtype.type(32 * np.random.randn(1))
         if isinstance(x, np.ndarray):
@@ -243,7 +243,7 @@ def test_stress_fill(backend, num_threads, dtype):
 
         value = sample_value(nums.dtype)
 
-        _fill(nums, value, num_threads, backend)
+        fill_(nums, value, num_threads, backend)
         nums_copy.fill(value)
 
         if dtype in ('int16', 'int32', 'int64'):

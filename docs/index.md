@@ -47,7 +47,7 @@ pip install imops[numba]  # additionally install Numba backend
 
 ::: imops.numeric.pointwise_add
 
-::: imops.numeric._fill
+::: imops.numeric.fill_
 
 ::: imops.numeric.full
 
