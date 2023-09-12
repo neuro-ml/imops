@@ -72,7 +72,7 @@ def pad_to_shape(
     axis: AxesLike = None,
     padding_values: Union[AxesParams, Callable] = 0,
     ratio: AxesParams = 0.5,
-    **copy_kwargs,
+    **copy_kwargs: dict,
 ) -> np.ndarray:
     """
     Pad `x` to match `shape` along the `axis`.
@@ -126,7 +126,7 @@ def pad_to_divisible(
     padding_values: Union[AxesParams, Callable] = 0,
     ratio: AxesParams = 0.5,
     remainder: AxesLike = 0,
-    **copy_kwargs,
+    **copy_kwargs: dict,
 ) -> np.ndarray:
     """
     Pad `x` to be divisible by `divisor` along the `axis`.
@@ -176,7 +176,7 @@ def restore_crop(
     box: np.ndarray,
     shape: AxesLike,
     padding_values: Union[AxesParams, Callable] = 0,
-    **copy_kwargs,
+    **copy_kwargs: dict,
 ) -> np.ndarray:
     """
     Pad `x` to match `shape`. The left padding is taken equal to `box`'s start.
