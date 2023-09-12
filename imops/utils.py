@@ -13,10 +13,12 @@ AxesLike = Union[int, Sequence[int]]
 AxesParams = Union[float, Sequence[float]]
 
 ZOOM_SRC_DIM = 4
+# TODO: define imops-specific environment variable like `OMP_NUM_THREADS`?
 IMOPS_NUM_THREADS = None
 
 
 def set_num_threads(num_threads: int) -> int:
+    assert isinstance(num_threads, int) or num_threads is None, 'Number of threads must be int value or None.'
     global IMOPS_NUM_THREADS
     current = IMOPS_NUM_THREADS
     IMOPS_NUM_THREADS = num_threads
@@ -33,9 +35,11 @@ def imops_num_threads(num_threads: int):
 
 
 def normalize_num_threads(num_threads: int, backend: Backend, warn_stacklevel: int = 1) -> int:
+    """Calculate the effective number of threads"""
+
     global IMOPS_NUM_THREADS
     if backend.name in SINGLE_THREADED_BACKENDS:
-        if num_threads != -1 or IMOPS_NUM_THREADS is not None:
+        if num_threads != -1:
             warn(
                 f'"{backend.name}" backend is single-threaded. Setting `num_threads` has no effect.',
                 stacklevel=warn_stacklevel,
@@ -45,11 +49,11 @@ def normalize_num_threads(num_threads: int, backend: Backend, warn_stacklevel: i
     num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend.name]
     # here we also handle the case `num_threads_var`=" " gracefully
     env_num_threads = os.environ.get(num_threads_var_name, '').strip()
+    env_num_threads = int(env_num_threads) if env_num_threads else None
+    # TODO: maybe let user set the absolute maximum number of threads?
+    num_available_cpus = len(os.sched_getaffinity(0))
 
-    if IMOPS_NUM_THREADS is not None:
-        max_threads = IMOPS_NUM_THREADS
-    else:
-        max_threads = int(env_num_threads) if env_num_threads else len(os.sched_getaffinity(0))
+    max_num_threads = min(filter(bool, [IMOPS_NUM_THREADS, env_num_threads, num_available_cpus]))
 
     if num_threads >= 0:
         # FIXME
@@ -59,9 +63,30 @@ def normalize_num_threads(num_threads: int, backend: Backend, warn_stacklevel: i
                 'Use `NUMBA_NUM_THREADS` environment variable.',
                 stacklevel=warn_stacklevel,
             )
-        return min(num_threads, max_threads)
+            return num_threads
 
-    return max_threads + num_threads + 1
+        if num_threads > max_num_threads:
+            if max_num_threads == IMOPS_NUM_THREADS:
+                warn(
+                    f'Required number of threads ({num_threads}) is greater than `IMOPS_NUM_THREADS` '
+                    f'({IMOPS_NUM_THREADS}). Using {IMOPS_NUM_THREADS} threads.',
+                    stacklevel=warn_stacklevel,
+                )
+            elif max_num_threads == env_num_threads:
+                warn(
+                    f'Required number of threads ({num_threads}) is greater than `{num_threads_var_name}` '
+                    f'({env_num_threads}). Using {env_num_threads} threads.',
+                    stacklevel=warn_stacklevel,
+                )
+            else:
+                warn(
+                    f'Required number of threads ({num_threads}) is greater than number of available CPU-s '
+                    f'({num_available_cpus}). Using {num_available_cpus} threads.',
+                    stacklevel=warn_stacklevel,
+                )
+        return min(num_threads, max_num_threads)
+
+    return max_num_threads + num_threads + 1
 
 
 def get_c_contiguous_permutaion(array: np.ndarray) -> Optional[np.ndarray]:

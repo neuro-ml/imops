@@ -1,8 +1,9 @@
 import numpy as np
 
 from .backend import BackendLike
+from .numeric import _NUMERIC_DEFAULT_NUM_THREADS
 from .pad import pad
-from .utils import _NUMERIC_DEFAULT_NUM_THREADS, AxesLike, AxesParams, broadcast_axis, fill_by_indices
+from .utils import AxesLike, AxesParams, broadcast_axis, fill_by_indices
 
 
 def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: AxesParams = 0.5) -> np.ndarray:
