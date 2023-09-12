@@ -19,7 +19,7 @@ from .utils import normalize_num_threads
 
 
 # (ndim, skimage_connectivity) -> cc3d_connectivity
-skimage2cc3d = {
+_SKIMAGE2CC3D = {
     (1, 1): 4,
     (2, 1): 4,
     (2, 2): 8,
@@ -110,7 +110,7 @@ def label(
 
         labeled_image, num_components = connected_components(
             label_image,
-            connectivity=skimage2cc3d[(ndim, connectivity)],
+            connectivity=_SKIMAGE2CC3D[(ndim, connectivity)],
             return_N=True,
             **{'out_dtype': dtype} if python_version()[:3] != '3.6' else {},
         )
