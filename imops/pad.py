@@ -2,7 +2,8 @@ from typing import Callable, Sequence, Union
 
 import numpy as np
 
-from .numeric import copy
+from .backend import BackendLike
+from .numeric import _NUMERIC_DEFAULT_NUM_THREADS, copy
 from .utils import AxesLike, AxesParams, axis_from_dim, broadcast_axis, broadcast_to_axis, fill_by_indices
 
 
@@ -11,7 +12,8 @@ def pad(
     padding: Union[AxesLike, Sequence[Sequence[int]]],
     axis: AxesLike = None,
     padding_values: Union[AxesParams, Callable] = 0,
-    **copy_kwargs: dict,
+    num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Pad `x` according to `padding` along the `axis`.
@@ -30,8 +32,11 @@ def pad(
     padding_values: Union[AxesParams, Callable]
         values to pad with, must be broadcastable to the resulting array.
         If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used
-    **copy_kwargs: dict
-        optional keyword arguments of `imops.numeric.copy` used in the function
+    num_threads: int
+        the number of threads to use for computation. Default = 4. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
 
     Returns
     -------
@@ -56,7 +61,7 @@ def pad(
 
     new_shape = np.array(x.shape) + np.sum(padding, axis=1)
     new_x = np.array(padding_values, dtype=x.dtype)
-    new_x = copy(np.broadcast_to(new_x, new_shape), order='C', **copy_kwargs)
+    new_x = copy(np.broadcast_to(new_x, new_shape), order='C', num_threads=num_threads, backend=backend)
 
     start = padding[:, 0]
     end = np.where(padding[:, 1] != 0, -padding[:, 1], None)
@@ -72,7 +77,8 @@ def pad_to_shape(
     axis: AxesLike = None,
     padding_values: Union[AxesParams, Callable] = 0,
     ratio: AxesParams = 0.5,
-    **copy_kwargs: dict,
+    num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Pad `x` to match `shape` along the `axis`.
@@ -91,8 +97,11 @@ def pad_to_shape(
     ratio: AxesParams
         float or sequence of floats describing what proportion of padding to apply on the left sides of padding axes.
         Remaining ratio of padding will be applied on the right sides
-    **copy_kwargs: dict
-        optional keyword arguments of `imops.numeric.copy` used in the function
+    num_threads: int
+        the number of threads to use for computation. Default = 4. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
 
     Returns
     -------
@@ -116,7 +125,7 @@ def pad_to_shape(
     start = (delta * ratio).astype(int)
     padding = np.array((start, delta - start)).T.astype(int)
 
-    return pad(x, padding, axis, padding_values=padding_values, **copy_kwargs)
+    return pad(x, padding, axis, padding_values=padding_values, num_threads=num_threads, backend=backend)
 
 
 def pad_to_divisible(
@@ -126,7 +135,8 @@ def pad_to_divisible(
     padding_values: Union[AxesParams, Callable] = 0,
     ratio: AxesParams = 0.5,
     remainder: AxesLike = 0,
-    **copy_kwargs: dict,
+    num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Pad `x` to be divisible by `divisor` along the `axis`.
@@ -146,8 +156,11 @@ def pad_to_divisible(
         Remaining ratio of padding will be applied on the right sides
     remainder: AxesLike
         `x` will be padded such that its shape gives the remainder `remainder` when divided by `divisor`
-    **copy_kwargs: dict
-        optional keyword arguments of `imops.numeric.copy` used in the function
+    num_threads: int
+        the number of threads to use for computation. Default = 4. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
 
     Returns
     -------
@@ -168,7 +181,9 @@ def pad_to_divisible(
     assert np.all(remainder >= 0)
     shape = np.maximum(np.array(x.shape)[list(axis)], remainder)
 
-    return pad_to_shape(x, shape + (remainder - shape) % divisor, axis, padding_values, ratio, **copy_kwargs)
+    return pad_to_shape(
+        x, shape + (remainder - shape) % divisor, axis, padding_values, ratio, num_threads=num_threads, backend=backend
+    )
 
 
 def restore_crop(
@@ -176,7 +191,8 @@ def restore_crop(
     box: np.ndarray,
     shape: AxesLike,
     padding_values: Union[AxesParams, Callable] = 0,
-    **copy_kwargs: dict,
+    num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Pad `x` to match `shape`. The left padding is taken equal to `box`'s start.
@@ -191,8 +207,11 @@ def restore_crop(
         shape to restore crop to
     padding_values: Union[AxesParams, Callable]
         values to pad with. If Callable (e.g. `numpy.min`) - `padding_values(x)` will be used
-    **copy_kwargs: dict
-        optional keyword arguments of `imops.numeric.copy` used in the function
+    num_threads: int
+        the number of threads to use for computation. Default = 4. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
 
     Returns
     -------
@@ -220,7 +239,7 @@ def restore_crop(
         )
 
     padding = np.array([start, shape - stop], dtype=int).T
-    x = pad(x, padding, padding_values=padding_values, **copy_kwargs)
+    x = pad(x, padding, padding_values=padding_values, num_threads=num_threads, backend=backend)
     assert all(np.array(x.shape) == shape)
 
     return x

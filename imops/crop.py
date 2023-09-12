@@ -1,7 +1,8 @@
 import numpy as np
 
+from .backend import BackendLike
 from .pad import pad
-from .utils import AxesLike, AxesParams, broadcast_axis, fill_by_indices
+from .utils import _NUMERIC_DEFAULT_NUM_THREADS, AxesLike, AxesParams, broadcast_axis, fill_by_indices
 
 
 def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: AxesParams = 0.5) -> np.ndarray:
@@ -48,7 +49,12 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
 
 
 def crop_to_box(
-    x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_values: AxesParams = None, **copy_kwargs
+    x: np.ndarray,
+    box: np.ndarray,
+    axis: AxesLike = None,
+    padding_values: AxesParams = None,
+    num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
+    backend: BackendLike = None,
 ) -> np.ndarray:
     """
     Crop `x` according to `box` along `axis`.
@@ -63,8 +69,11 @@ def crop_to_box(
         axis along which `x` will be cropped
     padding_values: AxesParams
         values to pad with if box exceeds the input's limits
-    **copy_kwargs: dict
-        optional keyword arguments of `imops.numeric.copy` used in the function
+    num_threads: int
+        the number of threads to use for computation. Default = 4. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
 
     Returns
     -------
@@ -95,6 +104,6 @@ def crop_to_box(
     x = x[tuple(map(slice, slice_start, slice_stop))]
 
     if padding_values is not None and padding.any():
-        x = pad(x, padding, axis, padding_values, **copy_kwargs)
+        x = pad(x, padding, axis, padding_values, num_threads=num_threads, backend=backend)
 
     return x
