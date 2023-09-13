@@ -6,7 +6,7 @@ from warnings import warn
 
 import numpy as np
 
-from .backend import BACKEND2NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Backend
+from .backend import BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Backend
 
 
 AxesLike = Union[int, Sequence[int]]
@@ -46,9 +46,9 @@ def normalize_num_threads(num_threads: int, backend: Backend, warn_stacklevel: i
             )
         return 1
 
-    num_threads_var_name = BACKEND2NUM_THREADS_VAR_NAME[backend.name]
-    # here we also handle the case `num_threads_var`=" " gracefully
-    env_num_threads = os.environ.get(num_threads_var_name, '').strip()
+    env_num_threads_var_name = BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME[backend.name]
+    # here we also handle the case `env_num_threads_var_name`=" " gracefully
+    env_num_threads = os.environ.get(env_num_threads_var_name, '').strip()
     env_num_threads = int(env_num_threads) if env_num_threads else None
     # TODO: maybe let user set the absolute maximum number of threads?
     num_available_cpus = len(os.sched_getaffinity(0))
@@ -74,7 +74,7 @@ def normalize_num_threads(num_threads: int, backend: Backend, warn_stacklevel: i
                 )
             elif max_num_threads == env_num_threads:
                 warn(
-                    f'Required number of threads ({num_threads}) is greater than `{num_threads_var_name}` '
+                    f'Required number of threads ({num_threads}) is greater than `{env_num_threads_var_name}` '
                     f'({env_num_threads}). Using {env_num_threads} threads.',
                     stacklevel=warn_stacklevel,
                 )

@@ -1,4 +1,5 @@
 import os
+from unittest import mock
 
 import pytest
 
@@ -29,18 +30,21 @@ def test_build_slices():
         build_slices([0], [None], [2, 3, 4])
 
 
+@mock.patch.dict(os.environ, {}, clear=True)
 def test_set_num_threads():
     PREV_IMOPS_NUM_THREADS = set_num_threads(10)
+
     assert PREV_IMOPS_NUM_THREADS is None
-    assert normalize_num_threads(-1, Cython()) == 10
+    assert normalize_num_threads(-1, Cython()) == min(10, len(os.sched_getaffinity(0)))
 
     PREV_IMOPS_NUM_THREADS = set_num_threads(None)
     assert PREV_IMOPS_NUM_THREADS == 10
     assert normalize_num_threads(-1, Cython()) == len(os.sched_getaffinity(0))
 
 
+@mock.patch.dict(os.environ, {}, clear=True)
 def test_imops_num_threads():
     with imops_num_threads(10):
-        assert normalize_num_threads(-1, Cython()) == 10
+        assert normalize_num_threads(-1, Cython()) == min(10, len(os.sched_getaffinity(0)))
 
     assert normalize_num_threads(-1, Cython()) == len(os.sched_getaffinity(0))

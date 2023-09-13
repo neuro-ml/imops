@@ -7,9 +7,9 @@ from warnings import warn
 class Backend:
     def __init_subclass__(cls, **kwargs):
         name = cls.__name__
-        if name in AVAILABLE_BACKENDS:
+        if name in _AVAILABLE_BACKENDS:
             raise ValueError(f'The name "{name}" is already in use.')
-        AVAILABLE_BACKENDS[name] = cls
+        _AVAILABLE_BACKENDS[name] = cls
         if not hasattr(Backend, name):
             setattr(Backend, name, cls)
 
@@ -23,7 +23,7 @@ class Backend:
 
 
 BackendLike = Union[str, Backend, Type[Backend], None]
-AVAILABLE_BACKENDS: Dict[str, Type[Backend]] = {}
+_AVAILABLE_BACKENDS: Dict[str, Type[Backend]] = {}
 
 
 def resolve_backend(value: BackendLike, warn_stacklevel: int = 1) -> Backend:
@@ -31,10 +31,10 @@ def resolve_backend(value: BackendLike, warn_stacklevel: int = 1) -> Backend:
         return DEFAULT_BACKEND
 
     if isinstance(value, str):
-        if value not in AVAILABLE_BACKENDS:
-            raise ValueError(f'"{value}" is not in the list of available backends: {tuple(AVAILABLE_BACKENDS)}.')
+        if value not in _AVAILABLE_BACKENDS:
+            raise ValueError(f'"{value}" is not in the list of available backends: {tuple(_AVAILABLE_BACKENDS)}.')
 
-        return AVAILABLE_BACKENDS[value]()
+        return _AVAILABLE_BACKENDS[value]()
 
     if isinstance(value, type):
         value = value()
@@ -91,5 +91,5 @@ class Scipy(Backend):
 
 DEFAULT_BACKEND = Cython()
 
-BACKEND2NUM_THREADS_VAR_NAME = {Cython.__name__: 'OMP_NUM_THREADS', Numba.__name__: 'NUMBA_NUM_THREADS'}
+BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME = {Cython.__name__: 'OMP_NUM_THREADS', Numba.__name__: 'NUMBA_NUM_THREADS'}
 SINGLE_THREADED_BACKENDS = (Scipy.__name__,)
