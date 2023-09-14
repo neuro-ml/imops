@@ -20,7 +20,7 @@ classifiers = [
 
 
 class NumpyImport(dict):
-    """Hacky way to return Numpy's include path with lazy import."""
+    """Hacky way to return Numpy's `include` path with lazy import."""
 
     # Must be json-serializable due to
     # https://github.com/cython/cython/blob/6ad6ca0e9e7d030354b7fe7d7b56c3f6e6a4bc23/Cython/Compiler/ModuleNode.py#L773
@@ -40,6 +40,20 @@ class NumpyImport(dict):
     __fspath__ = __repr__
 
 
+class NumpyLibImport(str):
+    """Hacky way to return Numpy's `lib` path with lazy import."""
+
+    # Exploit of https://github.com/pypa/setuptools/blob/1ef36f2d336e239bd8f83507cb9447e060b6ed60/setuptools/_distutils/
+    # unixccompiler.py#L276-L277
+    def __radd__(self, left):
+        import numpy as np
+
+        return left + str(Path(np.get_include()).parent / 'lib')
+
+    def __hash__(self):
+        return id(self)
+
+
 with open(root / 'requirements.txt', encoding='utf-8') as file:
     requirements = file.read().splitlines()
 with open(root / 'README.md', encoding='utf-8') as file:
@@ -50,6 +64,8 @@ version = runpy.run_path(root / name / '__version__.py')['__version__']
 # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
 # FIXME: code for cythonizing is duplicated in `_pyproject_build.py`
 modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom']
+modules_to_link_against_numpy_core_math_lib = ['numeric']
+
 for module in modules:
     src_dir = Path(__file__).parent / name / 'src'
     shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
@@ -60,12 +76,17 @@ ext_modules = [
         f'{name}.src._{prefix}{module}',
         [f'{name}/src/_{prefix}{module}.pyx'],
         include_dirs=[NumpyImport()],
+        library_dirs=[NumpyLibImport()] if module in modules_to_link_against_numpy_core_math_lib else [],
+        libraries=['npymath', 'm'] if module in modules_to_link_against_numpy_core_math_lib else [],
         extra_compile_args=args + additional_args,
         extra_link_args=args + additional_args,
         define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
     )
     for module in modules
-    for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
+    # FIXME: import of `ffast-math` compiled modules changes global FPU state, so now `fast=True` will just fallback to
+    # standard `-O2`` compiled versions until https://github.com/neuro-ml/imops/issues/37 is resolved
+    # for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
+    for prefix, additional_args in zip(['', 'fast_'], [[], []])
 ]
 
 setup(

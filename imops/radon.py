@@ -4,6 +4,7 @@ import numpy as np
 from scipy.fftpack import fft, ifft
 
 from .backend import BackendLike, resolve_backend
+from .numeric import copy
 from .src._backprojection import backprojection3d
 from .src._fast_backprojection import backprojection3d as fast_backprojection3d
 from .src._fast_radon import radon3d as fast_radon3d
@@ -52,7 +53,7 @@ def radon(
     >>> sinogram, fill_value = radon(image, return_fill=True)  # 2d image with fill value
     >>> sinogram = radon(image, axes=(-2, -1))  # nd image
     """
-    backend = resolve_backend(backend)
+    backend = resolve_backend(backend, warn_stacklevel=3)
     if backend.name not in ('Cython',):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
@@ -78,13 +79,14 @@ def radon(
         )
 
     if min_ != 0 or max_ != 0:
-        image = image.copy()
+        # FIXME: how to accurately pass `num_threads` and `backend` arguments to `copy`?
+        image = copy(image, order='C')
         image[:, outside_circle] = 0
 
     # TODO: f(arange)?
     limits = ((squared[:, None] + squared[None, :]) > (radius + 2) ** 2).sum(0) // 2
 
-    num_threads = normalize_num_threads(num_threads, backend)
+    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
 
     radon3d_ = fast_radon3d if backend.fast else radon3d
 
@@ -141,7 +143,7 @@ def inverse_radon(
     >>> image = inverse_radon(sinogram, fill_value=-1000)  # 2d image with fill value
     >>> image = inverse_radon(sinogram, axes=(-2, -1))  # nd image
     """
-    backend = resolve_backend(backend)
+    backend = resolve_backend(backend, warn_stacklevel=3)
     if backend.name not in ('Cython',):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
@@ -183,7 +185,7 @@ def inverse_radon(
     filtered_sinogram = filtered_sinogram.astype(dtype, copy=False)
     theta, xs = np.deg2rad(theta, dtype=dtype), xs.astype(dtype, copy=False)
 
-    num_threads = normalize_num_threads(num_threads, backend)
+    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
 
     backprojection3d_ = fast_backprojection3d if backend.fast else backprojection3d
 

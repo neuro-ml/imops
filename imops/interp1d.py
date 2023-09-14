@@ -5,6 +5,7 @@ import numpy as np
 from scipy.interpolate import interp1d as scipy_interp1d
 
 from .backend import BackendLike, resolve_backend
+from .numeric import copy as _copy
 from .src._fast_zoom import _interp1d as cython_fast_interp1d
 from .src._zoom import _interp1d as cython_interp1d
 from .utils import normalize_num_threads
@@ -74,7 +75,7 @@ class interp1d:
         num_threads: int = -1,
         backend: BackendLike = None,
     ) -> None:
-        backend = resolve_backend(backend)
+        backend = resolve_backend(backend, warn_stacklevel=3)
         if backend.name not in ('Scipy', 'Numba', 'Cython'):
             raise ValueError(f'Unsupported backend "{backend.name}".')
 
@@ -88,6 +89,7 @@ class interp1d:
             warn(
                 "Fast interpolation is only supported for ndim<=3, dtype=float32 or float64, order=1 or 'linear'. "
                 "Falling back to scipy's implementation.",
+                stacklevel=2,
             )
             self.scipy_interp1d = scipy_interp1d(x, y, kind, axis, copy, bounds_error, fill_value, assume_sorted)
         else:
@@ -114,12 +116,13 @@ class interp1d:
 
             self.fill_value = fill_value
             self.scipy_interp1d = None
-            self.x = np.copy(x) if copy else x
+            # FIXME: how to accurately pass `num_threads` and `backend` arguments to `copy`?
+            self.x = _copy(x, order='C') if copy else x
             self.n_dummy = 3 - y.ndim
             self.y = y[(None,) * self.n_dummy] if self.n_dummy else y
 
             if copy:
-                self.y = np.copy(self.y)
+                self.y = _copy(self.y, order='C')
 
             self.assume_sorted = assume_sorted
 
@@ -149,7 +152,7 @@ class interp1d:
             interpolated values. Shape is determined by replacing the interpolation axis in the original array with
             the shape of x
         """
-        num_threads = normalize_num_threads(self.num_threads, self.backend)
+        num_threads = normalize_num_threads(self.num_threads, self.backend, warn_stacklevel=3)
 
         if self.scipy_interp1d is not None:
             return self.scipy_interp1d(x_new)

@@ -1,5 +1,7 @@
 import numpy as np
 
+from .backend import BackendLike
+from .numeric import _NUMERIC_DEFAULT_NUM_THREADS
 from .pad import pad
 from .utils import AxesLike, AxesParams, broadcast_axis, fill_by_indices
 
@@ -43,10 +45,18 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
     ratio = fill_by_indices(np.zeros(ndim), ratio, axis)
     start = ((old_shape - new_shape) * ratio).astype(int)
 
+    # TODO: Create contiguous array?
     return x[tuple(map(slice, start, start + new_shape))]
 
 
-def crop_to_box(x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_values: AxesParams = None) -> np.ndarray:
+def crop_to_box(
+    x: np.ndarray,
+    box: np.ndarray,
+    axis: AxesLike = None,
+    padding_values: AxesParams = None,
+    num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
+    backend: BackendLike = None,
+) -> np.ndarray:
     """
     Crop `x` according to `box` along `axis`.
 
@@ -60,6 +70,11 @@ def crop_to_box(x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_v
         axis along which `x` will be cropped
     padding_values: AxesParams
         values to pad with if box exceeds the input's limits
+    num_threads: int
+        the number of threads to use for computation. Default = 4. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
 
     Returns
     -------
@@ -86,9 +101,10 @@ def crop_to_box(x: np.ndarray, box: np.ndarray, axis: AxesLike = None, padding_v
 
     slice_start = fill_by_indices(np.zeros(x.ndim, int), slice_start, axis)
     slice_stop = fill_by_indices(x.shape, slice_stop, axis)
+    # TODO: Create contiguous array?
     x = x[tuple(map(slice, slice_start, slice_stop))]
 
     if padding_values is not None and padding.any():
-        x = pad(x, padding, axis, padding_values)
+        x = pad(x, padding, axis, padding_values, num_threads=num_threads, backend=backend)
 
     return x

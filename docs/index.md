@@ -45,6 +45,14 @@ pip install imops[numba]  # additionally install Numba backend
 
 ::: imops.measure.center_of_mass
 
+::: imops.numeric.pointwise_add
+
+::: imops.numeric.fill_
+
+::: imops.numeric.full
+
+::: imops.numeric.copy
+
 ::: imops.radon.radon
 
 ::: imops.radon.inverse_radon

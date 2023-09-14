@@ -208,7 +208,7 @@ def _zoom(
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.zoom.html`
     """
-    backend = resolve_backend(backend)
+    backend = resolve_backend(backend, warn_stacklevel=4)
     if backend.name not in ('Scipy', 'Numba', 'Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
@@ -216,7 +216,7 @@ def _zoom(
     dtype = input.dtype
     cval = np.dtype(dtype).type(cval)
     zoom = fill_by_indices(np.ones(input.ndim, 'float64'), zoom, range(input.ndim))
-    num_threads = normalize_num_threads(num_threads, backend)
+    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=4)
 
     if backend.name == 'Scipy':
         return scipy_zoom(

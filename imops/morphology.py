@@ -28,12 +28,12 @@ def morphology_op_wrapper(
         num_threads: int = -1,
         backend: BackendLike = None,
     ) -> np.ndarray:
-        backend = resolve_backend(backend)
+        backend = resolve_backend(backend, warn_stacklevel=4)
         if backend.name not in {x.name for x in backend2src_op.keys()}:
             raise ValueError(f'Unsupported backend "{backend.name}".')
 
         ndim = image.ndim
-        num_threads = normalize_num_threads(num_threads, backend)
+        num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=4)
 
         if footprint is None:
             footprint = generate_binary_structure(ndim, 1)
@@ -60,7 +60,8 @@ def morphology_op_wrapper(
         if ndim > 3:
             warn(
                 f"Fast {' '.join(op_name.split('_'))} is only supported for ndim<=3. "
-                "Falling back to scipy's implementation."
+                "Falling back to scipy's implementation.",
+                stacklevel=3,
             )
             output = backend2src_op[Scipy()](image, footprint)
 
@@ -70,13 +71,13 @@ def morphology_op_wrapper(
             raise ValueError('Input image and footprint number of dimensions must be the same.')
 
         if not image.any():
-            warn(f'{op_name} is applied to the fully False mask (mask.any() == False).')
+            warn(f'{op_name} is applied to the fully False mask (mask.any() == False).', stacklevel=3)
             output.fill(False)
 
             return output
 
         if image.all():
-            warn(f'{op_name} is applied to the fully True mask (mask.all() == True).')
+            warn(f'{op_name} is applied to the fully True mask (mask.all() == True).', stacklevel=3)
             output.fill(True)
 
             return output
