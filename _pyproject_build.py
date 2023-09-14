@@ -1,3 +1,4 @@
+import platform
 import shutil
 from pathlib import Path
 
@@ -49,7 +50,8 @@ class PyprojectBuild(build_py):
         super().initialize_options()
 
         name = 'imops'
-        args = ['-fopenmp']
+        on_windows = platform.system() == 'Windows'
+        args = ['/openmp' if on_windows else '-fopenmp']
 
         if self.distribution.ext_modules is None:
             self.distribution.ext_modules = []
@@ -76,7 +78,9 @@ class PyprojectBuild(build_py):
                         library_dirs=[NumpyLibImport()]
                         if module in modules_to_link_against_numpy_core_math_lib
                         else [],
-                        libraries=['npymath', 'm'] if module in modules_to_link_against_numpy_core_math_lib else [],
+                        libraries=['npymath'] + ['m'] * (not on_windows)
+                        if module in modules_to_link_against_numpy_core_math_lib
+                        else [],
                         extra_compile_args=args + additional_args,
                         extra_link_args=args + additional_args,
                         define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],

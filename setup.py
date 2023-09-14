@@ -1,3 +1,4 @@
+import platform
 import runpy
 import shutil
 from pathlib import Path
@@ -70,14 +71,17 @@ for module in modules:
     src_dir = Path(__file__).parent / name / 'src'
     shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
 
-args = ['-fopenmp']
+on_windows = platform.system() == 'Windows'
+args = ['/openmp' if on_windows else '-fopenmp']
 ext_modules = [
     Extension(
         f'{name}.src._{prefix}{module}',
         [f'{name}/src/_{prefix}{module}.pyx'],
         include_dirs=[NumpyImport()],
         library_dirs=[NumpyLibImport()] if module in modules_to_link_against_numpy_core_math_lib else [],
-        libraries=['npymath', 'm'] if module in modules_to_link_against_numpy_core_math_lib else [],
+        libraries=['npymath'] + ['m'] * (not on_windows)
+        if module in modules_to_link_against_numpy_core_math_lib
+        else [],
         extra_compile_args=args + additional_args,
         extra_link_args=args + additional_args,
         define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
