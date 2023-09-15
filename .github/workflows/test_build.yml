@@ -1,7 +1,6 @@
 name: Test build
 
-on:
-  workflow_dispatch:
+on: [ pull_request ]
 
 env:
   MODULE_NAME: imops
