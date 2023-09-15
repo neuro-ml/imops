@@ -1,5 +1,5 @@
 include *.md
 include requirements.txt
 include pyproject.toml
-include _pyproject_build.py
+include _build_utils.py
 recursive-include imops *.py
