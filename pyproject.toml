@@ -56,10 +56,10 @@ skip_glob='.asv'
 max-line-length = 120
 
 [tool.setuptools]
-py-modules = ['_pyproject_build']
+py-modules = ['_build_utils']
 
 [tool.setuptools.cmdclass]
-build_py = "_pyproject_build.PyprojectBuild"
+build_py = "_build_utils.PyprojectBuild"
 
 [tool.setuptools.packages.find]
 include = ['imops']
