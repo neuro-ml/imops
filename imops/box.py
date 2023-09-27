@@ -5,6 +5,9 @@ from typing import Callable, Tuple
 
 import numpy as np
 
+# for backward compatibility
+from .utils import build_slices  # noqa: F401
+
 
 # Immutable numpy array
 Box = np.ndarray
