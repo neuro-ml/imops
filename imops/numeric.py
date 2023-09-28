@@ -258,7 +258,7 @@ def full(
     backend: BackendLike = None,
 ) -> np.ndarray:
     """
-    Return a new array of given shape and type, filled with `fill_value`.
+    Return a new array of given shape and dtype, filled with `fill_value`.
 
     Uses a fast parallelizable implementation for fp16-32-64 and int16-32-64 inputs and ndim <= 4.
 
@@ -284,10 +284,10 @@ def full(
     >>> x = full((2, 3, 4), 1.5, dtype=int)  # same as np.ones((2, 3, 4), dtype=int)
     >>> x = full((2, 3, 4), 1, dtype='uint16')  # will fail because of unsupported uint16 dtype
     """
-    nums = np.empty(shape, dtype=dtype, order=order)
+    dtype = dtype or np.array(fill_value).dtype
 
-    if dtype is not None:
-        fill_value = nums.dtype.type(fill_value)
+    nums = np.empty(shape, dtype=dtype, order=order)
+    fill_value = nums.dtype.type(fill_value)
 
     fill_(nums, fill_value, num_threads, backend)
 

@@ -1,10 +1,24 @@
 import os
 from unittest import mock
 
+import numpy as np
 import pytest
 
 from imops.backend import Cython
-from imops.utils import build_slices, check_len, imops_num_threads, normalize_num_threads, set_num_threads
+from imops.utils import (
+    broadcast_axis,
+    broadcast_to_axis,
+    build_slices,
+    check_len,
+    imops_num_threads,
+    normalize_num_threads,
+    set_num_threads,
+)
+
+
+assert_eq = np.testing.assert_array_equal
+
+MANY_THREADS = 42069
 
 
 def test_check_len():
@@ -48,3 +62,51 @@ def test_imops_num_threads():
         assert normalize_num_threads(-1, Cython()) == min(10, len(os.sched_getaffinity(0)))
 
     assert normalize_num_threads(-1, Cython()) == len(os.sched_getaffinity(0))
+
+
+@mock.patch.dict(os.environ, {}, clear=True)
+def test_many_threads_warning_os():
+    with pytest.warns(UserWarning):
+        normalize_num_threads(MANY_THREADS, Cython())
+
+
+@mock.patch.dict(os.environ, {'OMP_NUM_THREADS': '2'}, clear=True)
+def test_many_threads_warning_omp():
+    with pytest.warns(UserWarning):
+        normalize_num_threads(MANY_THREADS, Cython())
+
+
+@mock.patch.dict(os.environ, {}, clear=True)
+def test_many_threads_warning_imops():
+    with imops_num_threads(10):
+        with pytest.warns(UserWarning):
+            normalize_num_threads(MANY_THREADS, Cython())
+
+
+def test_broadcast_to_axis():
+    arrays = np.ones((1, 2)), np.ones((3, 4, 5)), np.ones(1), 1
+    axis = [0, 0, 0]
+
+    for x, out in zip((np.ones((3, 2)), np.ones((3, 4, 5)), np.ones(3), np.ones(3)), broadcast_to_axis(axis, *arrays)):
+        assert_eq(x, out)
+
+    with pytest.raises(ValueError):
+        broadcast_to_axis(axis)
+
+    with pytest.raises(ValueError):
+        broadcast_to_axis(None, *arrays)
+
+    with pytest.raises(ValueError):
+        broadcast_to_axis([0, 0], *arrays)
+
+
+def test_broadcast_axis():
+    arrays = np.ones((1, 3)), np.ones((2, 3))
+
+    for out in broadcast_axis([0, 1], 2, *arrays)[1:]:
+        assert_eq(out, np.ones((2, 3)))
+
+    arrays = np.ones((3, 1)), np.ones((2, 3))
+
+    with pytest.raises(ValueError):
+        broadcast_axis([0, 1], 2, *arrays)

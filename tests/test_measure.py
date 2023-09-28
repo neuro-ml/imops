@@ -338,7 +338,7 @@ def test_labeled_center_of_mass(backend, dtype, label_dtype):
             else np.random.choice(np.array([[False], [True], [False, True], [True, False]], dtype=object))
         )
 
-        out = center_of_mass(inp, labels, index, backend=backend)
+        out = center_of_mass(inp, labels, index, num_threads=1, backend=backend)
         desired_out = scipy_center_of_mass(inp, labels, index)
 
         for x, y in zip(out, desired_out):

@@ -155,7 +155,7 @@ def test_stress(pair, backend, footprint_shape_modifier, boxed):
             inp = np.random.binomial(1, 0.5, shape)
 
         footprint_shape = footprint_shape_modifier(np.random.randint(1, 4, size=inp.ndim))
-        footprint = np.random.binomial(1, 0.5, footprint_shape) if np.random.binomial(1, 0.5, 1) else None
+        footprint = np.random.binomial(1, 0.5, footprint_shape) if np.random.binomial(1, 0.5) else None
 
         if backend == Scipy() and boxed:
             with pytest.raises(ValueError):
@@ -173,9 +173,15 @@ def test_stress(pair, backend, footprint_shape_modifier, boxed):
             return
 
         desired_out = sk_op(inp, footprint)
+        output = np.empty_like(inp)
+
+        if np.random.binomial(1, 0.5):
+            output = imops_op(inp, footprint, backend=backend, boxed=boxed)
+        else:
+            imops_op(inp, footprint, output=output, backend=backend, boxed=boxed)
 
         assert_eq(
-            imops_op(inp, footprint, backend=backend, boxed=boxed),
+            output,
             desired_out,
             err_msg=f'{i, shape, footprint, box_coord if boxed else None}',
         )

@@ -95,6 +95,34 @@ def test_length_inequality_exception(backend):
         interp1d(x, y, axis=0, backend=backend)
 
 
+def test_nans(backend):
+    if backend.name == 'Scipy':
+        return
+
+    x = np.array([0, 1, 2])
+    y = np.array([np.inf, -np.inf, np.inf])
+
+    with pytest.raises(RuntimeError):
+        interp1d(x, y, axis=0, fill_value=0, backend=backend)(x / 2)
+
+    x = np.array([0, 1, 2, 3, 4, 5])
+    y = np.array([np.inf, 0, 1, 2, -np.inf, np.inf])
+
+    with pytest.raises(RuntimeError):
+        interp1d(x, y, axis=0, fill_value=0, backend=backend)(x)
+
+    y = np.array([np.inf, 0, 1, np.inf, -np.inf, np.inf])
+
+    allclose(
+        interp1d(x, y, axis=0, fill_value=0, backend=backend)(x / 2),
+        np.array([np.inf, np.inf, np.inf, 0.5, 1, np.inf]),
+    )
+    allclose(
+        interp1d(x, -y, axis=0, fill_value=0, backend=backend)(x / 2),
+        np.array([-np.inf, -np.inf, -np.inf, -0.5, -1, -np.inf]),
+    )
+
+
 def test_extrapolation(backend):
     for i in range(n_samples):
         shape = np.random.randint(16, 64, size=np.random.randint(1, 4))
@@ -152,7 +180,15 @@ def test_stress(backend):
         old_locations = np.random.randn(shape[axis])
         new_locations = np.random.randn(np.random.randint(shape[axis] // 2, shape[axis] * 2))
 
-        out = interp1d(old_locations, inp, axis=axis, bounds_error=False, fill_value=0, backend=backend)(new_locations)
+        out = interp1d(
+            old_locations,
+            inp,
+            axis=axis,
+            copy=np.random.binomial(1, 0.5),
+            bounds_error=False,
+            fill_value=0,
+            backend=backend,
+        )(new_locations)
         desired_out = scipy_interp1d(old_locations, inp, axis=axis, bounds_error=False, fill_value=0)(new_locations)
 
         allclose(out, desired_out, rtol=1e-6, err_msg=f'{i, shape}')
