@@ -29,14 +29,14 @@ class NumericSuite:
 
     @discard_arg(2)
     def time_copy(self, backend, num_threads):
-        copy(self.nums1_3d, num_threads, backend)
+        copy(self.nums1_3d, num_threads=num_threads, backend=backend)
 
     def time_full(self, backend, dtype, num_threads):
-        full(self.shape, 42, dtype, num_threads, backend)
+        full(self.shape, 42, dtype, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def time_fill_(self, backend, num_threads):
-        fill_(self.empty_3d, 42, num_threads, backend)
+        fill_(self.empty_3d, 42, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def peakmem_add_array(self, backend, num_threads):
@@ -48,11 +48,11 @@ class NumericSuite:
 
     @discard_arg(2)
     def peakmem_copy(self, backend, num_threads):
-        copy(self.nums1_3d, num_threads, backend)
+        copy(self.nums1_3d, num_threads=num_threads, backend=backend)
 
     def peakmem_full(self, backend, dtype, num_threads):
-        full(self.shape, 42, dtype, num_threads, backend)
+        full(self.shape, 42, dtype, num_threads=num_threads, backend=backend)
 
     @discard_arg(2)
     def peakmem_fill_(self, backend, num_threads):
-        fill_(self.empty_3d, 42, num_threads, backend)
+        fill_(self.empty_3d, 42, num_threads=num_threads, backend=backend)
