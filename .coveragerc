@@ -1,4 +1,0 @@
-[report]
-omit =
-    # FIXME: coverage can't reach lines of numba.njit-ed functions
-    imops/src/_numba_zoom.py

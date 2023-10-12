@@ -61,7 +61,7 @@ jobs:
           pytest tests/test_backend.py -m nonumba
       - name: Generate coverage report
         run: |
-          coverage xml -o reports/coverage-${{ matrix.python-version }}.xml
+          coverage xml -o reports/coverage-${{ matrix.python-version }}.xml --omit=imops/src/_numba_zoom.py
           sed -i -e "s|$MODULE_PARENT/||g" reports/coverage-${{ matrix.python-version }}.xml
           sed -i -e "s|$(echo $MODULE_PARENT/ | tr "/" .)||g" reports/coverage-${{ matrix.python-version }}.xml
 
