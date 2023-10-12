@@ -151,14 +151,6 @@ def broadcast_to_axis(axis: AxesLike, *arrays: AxesParams):
     return tuple(np.repeat(x, len(axis) // len(x), 0) for x in arrays)
 
 
-# TODO: come up with a better name
-def composition_args(f: Callable, g: Callable) -> Callable:
-    def inner(*args):
-        return f(g(*args), *args[1:])
-
-    return inner
-
-
 def morphology_composition_args(f, g) -> Callable:
     def wrapper(
         image: np.ndarray,
