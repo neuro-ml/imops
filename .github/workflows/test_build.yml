@@ -30,10 +30,12 @@ jobs:
       - name: Install blas for i686
         if: matrix.os == 'ubuntu-20.04'
         run: |
-          sudo apt-get install libopenblas-dev
+          sudo apt-get install libopenblas-dev pkg-config
           export PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/openblas-pthread/pkgconfig"  
       - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
+        run: |
+          echo $PKG_CONFIG_PATH
+          python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_ENVIRONMENT_MACOS: >
             PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="-L/usr/local/opt/llvm/lib" CPPFLAGS="-I/usr/local/opt/llvm/include"
