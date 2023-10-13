@@ -12,13 +12,12 @@ def sk_iradon(xs):
         return np.stack([iradon_(x) for x in xs])
 
 
-def sk_radon(xs, strict=True):
+def sk_radon(xs):
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', module='numpy')
         warnings.simplefilter('ignore', DeprecationWarning)
         warnings.simplefilter('ignore', np.VisibleDeprecationWarning)
-        if strict:
-            warnings.filterwarnings('error', '.*image must be zero.*', module='skimage')
+        warnings.filterwarnings('error', '.*image must be zero.*', module='skimage')
         return np.stack([radon_(x) for x in xs])
 
 

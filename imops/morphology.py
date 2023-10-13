@@ -3,7 +3,12 @@ from warnings import warn
 
 import numpy as np
 from scipy.ndimage import generate_binary_structure
-from skimage.morphology import binary_dilation as scipy_binary_dilation, binary_erosion as scipy_binary_erosion
+from skimage.morphology import (
+    binary_closing as scipy_binary_closing,
+    binary_dilation as scipy_binary_dilation,
+    binary_erosion as scipy_binary_erosion,
+    binary_opening as scipy_binary_opening,
+)
 
 from .backend import BackendLike, Cython, Scipy, resolve_backend
 from .box import add_margin, box_to_shape, mask_to_box, shape_to_box
@@ -14,7 +19,7 @@ from .src._fast_morphology import (
     _binary_erosion as cython_fast_binary_erosion,
 )
 from .src._morphology import _binary_dilation as cython_binary_dilation, _binary_erosion as cython_binary_erosion
-from .utils import composition_args, morphology_composition_args, normalize_num_threads
+from .utils import morphology_composition_args, normalize_num_threads
 
 
 def morphology_op_wrapper(
@@ -42,8 +47,12 @@ def morphology_op_wrapper(
 
         if output is None:
             output = np.empty_like(image, dtype=bool)
+        elif boxed:
+            raise ValueError('`boxed==True` is incompatible with provided `output`')
         elif output.shape != image.shape:
             raise ValueError('Input image and output image shapes must be the same.')
+        elif output.dtype != bool:
+            raise ValueError(f'Output image must have `bool` dtype, got {output.dtype}.')
         elif not output.data.c_contiguous:
             # TODO: Implement morphology for `output` of arbitrary layout
             raise ValueError('`output` must be a C-contiguous array.')
@@ -53,7 +62,7 @@ def morphology_op_wrapper(
         if backend.name == 'Scipy':
             if boxed:
                 raise ValueError('`boxed==True` is incompatible with "Scipy" backend.')
-            output = src_op(image, footprint)
+            src_op(image, footprint, out=output)
 
             return output
 
@@ -63,7 +72,7 @@ def morphology_op_wrapper(
                 "Falling back to scipy's implementation.",
                 stacklevel=3,
             )
-            output = backend2src_op[Scipy()](image, footprint)
+            backend2src_op[Scipy()](image, footprint, out=output)
 
             return output
 
@@ -95,7 +104,7 @@ def morphology_op_wrapper(
         if n_dummy:
             output = output[(0,) * n_dummy]
 
-        return output.astype(bool, copy=False)
+        return output
 
     return wrapped
 
@@ -244,7 +253,7 @@ def binary_erosion(
 _binary_closing = morphology_op_wrapper(
     'binary_closing',
     {
-        Scipy(): composition_args(scipy_binary_erosion, scipy_binary_dilation),
+        Scipy(): scipy_binary_closing,
         Cython(fast=False): morphology_composition_args(cython_binary_erosion, cython_binary_dilation),
         Cython(fast=True): morphology_composition_args(cython_fast_binary_erosion, cython_fast_binary_dilation),
     },
@@ -297,7 +306,7 @@ def binary_closing(
 _binary_opening = morphology_op_wrapper(
     'binary_opening',
     {
-        Scipy(): composition_args(scipy_binary_dilation, scipy_binary_erosion),
+        Scipy(): scipy_binary_opening,
         Cython(fast=False): morphology_composition_args(cython_binary_dilation, cython_binary_erosion),
         Cython(fast=True): morphology_composition_args(cython_fast_binary_dilation, cython_fast_binary_erosion),
     },

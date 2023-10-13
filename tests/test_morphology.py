@@ -150,12 +150,12 @@ def test_stress(pair, backend, footprint_shape_modifier, boxed):
             box_pos = np.asarray([np.random.randint(0, s - bs + 1) for bs, s in zip(box_size, shape)])
             box_coord = np.array([box_pos, box_pos + box_size])
             inp = np.random.binomial(1, 0.7, box_size)
-            inp = restore_crop(inp, box_coord, shape, 0)
+            inp = restore_crop(inp, box_coord, shape, 0).astype(bool)
         else:
-            inp = np.random.binomial(1, 0.5, shape)
+            inp = np.random.binomial(1, 0.5, shape).astype(bool)
 
         footprint_shape = footprint_shape_modifier(np.random.randint(1, 4, size=inp.ndim))
-        footprint = np.random.binomial(1, 0.5, footprint_shape) if np.random.binomial(1, 0.5, 1) else None
+        footprint = np.random.binomial(1, 0.5, footprint_shape) if np.random.binomial(1, 0.5) else None
 
         if backend == Scipy() and boxed:
             with pytest.raises(ValueError):
@@ -173,9 +173,15 @@ def test_stress(pair, backend, footprint_shape_modifier, boxed):
             return
 
         desired_out = sk_op(inp, footprint)
+        output = np.empty_like(inp)
+
+        if np.random.binomial(1, 0.5) or boxed:
+            output = imops_op(inp, footprint, backend=backend, boxed=boxed)
+        else:
+            imops_op(inp, footprint, output=output, backend=backend, boxed=boxed)
 
         assert_eq(
-            imops_op(inp, footprint, backend=backend, boxed=boxed),
+            output,
             desired_out,
             err_msg=f'{i, shape, footprint, box_coord if boxed else None}',
         )
