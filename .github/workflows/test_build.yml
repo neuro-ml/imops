@@ -31,7 +31,6 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
         run: |
           sudo apt-get install libopenblas-dev pkg-config
-          export PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/openblas-pthread/pkgconfig"  
       - name: Build wheels
         run: |
           echo $PKG_CONFIG_PATH
@@ -41,3 +40,4 @@ jobs:
             PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="-L/usr/local/opt/llvm/lib" CPPFLAGS="-I/usr/local/opt/llvm/include"
           CIBW_BUILD: cp39-*
           CIBW_SKIP: "*musllinux* *manylinux_x86_64"
+          PKG_CONFIG_PATH: "/usr/lib/x86_64-linux-gnu/openblas-pthread/pkgconfig"  
