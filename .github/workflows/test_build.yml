@@ -33,4 +33,4 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: >
             PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="-L/usr/local/opt/llvm/lib" CPPFLAGS="-I/usr/local/opt/llvm/include"
           CIBW_BUILD: cp39-*
-          CIBW_SKIP: "*musllinux*" "*manylinux_x86_64"
+          CIBW_SKIP: "*musllinux* *manylinux_x86_64"
