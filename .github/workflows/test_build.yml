@@ -29,7 +29,9 @@ jobs:
           gcc --version
       - name: Install blas for i686
         if: matrix.os == 'ubuntu-20.04'
-        run: sudo apt-get install libopenblas-dev
+        run: |
+          sudo apt-get install libopenblas-dev
+          export PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/openblas-pthread/pkgconfig"  
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
