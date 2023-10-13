@@ -27,6 +27,9 @@ jobs:
           ln -sf /usr/local/bin/gcc-12 /usr/local/bin/gcc
           ls /usr/local/bin/gcc*
           gcc --version
+      - name: Install blas for i686
+        if: matrix.os == 'ubuntu-20.04'
+        run: sudo apt-get install libopenblas-dev
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
