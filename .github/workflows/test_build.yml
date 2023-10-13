@@ -33,7 +33,7 @@ jobs:
           sudo apt-get install libopenblas-dev pkg-config
       - name: Build wheels
         run: |
-          echo $PKG_CONFIG_PATH
+          ls $PKG_CONFIG_PATH
           python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_ENVIRONMENT_MACOS: >
