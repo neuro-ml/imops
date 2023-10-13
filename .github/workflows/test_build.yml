@@ -39,4 +39,4 @@ jobs:
             PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="-L/usr/local/opt/llvm/lib" CPPFLAGS="-I/usr/local/opt/llvm/include"
           CIBW_BUILD: cp39-*
           CIBW_SKIP: "*musllinux* *manylinux_x86_64"
-          PKG_CONFIG_PATH: "/usr/lib/x86_64-linux-gnu/openblas-pthread/pkgconfig/openblas.pc"  
+          PKG_CONFIG_PATH: "/usr/lib/x86_64-linux-gnu/openblas-pthread/pkgconfig/blas-openblas.pc"  
