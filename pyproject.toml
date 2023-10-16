@@ -70,6 +70,3 @@ imops = ['py.typed']
 [tool.setuptools.dynamic]
 version = {attr = 'imops.__version__.__version__'}
 dependencies = { file = ['requirements.txt'] }
-
-[tool.cibuildwheel.config-settings]
---build-option = "-Dallow-noblas=true"
