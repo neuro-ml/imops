@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.10.0
+        run: python -m pip install cibuildwheel==2.16.2
       - name: Install gcc for mac
         if: matrix.os == 'macOS-11'
         run: |
