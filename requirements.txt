@@ -5,3 +5,5 @@ dataclasses; python_version < '3.7'
 scikit-image
 connected-components-3d
 fastremap
+pybind11
+pybind11[global]

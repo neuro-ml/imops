@@ -59,6 +59,24 @@ Works faster only for `ndim<=4, dtype=float32 or float64 (and bool-int16-32-64 i
 ```python
 from imops import interp1d  # same as `scipy.interpolate.interp1d`
 ```
+
+### Fast 2d linear interpolation
+From https://github.com/alexeybelkov/parinterp/tree/rework
+```python
+import numpy as np
+from imops.interp2d import Linear2DInterpolator
+n, m = 1024, 2
+points = np.random.randint(low=0, high=1024, size=(n, m))
+points = np.unique(points, axis=0)
+x_points = points[: n // 2]
+values = np.random.uniform(low=0.0, high=1.0, size=(len(x_points),))
+interp_points = points[n // 2:]
+n_jobs = -1 # will be equal to num of CPU cores
+interpolator = Linear2DInterpolator(x_points, values, n_jobs)
+# Also you can pass values to __call__ and rewrite the ones that were passed to __init__
+interp_values = interpolator(interp_points, values + 1.0, fill_value=0.0)
+```
+
 Works faster only for `ndim<=3, dtype=float32 or float64, order=1`
 ### Fast binary morphology
 
