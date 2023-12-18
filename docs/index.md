@@ -33,6 +33,11 @@ pip install imops[numba]  # additionally install Numba backend
       members:
         - __call__
 
+::: imops.interp2d.Linear2DInterpolator
+    options:
+      members:
+        - __call__
+
 ::: imops.morphology.binary_dilation
 
 ::: imops.morphology.binary_erosion
