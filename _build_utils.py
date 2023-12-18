@@ -90,7 +90,7 @@ def get_ext_modules():
     ] + [
         Extension(
             'cpp_modules',
-            [f'{name}/cpp/src/main.cpp'],  # Sort source files for reproducibility
+            [f'{name}/cpp/src/main.cpp'],
             include_dirs=[LazyImport('pybind11')],
             extra_compile_args=args + cpp_args,
             extra_link_args=args + cpp_args,
