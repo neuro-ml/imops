@@ -53,17 +53,20 @@ class PyprojectBuild(build_py):
 
 
 def get_ext_modules():
+    from pybind11.setup_helpers import Pybind11Extension
+
     name = 'imops'
     on_windows = platform.system() == 'Windows'
     args = ['/openmp' if on_windows else '-fopenmp']
+    cpp_args = ['-std=c++2a', '-O3']  # FIXME: account for higher gcc versions
 
     # Cython extension and .pyx source file names must be the same to compile
     # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
     modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom']
     modules_to_link_against_numpy_core_math_lib = ['numeric']
 
+    src_dir = Path(__file__).parent / name / 'src'
     for module in modules:
-        src_dir = Path(__file__).parent / name / 'src'
         shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
 
     return [
@@ -84,4 +87,11 @@ def get_ext_modules():
         # fallback to standard `-O2` compiled versions until https://github.com/neuro-ml/imops/issues/37 is resolved
         # for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
         for prefix, additional_args in zip(['', 'fast_'], [[], []])
+    ] + [
+        Pybind11Extension(
+            'cpp_modules',
+            [f'{name}/cpp/src/main.cpp'],  # Sort source files for reproducibility
+            extra_compile_args=args + cpp_args,
+            extra_link_args=args + cpp_args,
+        )
     ]

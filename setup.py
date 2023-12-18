@@ -1,23 +1,7 @@
 import runpy
 from pathlib import Path
-import os
+
 from setuptools import find_packages, setup
-
-shared_objects = {'cpp_modules': False}
-
-# a dumb suboptimal way to check if cmake builds are okay
-for item in os.listdir('imops/cpp/build/'):
-    for name in shared_objects:
-        if name in item and '.so' in item:
-            shared_objects[name] = True
-
-
-not_builded = []
-for name, builded in shared_objects.items():
-    if not builded:
-        not_builded.append(name)
-if not_builded:    
-    raise Exception(f"Failed to build following C++ shared objects: {not_builded}")
 
 
 name = 'imops'
@@ -71,6 +55,5 @@ setup(
         'Cython<3.0.0',
     ],
     ext_modules=ext_modules,
-    py_modules=['imops/cpp/build/cpp_modules'],
     python_requires='>=3.6',
 )
