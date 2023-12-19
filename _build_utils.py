@@ -58,7 +58,7 @@ def get_ext_modules():
     name = 'imops'
     on_windows = platform.system() == 'Windows'
     args = ['/openmp' if on_windows else '-fopenmp']
-    cpp_args = ['-std=c++2a', '-O3']  # FIXME: account for higher gcc versions
+    cpp_args = ['/std:c++20' if on_windows else '-std=c++2a', '/O3' if on_windows else '-O3']  # FIXME: account for higher gcc versions
 
     # Cython extension and .pyx source file names must be the same to compile
     # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
