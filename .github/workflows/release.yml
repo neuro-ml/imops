@@ -58,6 +58,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m cibuildwheel --output-dir wheelhouse
         env:
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_ENVIRONMENT_MACOS: >
             PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="-L/usr/local/opt/llvm/lib" CPPFLAGS="-I/usr/local/opt/llvm/include"
           CIBW_BUILD: cp36-* cp37-* cp38-* cp39-* cp310-* cp311-*

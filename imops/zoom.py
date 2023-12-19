@@ -238,6 +238,7 @@ def _zoom(
         warn(
             'Fast zoom is only supported for ndim<=4, dtype=fp32 or fp64 (and bool-int16-32-64 if order == 0), '
             "output=None, order=0 or 1, mode='constant', grid_mode=False. Falling back to scipy's implementation.",
+            stacklevel=3,
         )
         return scipy_zoom(
             input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
@@ -276,7 +277,7 @@ def _zoom(
                 *args,
             )
         else:
-            warn("Input array can't be represented as C-contiguous, performance can drop a lot.")
+            warn("Input array can't be represented as C-contiguous, performance can drop a lot.", stacklevel=3)
             out = src_zoom(input, zoom, cval, *args)
     else:
         out = src_zoom(input, zoom, cval, *args)
