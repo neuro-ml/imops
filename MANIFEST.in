@@ -3,4 +3,4 @@ include requirements.txt
 include pyproject.toml
 include _build_utils.py
 recursive-include imops *.py
-recursive-include imops/cpp *
+recursive-include imops/cpp *.h *.hpp *.cpp
