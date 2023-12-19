@@ -32,7 +32,7 @@ jobs:
       - name: Install g++-11 for ubuntu
         if: matrix.os == 'ubuntu-20.04'
         run: |
-          apt-get install g++-11
+          sudo apt install g++-11
           ls /usr/local/bin/g++*
       - name: Build wheels
         run: |
