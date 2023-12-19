@@ -29,6 +29,7 @@ jobs:
           ls /usr/local/bin/g++*
           gcc --version
           g++ --version
+      - name: Install g++-11 for ubuntu
         if: matrix.os == 'ubuntu-20.04'
         run: |
           apt-get install g++-11
