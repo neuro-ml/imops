@@ -33,7 +33,6 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
         run: |
           sudo apt install g++-11
-          ls /usr/local/bin/g++*
       - name: Build wheels
         run: |
           python -m pip install --upgrade pip
