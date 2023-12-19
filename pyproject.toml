@@ -50,8 +50,8 @@ line_length = 120
 lines_after_imports = 2
 profile = 'black'
 combine_as_imports = true
-skip_glob='.asv'
-skip = ['imops/interp2d']
+skip_glob=['.asv/*', '.eggs/*']
+skip = ['imops/interp2d.py']
 
 [tool.cython-lint]
 max-line-length = 120
