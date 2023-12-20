@@ -24,7 +24,7 @@ jobs:
         run: |
           brew install llvm libomp
           echo $PATH
-          ln -sf /usr/local/bin/gcc-12 /usr/local/bin/gcc
+          ln -sf /usr/local/bin/gcc-11 /usr/local/bin/gcc
           ls /usr/local/bin/gcc*
           ls /usr/local/bin/g++*
           gcc --version
@@ -32,6 +32,8 @@ jobs:
       - name: Install g++-11 for ubuntu
         if: matrix.os == 'ubuntu-20.04'
         run: |
+          sudo apt install g++-11
+          sudo apt install gcc-11
           g++ --version
           gcc --version
           ls /usr/bin/gcc*
@@ -42,7 +44,8 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_ENVIRONMENT_MACOS: >
-            PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="-L/usr/local/opt/llvm/lib" CPPFLAGS="-I/usr/local/opt/llvm/include" CXX="/usr/local/bin/g++-12"
+            PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="-L/usr/local/opt/llvm/lib" CPPFLAGS="-I/usr/local/opt/llvm/include" CXX="/usr/local/bin/g++-11" CC="/usr/local/bin/gcc-11"
+          CIBW_ENVIRONMENT_LINUX: CXX="/usr/bin/g++-11" CC="/usr/bin/gcc-11"
           CIBW_BUILD: cp39-* cp36-*
           CIBW_SKIP: "*musllinux* *manylinux_x86_64"
           CIBW_BEFORE_BUILD_LINUX: 'if [ $(python -c "import sys; print(sys.version_info[1])") -ge 9 ]; then python -m pip install "numpy<2.0.0" --config-settings=setup-args="-Dallow-noblas=true"; fi'
