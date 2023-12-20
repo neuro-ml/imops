@@ -49,7 +49,7 @@ jobs:
         env:
           CIBW_ENVIRONMENT_MACOS: >
             PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="-L/usr/local/opt/llvm/lib" CPPFLAGS="-I/usr/local/opt/llvm/include" CXX="/usr/local/bin/g++-11"
-          CIBW_ENVIRONMENT_LINUX: CC=${{ steps.install_cc.outputs.cc }} CXX=${{ steps.install_cc.outputs.cxx }}
+          CIBW_ENVIRONMENT_LINUX: CXX=${{ steps.install_cc.outputs.cxx }}
           CIBW_BUILD: cp39-* cp36-*
           CIBW_SKIP: "*musllinux* *manylinux_x86_64"
           CIBW_BEFORE_BUILD_LINUX: 'if [ $(python -c "import sys; print(sys.version_info[1])") -ge 9 ]; then python -m pip install "numpy<2.0.0" --config-settings=setup-args="-Dallow-noblas=true"; fi'
