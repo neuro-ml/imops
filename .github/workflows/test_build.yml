@@ -40,8 +40,8 @@ jobs:
         run: |
           ls /usr/bin/gcc*
           ls /usr/bin/g++*
-          ln -sf /usr/bin/gcc-11 /usr/bin/gcc
-          ln -sf /usr/bin/g++-11 /usr/bin/g++
+          sudo ln -sf /usr/bin/gcc-11 /usr/bin/gcc
+          sudo ln -sf /usr/bin/g++-11 /usr/bin/g++
           g++ --version
           gcc --version
       - name: Build wheels
