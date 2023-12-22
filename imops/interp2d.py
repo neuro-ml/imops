@@ -22,8 +22,8 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
     interp_values = interpolator(interp_points, values + 1.0, fill_value=0.0)
     """
 
-    def __init__(self, points: np.ndarray, values: np.ndarray, n_jobs: int = 1, **kwargs):
-        super().__init__(points, n_jobs)
+    def __init__(self, points: np.ndarray, values: np.ndarray, n_jobs: int = 1,  triangles: Optional[np.ndarray] = None, **kwargs):
+        super().__init__(points, n_jobs, triangles)
         self.kdtree = KDTree(data=points, **kwargs)
         self.values = values
         self.n_jobs = n_jobs

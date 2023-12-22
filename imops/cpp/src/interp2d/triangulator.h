@@ -4,6 +4,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/embed.h>
+#include <pybind11/stl.h>
 #include "delaunator/delaunator-header-only.hpp"
 #include "utils.h"
 
@@ -21,31 +22,57 @@ public:
     std::vector<std::vector<size_t>> point2tri;
     std::unordered_map<uint64_t, std::array<size_t, 2>> edge2tri;
 
-    Triangulator(const pyarr_size_t& pypoints, int n_jobs = 1) {
+    Triangulator(const pyarr_size_t& pypoints, int n_jobs, std::optional<pyarr_size_t> pytriangles) {
         if (n_jobs < 0 and n_jobs != -1) {
             throw std::invalid_argument(
                 "Invalid number of workers, have to be -1 or positive integer");
         }
         n_jobs_ = n_jobs == -1 ? omp_get_num_procs() : n_jobs;
-        size_t n = pypoints.shape()[0];
-        std::vector<double> double_points(2 * n);
+        size_t n = pypoints.shape(0);
+
         points.resize(2 * n);
+
         omp_set_dynamic(0);  // Explicitly disable dynamic teams
         omp_set_num_threads(n_jobs_);
-        #pragma parallel for
-        for (size_t i = 0; i < n; ++i) {
-            double_points.at(2 * i) = static_cast<double>(pypoints.at(i, 0));
-            double_points.at(2 * i + 1) = static_cast<double>(pypoints.at(i, 1));
+
+        if (pytriangles.has_value()) {
+            #pragma parallel for
+            for (size_t i = 0; i < n; ++i) {
+                size_t j = 2 * i;
+                points.at(j) = pypoints.at(i, 0);
+                points.at(j + 1) = pypoints.at(i, 1);
+            }
+            
+            size_t m = pytriangles -> shape(0);
+            triangles.resize(3 * m);
+            
+            #pragma parallel for
+            for (size_t i = 0; i < m; ++i) {
+                size_t j = 3 * i;
+                triangles.at(j) = pytriangles -> at(i, 0);
+                triangles.at(j + 1) = pytriangles -> at(i, 1);
+                triangles.at(j + 2) = pytriangles -> at(i, 2);
+            }
         }
-        delaunator::Delaunator delaunated(double_points);
-        triangles = std::move(delaunated.triangles);
-        
-        #pragma parallel for
-        for (size_t i = 0; i < n; ++i) {
-            size_t j = 2 * i;
-            points.at(j) = static_cast<size_t>(delaunated.coords.at(j));
-            points.at(j + 1) = static_cast<size_t>(delaunated.coords.at(j + 1));
+
+        else {
+            std::vector<double> double_points(2 * n);
+            #pragma parallel for
+            for (size_t i = 0; i < n; ++i) {
+                double_points.at(2 * i) = static_cast<double>(pypoints.at(i, 0));
+                double_points.at(2 * i + 1) = static_cast<double>(pypoints.at(i, 1));
+            }
+            delaunator::Delaunator delaunated(double_points);
+            triangles = std::move(delaunated.triangles);
+
+            #pragma parallel for
+            for (size_t i = 0; i < n; ++i) {
+                size_t j = 2 * i;
+                points.at(j) = static_cast<size_t>(delaunated.coords.at(j));
+                points.at(j + 1) = static_cast<size_t>(delaunated.coords.at(j + 1));
+            }
         }
+
         point2tri.resize(n);
         for (size_t i = 0; i < triangles.size() / 3; ++i) {
             size_t t = 3 * i;
