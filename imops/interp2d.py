@@ -1,7 +1,12 @@
 import numpy as np
 from scipy.spatial import KDTree
 from platform import python_version
+
+# TODO: can we make it submodule like `from imops.cpp import Linear2DInterpolatorCpp`?
 from cpp_modules import Linear2DInterpolatorCpp
+
+from .utils import normalize_num_threads
+from .backend import Cython
 
 
 class Linear2DInterpolator(Linear2DInterpolatorCpp):
@@ -54,7 +59,8 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         super().__init__(points, num_threads, triangles)
         self.kdtree = KDTree(data=points, **kwargs)
         self.values = values
-        self.num_threads = num_threads
+        # FIXME: add backend dispatch
+        self.num_threads = normalize_num_threads(num_threads, Cython(), warn_stacklevel=3)
 
     def __call__(self, points: np.ndarray, values: np.ndarray = None, fill_value: float = 0.0) -> np.ndarray:
         """
@@ -65,7 +71,7 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         points: np.ndarray
             2-D array of data point coordinates to interpolate at
         values: np.ndarray
-            1-D array of fp32/fp64 values to use at initial points. If passed, existing values will be replaced
+            1-D array of fp32/fp64 values to use at initial points. If passed, existing values will be rewritten
         fill_value: float
             value to fill past edges
 
