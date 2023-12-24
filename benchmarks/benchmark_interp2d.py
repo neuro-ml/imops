@@ -15,17 +15,19 @@ class Interp2dSuite:
     @discard_arg(1)
     @discard_arg(-1)
     def setup(self, dtype):
-        x = load_npy_gz(Path(__file__).parent / 'tests' / 'test_data' / 'arr_0.npy.gz').astype(dtype)
-        self.int_points = np.transpose((np.isnan(x)).nonzero())
-        self.x_points = np.transpose((~np.isnan(x)).nonzero())
-        self.x_values = x[~np.isnan(x)]
+        x = load_npy_gz(Path(__file__).parent / 'data' / 'ribs.npy.gz').astype(dtype)
+        add_cols = x.shape[1] // 4
+        distances = np.concatenate((x[..., -add_cols:], x, x[..., :add_cols]), axis=1)
+        self.int_points = np.transpose((np.isnan(distances)).nonzero())
+        self.x_points = np.transpose((~np.isnan(distances)).nonzero())
+        self.x_values = distances[~np.isnan(distances)]
 
     @discard_arg(2)
     def time_interp2d(self, backend, num_threads):
         if backend == 'C++':
             Linear2DInterpolator(self.x_points, self.x_values, num_threads=num_threads)(self.int_points, fill_value=0.0)
         elif backend == 'Scipy':
-            LinearNDInterpolator(self.x_points, self.x_values)(self.int_points, fill_value=0.0)
+            LinearNDInterpolator(self.x_points, self.x_values)(self.int_points)
         else:
             raise NotImplementedError
 
@@ -34,6 +36,6 @@ class Interp2dSuite:
         if backend == 'C++':
             Linear2DInterpolator(self.x_points, self.x_values, num_threads=num_threads)(self.int_points, fill_value=0.0)
         elif backend == 'Scipy':
-            LinearNDInterpolator(self.x_points, self.x_values)(self.int_points, fill_value=0.0)
+            LinearNDInterpolator(self.x_points, self.x_values)(self.int_points)
         else:
             raise NotImplementedError
