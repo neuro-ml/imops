@@ -43,9 +43,7 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         self.values = values
         self.n_jobs = n_jobs
 
-    def __call__(
-        self, points: np.ndarray, values: Optional[np.ndarray] = None, fill_value: float = 0.0
-    ) -> np.ndarray:
+    def __call__(self, points: np.ndarray, values: Optional[np.ndarray] = None, fill_value: float = 0.0) -> np.ndarray:
 
         if values is not None:
             if isinstance(values, np.ndarray):
