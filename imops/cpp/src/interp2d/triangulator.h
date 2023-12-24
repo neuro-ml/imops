@@ -22,7 +22,8 @@ public:
     std::vector<std::vector<size_t>> point2tri;
     std::unordered_map<uint64_t, std::array<size_t, 2>> edge2tri;
 
-    Triangulator(const pyarr_size_t& pypoints, int n_jobs, std::optional<pyarr_size_t> pytriangles) {
+    Triangulator(const pyarr_size_t& pypoints, int n_jobs,
+                 std::optional<pyarr_size_t> pytriangles) {
         if (n_jobs < 0 and n_jobs != -1) {
             throw std::invalid_argument(
                 "Invalid number of workers, have to be -1 or positive integer");
@@ -42,16 +43,16 @@ public:
                 points.at(j) = pypoints.at(i, 0);
                 points.at(j + 1) = pypoints.at(i, 1);
             }
-            
-            size_t m = pytriangles -> shape(0);
+
+            size_t m = pytriangles->shape(0);
             triangles.resize(3 * m);
-            
+
             #pragma parallel for
             for (size_t i = 0; i < m; ++i) {
                 size_t j = 3 * i;
-                triangles.at(j) = pytriangles -> at(i, 0);
-                triangles.at(j + 1) = pytriangles -> at(i, 1);
-                triangles.at(j + 2) = pytriangles -> at(i, 2);
+                triangles.at(j) = pytriangles->at(i, 0);
+                triangles.at(j + 1) = pytriangles->at(i, 1);
+                triangles.at(j + 2) = pytriangles->at(i, 2);
             }
         }
 

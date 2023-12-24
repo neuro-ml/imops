@@ -5,14 +5,14 @@ class Interpolator {
 public:
     using pyarr_double = py::array_t<double, py::array::c_style | py::array::forcecast>;
     const Triangulator triangulation;
-    Interpolator(const Triangulator::pyarr_size_t& pypoints, int n_jobs, std::optional<Triangulator::pyarr_size_t> pytriangles)
+    Interpolator(const Triangulator::pyarr_size_t& pypoints, int n_jobs,
+                 std::optional<Triangulator::pyarr_size_t> pytriangles)
         : triangulation(pypoints, n_jobs, pytriangles) {
-            // if (pytriangles.has_value())
-            //     std::cout << pytriangles -> shape(0) << ' ' << pytriangles -> shape(1) << '\n';
     }
 
-    pyarr_double operator()(const Triangulator::pyarr_size_t& int_points, const pyarr_double& values,
-                           const Triangulator::pyarr_size_t& neighbors, double fill_value = 0.0) {
+    pyarr_double operator()(const Triangulator::pyarr_size_t& int_points,
+                            const pyarr_double& values, const Triangulator::pyarr_size_t& neighbors,
+                            double fill_value = 0.0) {
         if (triangulation.points.size() / 2 != values.shape(0)) {
             throw std::invalid_argument("Length mismatch between known points and their values");
         }
@@ -21,7 +21,7 @@ public:
         }
 
         size_t n = int_points.shape()[0];
-        std::vector<double> int_values(n, fill_value);
+        std::vector<double> int_values(n);
 
         omp_set_dynamic(0);  // Explicitly disable dynamic teams
         omp_set_num_threads(triangulation.n_jobs_);
@@ -42,6 +42,8 @@ public:
                 double f2 = values.at(triangulation.triangles.at(t + 1));
                 double f3 = values.at(triangulation.triangles.at(t + 2));
                 int_values[i] = (f1 * lambda_1 + f2 * lambda_2 + f3 * lambda_3) * one_over_2area;
+            } else {
+                int_values[i] = fill_value;
             }
         }
 
