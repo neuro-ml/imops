@@ -24,10 +24,17 @@ public:
 
     Triangulator(const pyarr_size_t& pypoints, int n_jobs,
                  std::optional<pyarr_size_t> pytriangles) {
-        if (n_jobs < 0 and n_jobs != -1) {
+        if (n_jobs <= 0 and n_jobs != -1) {
             throw std::invalid_argument(
-                "Invalid number of workers, have to be -1 or positive integer");
+                "Invalid number of workers, has to be -1 or positive integer");
         }
+        if (pytriangles.has_value()) {
+            if (pytriangles->shape(1) != 3 or pytriangles->shape(0) == 0 or
+                pytriangles->size() / 3 != pytriangles->shape(0)) {
+                throw std::invalid_argument("Passed triangles argument has an incorrect shape");
+            }
+        }
+
         n_jobs_ = n_jobs == -1 ? omp_get_num_procs() : n_jobs;
         size_t n = pypoints.shape(0);
 

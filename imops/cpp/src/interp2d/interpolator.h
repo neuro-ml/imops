@@ -20,7 +20,7 @@ public:
             throw std::invalid_argument("Length mismatch between int_points and their neighbors");
         }
 
-        size_t n = int_points.shape()[0];
+        size_t n = int_points.shape(0);
         std::vector<double> int_values(n);
 
         omp_set_dynamic(0);  // Explicitly disable dynamic teams
