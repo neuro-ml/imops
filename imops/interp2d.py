@@ -2,7 +2,7 @@ from typing import Optional
 
 import numpy as np
 from scipy.spatial import KDTree
-
+from platform import python_version
 from cpp_modules import Linear2DInterpolatorCpp
 
 
@@ -59,7 +59,7 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         if self.values is None:
             raise ValueError('\"values\" argument was never passed neither in __init__ or __call__ methods')
 
-        _, neighbors = self.kdtree.query(points, 1, workers=self.n_jobs)
+        _, neighbors = self.kdtree.query(points, 1, **{'workers': self.n_jobs} if python_version()[:3] != '3.6' else {})
 
         if not isinstance(points, np.ndarray):
             raise ValueError(f'Wrong type of \"points\" argument, expected np.ndarray. Got {type(points)}')
