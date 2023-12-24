@@ -13,7 +13,7 @@ public:
     pyarr_double operator()(const Triangulator::pyarr_size_t& int_points,
                             const pyarr_double& values, const Triangulator::pyarr_size_t& neighbors,
                             double fill_value = 0.0) {
-        if (triangulation.points.size() / 2 != values.shape(0)) {
+        if (static_cast<long>(triangulation.points.size() / 2) != values.shape(0)) {
             throw std::invalid_argument("Length mismatch between known points and their values");
         }
         if (neighbors.shape(0) != int_points.shape(0)) {
