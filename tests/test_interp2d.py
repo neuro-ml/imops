@@ -13,20 +13,20 @@ np.random.seed(1337)
 
 
 @pytest.fixture(params=range(1, 5))
-def n_jobs(request):
+def num_threads(request):
     return request.param
 
 
-def test_test_data(n_jobs):
+def test_test_data(num_threads):
     tests_root = Path(__file__).parent
     for i in range(2):
         x = load(tests_root / 'test_data' / f'arr_{i}.npy.gz')
         int_points = np.transpose((np.isnan(x)).nonzero())
         x_points: np.ndarray = np.transpose((~np.isnan(x)).nonzero())
         x_values = x[~np.isnan(x)]
-        imops_values = Linear2DInterpolator(x_points, x_values, n_jobs=n_jobs)(int_points, fill_value=0.0)
+        imops_values = Linear2DInterpolator(x_points, x_values, num_threads=num_threads)(int_points, fill_value=0.0)
         triangles = scipy.spatial.Delaunay(x_points).simplices
-        delaunay_values = Linear2DInterpolator(x_points, x_values, n_jobs=n_jobs, triangles=triangles)(
+        delaunay_values = Linear2DInterpolator(x_points, x_values, num_threads=num_threads, triangles=triangles)(
             int_points, fill_value=0.0
         )
         scipy_values = griddata(x_points, x_values, int_points, method='linear', fill_value=0.0)
@@ -42,9 +42,9 @@ def test_test_data(n_jobs):
         x_values = load(tests_root / 'test_data' / f'val_{i}.npy.gz')
         x_points = np.transpose(x.nonzero())
         int_points = np.transpose((~x).nonzero())
-        imops_values = Linear2DInterpolator(x_points, x_values, n_jobs=n_jobs)(int_points, fill_value=0.0)
+        imops_values = Linear2DInterpolator(x_points, x_values, num_threads=num_threads)(int_points, fill_value=0.0)
         triangles = scipy.spatial.Delaunay(x_points).simplices
-        delaunay_values = Linear2DInterpolator(x_points, x_values, n_jobs=n_jobs, triangles=triangles)(
+        delaunay_values = Linear2DInterpolator(x_points, x_values, num_threads=num_threads, triangles=triangles)(
             int_points, fill_value=0.0
         )
         scipy_values = griddata(x_points, x_values, int_points, method='linear', fill_value=0.0)
