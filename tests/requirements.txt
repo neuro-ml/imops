@@ -3,3 +3,4 @@ pytest-subtests
 pytest-cov
 scikit-image
 numba
+deli
