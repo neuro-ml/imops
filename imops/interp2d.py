@@ -53,9 +53,6 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
             else:
                 raise ValueError(f'Wrong type of \"triangles\" argument, expected np.ndarray. Got {type(triangles)}')
 
-        if num_threads <= 0 and num_threads != -1:
-            raise ValueError('Invalid number of workers, has to be -1 or positive integer')
-
         super().__init__(points, num_threads, triangles)
         self.kdtree = KDTree(data=points, **kwargs)
         self.values = values
