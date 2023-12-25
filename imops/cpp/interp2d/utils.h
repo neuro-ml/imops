@@ -51,36 +51,6 @@ inline bool segments_intersection(size_t Ax, size_t Ay, size_t Bx, size_t By, si
     return false;
 }
 
-// hope it also works
-// inline bool point_in_triangle(const std::array<int64_t, 4>& coords_info) {
-//     if (coords_info[3] < 0) {
-//         for (size_t i = 1; i < 3; ++i) {
-//             if (coords_info[3] <= coords_info[i] and coords_info[i] <= 0) {
-//                 size_t j = i - 1;
-//                 size_t k = fast_mod(i + 1, 3);
-//                 return coords_info[3] < coords_info[j] and coords_info[j] < 0 and
-//                        coords_info[3] < coords_info[k] and coords_info[k] < 0;
-//             }
-//         }
-//         return coords_info[3] < coords_info[0] and coords_info[0] < 0 and
-//                coords_info[3] < coords_info[1] and coords_info[1] < 0 and
-//                coords_info[3] < coords_info[2] and coords_info[2] < 0;
-//     }
-
-//     for (size_t i = 1; i < 3; ++i) {
-//             if (coords_info[3] >= coords_info[i] and coords_info[i] >= 0) {
-//                 size_t j = i - 1;
-//                 size_t k = fast_mod(i + 1, 3);
-//                 return coords_info[3] > coords_info[j] and coords_info[j] > 0 and
-//                        coords_info[3] > coords_info[k] and coords_info[k] > 0;
-//             }
-//         }
-
-//     return coords_info[3] > coords_info[0] and coords_info[0] > 0 and
-//            coords_info[3] > coords_info[1] and coords_info[1] > 0 and
-//            coords_info[3] > coords_info[2] and coords_info[2] > 0;
-// }
-
 inline bool point_in_triangle(const std::array<int64_t, 4>& coords_info) {
     if (coords_info[3] < 0) {
         return coords_info[3] <= coords_info[0] and coords_info[0] <= 0 and
