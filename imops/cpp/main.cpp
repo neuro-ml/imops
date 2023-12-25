@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <stdexcept>
 #include "interp2d/interpolator.h"

@@ -91,9 +91,9 @@ inline bool counterclockwise(const Point& p0, const Point& p1, const Point& p2)
     Point v0 = Point::vector(p0, p1);
     Point v1 = Point::vector(p0, p2);
     double det = Point::determinant(v0, v1);
-    double dist = v0.magnitude2() + v1.magnitude2();
     if (det == 0)
         return false;
+    double dist = v0.magnitude2() + v1.magnitude2();
     double reldet = std::abs(dist / det);
     if (reldet > 1e14)
         return false;
@@ -126,6 +126,8 @@ inline Point circumcenter(
     const double cl = ex * ex + ey * ey;
     //ABELL - This is suspect for div-by-0.
     const double d = dx * ey - dy * ex;
+
+    assert(("Divide by zero exception", d == 0.0));
 
     const double x = ax + (ey * bl - dy * cl) * 0.5 / d;
     const double y = ay + (dx * cl - ex * bl) * 0.5 / d;
