@@ -72,9 +72,9 @@ points = np.unique(points, axis=0)
 x_points = points[: n // 2]
 values = np.random.uniform(low=0.0, high=1.0, size=(len(x_points),))
 interp_points = points[n // 2:]
-n_jobs = -1 # will be equal to num of CPU cores
+num_threads = -1 # will be equal to num of CPU cores
 # You can optionally pass your own triangulation as an np.array of shape [num_triangles, 3], element at (i, j) position is an index of a point from x_points
-interpolator = Linear2DInterpolator(x_points, values, n_jobs=n_jobs, triangles=None)
+interpolator = Linear2DInterpolator(x_points, values, num_threads=num_threads, triangles=None)
 # Also you can pass values to __call__ and rewrite the ones that were passed to __init__
 interp_values = interpolator(interp_points, values + 1.0, fill_value=0.0)
 ```
