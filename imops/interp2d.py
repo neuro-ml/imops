@@ -1,12 +1,11 @@
-import numpy as np
-from scipy.spatial import KDTree
 from platform import python_version
 
-# TODO: can we make it submodule like `from imops.cpp import Linear2DInterpolatorCpp`?
-from cpp_modules import Linear2DInterpolatorCpp
+import numpy as np
+from scipy.spatial import KDTree
 
-from .utils import normalize_num_threads
 from .backend import Cython
+from .cpp.cpp_modules import Linear2DInterpolatorCpp
+from .utils import normalize_num_threads
 
 
 class Linear2DInterpolator(Linear2DInterpolatorCpp):
@@ -52,11 +51,10 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         **kwargs,
     ):
         if triangles is not None:
-            if isinstance(triangles, np.ndarray):
-                if triangles.ndim != 2 or triangles.shape[1] != 3 or triangles.shape[0] * 3 != triangles.size:
-                    raise ValueError('Passed `triangles` argument has an incorrect shape')
-            else:
+            if not isinstance(triangles, np.ndarray):
                 raise ValueError(f'Wrong type of `triangles` argument, expected np.ndarray. Got {type(triangles)}')
+            if triangles.ndim != 2 or triangles.shape[1] != 3 or triangles.shape[0] * 3 != triangles.size:
+                raise ValueError('Passed `triangles` argument has an incorrect shape')
 
         if not isinstance(points, np.ndarray):
             raise ValueError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
@@ -90,11 +88,11 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         if self.values is None:
             raise ValueError('`values` argument was never passed neither in __init__ or __call__ methods')
 
-        if isinstance(self.values, np.ndarray):
-            if self.values.ndim > 1:
-                raise ValueError(f'Wrong shape of `values` argument, expected ndim=1. Got shape {self.values.shape}')
-        else:
+        if not isinstance(self.values, np.ndarray):
             raise ValueError(f'Wrong type of `values` argument, expected np.ndarray. Got {type(self.values)}')
+
+        if self.values.ndim > 1:
+            raise ValueError(f'Wrong shape of `values` argument, expected ndim=1. Got shape {self.values.shape}')
 
         _, neighbors = self.kdtree.query(
             points, 1, **{'workers': self.num_threads} if python_version()[:3] != '3.6' else {}
@@ -103,5 +101,4 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         if not isinstance(points, np.ndarray):
             raise ValueError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
 
-        int_values = super().__call__(points, self.values, neighbors, fill_value)
-        return int_values
+        return super().__call__(points, self.values, neighbors, fill_value)
