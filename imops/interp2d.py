@@ -52,16 +52,16 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
     ):
         if triangles is not None:
             if not isinstance(triangles, np.ndarray):
-                raise ValueError(f'Wrong type of `triangles` argument, expected np.ndarray. Got {type(triangles)}')
+                raise TypeError(f'Wrong type of `triangles` argument, expected np.ndarray. Got {type(triangles)}')
             if triangles.ndim != 2 or triangles.shape[1] != 3 or triangles.shape[0] * 3 != triangles.size:
                 raise ValueError('Passed `triangles` argument has an incorrect shape')
 
         if not isinstance(points, np.ndarray):
-            raise ValueError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
+            raise TypeError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
 
         if values is not None:
             if not isinstance(values, np.ndarray):
-                raise ValueError(f'Wrong type of `values` argument, expected np.ndarray. Got {type(values)}')
+                raise TypeError(f'Wrong type of `values` argument, expected np.ndarray. Got {type(values)}')
 
             if values.ndim > 1:
                 raise ValueError(f'Wrong shape of `values` argument, expected ndim=1. Got shape {values.shape}')
@@ -96,7 +96,7 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
             raise ValueError('`values` argument was never passed neither in __init__ or __call__ methods')
 
         if not isinstance(self.values, np.ndarray):
-            raise ValueError(f'Wrong type of `values` argument, expected np.ndarray. Got {type(self.values)}')
+            raise TypeError(f'Wrong type of `values` argument, expected np.ndarray. Got {type(self.values)}')
 
         if self.values.ndim > 1:
             raise ValueError(f'Wrong shape of `values` argument, expected ndim=1. Got shape {self.values.shape}')
@@ -106,6 +106,6 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         )
 
         if not isinstance(points, np.ndarray):
-            raise ValueError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
+            raise TypeError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
 
         return super().__call__(points, self.values, neighbors, fill_value)
