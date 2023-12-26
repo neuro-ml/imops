@@ -62,7 +62,6 @@ from imops import interp1d  # same as `scipy.interpolate.interp1d`
 Works faster only for `ndim<=3, dtype=float32 or float64, order=1`
 
 ### Fast 2d linear interpolation
-From https://github.com/alexeybelkov/parinterp/tree/rework
 ```python
 import numpy as np
 from imops.interp2d import Linear2DInterpolator

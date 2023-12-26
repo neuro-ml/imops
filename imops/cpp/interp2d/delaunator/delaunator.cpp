@@ -66,11 +66,11 @@ inline bool clockwise(const Point& p0, const Point& p1, const Point& p2)
     Point v0 = Point::vector(p0, p1);
     Point v1 = Point::vector(p0, p2);
     double det = Point::determinant(v0, v1);
-    double dist = v0.magnitude2() + v1.magnitude2();
     if (det == 0)
     {
         return false;
     }
+    double dist = v0.magnitude2() + v1.magnitude2();
     double reldet = std::abs(dist / det);
     if (reldet > 1e14)
         return false;
@@ -127,7 +127,9 @@ inline Point circumcenter(
     //ABELL - This is suspect for div-by-0.
     const double d = dx * ey - dy * ex;
 
-    assert(("Divide by zero exception", d == 0.0));
+    if (d == 0.0) {
+        throw std::runtime_error("Division by zero");
+    }
 
     const double x = ax + (ey * bl - dy * cl) * 0.5 / d;
     const double y = ay + (dx * cl - ex * bl) * 0.5 / d;
@@ -184,8 +186,8 @@ Delaunator::Delaunator(std::vector<double> const& in_coords)
 
     double max_x = std::numeric_limits<double>::lowest();
     double max_y = std::numeric_limits<double>::lowest();
-    double min_x = (std::numeric_limits<double>::max)();
-    double min_y = (std::numeric_limits<double>::max)();
+    double min_x = std::numeric_limits<double>::max();
+    double min_y = std::numeric_limits<double>::max();
     for (const Point& p : m_points)
     {
         min_x = std::min(p.x(), min_x);
@@ -204,11 +206,10 @@ Delaunator::Delaunator(std::vector<double> const& in_coords)
     std::size_t i2 = INVALID_INDEX;
 
     // pick a seed point close to the centroid
-    double min_dist = (std::numeric_limits<double>::max)();
+    double min_dist = std::numeric_limits<double>::max();
     for (size_t i = 0; i < m_points.size(); ++i)
     {
-        const Point& p = m_points[i];
-        const double d = Point::dist2(center, p);
+        const double d = Point::dist2(center, m_points[i]);
         if (d < min_dist) {
             i0 = i;
             min_dist = d;
@@ -217,7 +218,7 @@ Delaunator::Delaunator(std::vector<double> const& in_coords)
 
     const Point& p0 = m_points[i0];
 
-    min_dist = (std::numeric_limits<double>::max)();
+    min_dist = std::numeric_limits<double>::max();
 
     // find the point closest to the seed
     for (std::size_t i = 0; i < n; i++) {
@@ -231,7 +232,7 @@ Delaunator::Delaunator(std::vector<double> const& in_coords)
 
     const Point& p1 = m_points[i1];
 
-    double min_radius = (std::numeric_limits<double>::max)();
+    double min_radius = std::numeric_limits<double>::max();
 
     // find the third point which forms the smallest circumcircle
     // with the first two
@@ -245,7 +246,7 @@ Delaunator::Delaunator(std::vector<double> const& in_coords)
         }
     }
 
-    if (!(min_radius < (std::numeric_limits<double>::max)())) {
+    if (!(min_radius < std::numeric_limits<double>::max())) {
         throw std::runtime_error("not triangulation");
     }
 
