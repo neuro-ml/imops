@@ -70,7 +70,7 @@ def test_test_data(num_threads):
 def test_no_values(example):
     x_points, int_points = example
 
-    with pytest.raises((ValueError, TypeError)):
+    with pytest.raises(ValueError):
         Linear2DInterpolator(x_points)(int_points)
 
 
