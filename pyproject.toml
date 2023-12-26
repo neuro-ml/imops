@@ -14,6 +14,7 @@ authors = [
     {name = 'maxme1', email = 'maxs987@gmail.com'},
     {name = 'vovaf709', email = 'vovaf709@yandex.ru'},
     {name = 'talgat', email = 'saparov2130@gmail.com'},
+    {name = 'alexeybelkov', email='fpmbelkov@gmail.com'}
 ]
 classifiers = [
     'Development Status :: 5 - Production/Stable',
