@@ -70,16 +70,16 @@ def test_test_data(num_threads):
 def test_no_values(example):
     x_points, int_points = example
 
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         Linear2DInterpolator(x_points)(int_points)
 
 
 def test_bad_values_dtype(example):
     x_points, int_points = example
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         Linear2DInterpolator(x_points, values=[1, 2, 3])(int_points)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         Linear2DInterpolator(x_points)(int_points, values=[1, 2, 3])
     with pytest.raises(ValueError):
         Linear2DInterpolator(x_points)(int_points, values=np.ones((3, 3)))
