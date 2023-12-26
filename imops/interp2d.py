@@ -58,12 +58,13 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
 
         if not isinstance(points, np.ndarray):
             raise ValueError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
-        
-        if not isinstance(self.values, np.ndarray):
-            raise ValueError(f'Wrong type of `values` argument, expected np.ndarray. Got {type(self.values)}')
 
-        if self.values.ndim > 1:
-            raise ValueError(f'Wrong shape of `values` argument, expected ndim=1. Got shape {self.values.shape}')
+        if values is not None:
+            if not isinstance(values, np.ndarray):
+                raise ValueError(f'Wrong type of `values` argument, expected np.ndarray. Got {type(values)}')
+
+            if values.ndim > 1:
+                raise ValueError(f'Wrong shape of `values` argument, expected ndim=1. Got shape {values.shape}')
 
         super().__init__(points, num_threads, triangles)
         self.kdtree = KDTree(data=points, **kwargs)
