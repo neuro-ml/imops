@@ -6,12 +6,13 @@ from setuptools import Extension
 from setuptools.command.build_py import build_py
 
 
-class NumpyImport(dict):
-    """Hacky way to return Numpy's `include` path with lazy import."""
+class LazyImport(dict):
+    """Hacky way to return any module's `include` path with lazy import."""
 
     # Must be json-serializable due to
     # https://github.com/cython/cython/blob/6ad6ca0e9e7d030354b7fe7d7b56c3f6e6a4bc23/Cython/Compiler/ModuleNode.py#L773
-    def __init__(self):
+    def __init__(self, module_name):
+        self.module_name = module_name
         return super().__init__(self, description=self.__doc__)
 
     # Must be hashable due to
@@ -20,9 +21,10 @@ class NumpyImport(dict):
         return id(self)
 
     def __repr__(self):
-        import numpy as np
+        scope = {}
+        exec(f'import {self.module_name} as module', scope)
 
-        return np.get_include()
+        return scope['module'].get_include()
 
     __fspath__ = __repr__
 
@@ -56,21 +58,25 @@ def get_ext_modules():
     name = 'imops'
     on_windows = platform.system() == 'Windows'
     args = ['/openmp' if on_windows else '-fopenmp']
+    cpp_args = [
+        '/std:c++20' if on_windows else '-std=c++2a',
+        '/O3' if on_windows else '-O3',
+    ]  # FIXME: account for higher gcc versions
 
     # Cython extension and .pyx source file names must be the same to compile
     # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
     modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom']
     modules_to_link_against_numpy_core_math_lib = ['numeric']
 
+    src_dir = Path(__file__).parent / name / 'src'
     for module in modules:
-        src_dir = Path(__file__).parent / name / 'src'
         shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
 
     return [
         Extension(
             f'{name}.src._{prefix}{module}',
             [f'{name}/src/_{prefix}{module}.pyx'],
-            include_dirs=[NumpyImport()],
+            include_dirs=[LazyImport('numpy')],
             library_dirs=[NumpyLibImport()] if module in modules_to_link_against_numpy_core_math_lib else [],
             libraries=['npymath'] + ['m'] * (not on_windows)
             if module in modules_to_link_against_numpy_core_math_lib
@@ -84,4 +90,13 @@ def get_ext_modules():
         # fallback to standard `-O2` compiled versions until https://github.com/neuro-ml/imops/issues/37 is resolved
         # for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
         for prefix, additional_args in zip(['', 'fast_'], [[], []])
+    ] + [
+        Extension(
+            f'{name}.cpp.cpp_modules',
+            [f'{name}/cpp/main.cpp'],
+            include_dirs=[LazyImport('pybind11')],
+            extra_compile_args=args + cpp_args,
+            extra_link_args=args + cpp_args,
+            language='c++',
+        )
     ]
