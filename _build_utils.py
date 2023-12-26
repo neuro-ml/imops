@@ -7,7 +7,7 @@ from setuptools.command.build_py import build_py
 
 
 class LazyImport(dict):
-    """Hacky way to return Numpy's `include` path with lazy import."""
+    """Hacky way to return any module's `include` path with lazy import."""
 
     # Must be json-serializable due to
     # https://github.com/cython/cython/blob/6ad6ca0e9e7d030354b7fe7d7b56c3f6e6a4bc23/Cython/Compiler/ModuleNode.py#L773
