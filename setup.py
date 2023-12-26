@@ -36,7 +36,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='maxme1, vovaf709, talgat, alexeybelkov',
-    author_email='maxs987@gmail.com, vovaf709@yandex.ru, saparov2130@gmail.com, fpmbelkov@gmail.com',
+    author_email='max@aumi.ai, vovaf709@yandex.ru, saparov2130@gmail.com, fpmbelkov@gmail.com',
     license='MIT',
     url='https://github.com/neuro-ml/imops',
     download_url='https://github.com/neuro-ml/imops/archive/v%s.tar.gz' % version,
