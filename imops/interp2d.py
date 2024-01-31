@@ -81,7 +81,7 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         points: np.ndarray
             2-D array of data point coordinates to interpolate at
         values: np.ndarray
-            1-D array of fp32/fp64 values to use at initial points. If passed, existing values will be rewritten
+            1-D array of fp32/fp64 values to use at initial points. If passed, existing values will NOT be rewritten
         fill_value: float
             value to fill past edges
 
@@ -90,16 +90,16 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         new_values: np.ndarray
             interpolated values at given points
         """
-        self.values = values if values is not None else self.values
+        x_values = values if values is not None else self.values
 
-        if self.values is None:
+        if x_values is None:
             raise ValueError('`values` argument was never passed neither in __init__ or __call__ methods')
 
-        if not isinstance(self.values, np.ndarray):
-            raise TypeError(f'Wrong type of `values` argument, expected np.ndarray. Got {type(self.values)}')
+        if not isinstance(x_values, np.ndarray):
+            raise TypeError(f'Wrong type of `values` argument, expected np.ndarray. Got {type(x_values)}')
 
-        if self.values.ndim > 1:
-            raise ValueError(f'Wrong shape of `values` argument, expected ndim=1. Got shape {self.values.shape}')
+        if x_values.ndim > 1:
+            raise ValueError(f'Wrong shape of `values` argument, expected ndim=1. Got shape {x_values.shape}')
 
         _, neighbors = self.kdtree.query(
             points, 1, **{'workers': self.num_threads} if python_version()[:3] != '3.6' else {}
@@ -108,4 +108,4 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         if not isinstance(points, np.ndarray):
             raise TypeError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
 
-        return super().__call__(points, self.values, neighbors, fill_value)
+        return super().__call__(points, x_values, neighbors, fill_value)
