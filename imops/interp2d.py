@@ -90,7 +90,7 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         new_values: np.ndarray
             interpolated values at given points
         """
-        self.values = values or self.values
+        self.values = values if values is not None else self.values
 
         if self.values is None:
             raise ValueError('`values` argument was never passed neither in __init__ or __call__ methods')
