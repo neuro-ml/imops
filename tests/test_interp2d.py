@@ -80,7 +80,7 @@ def test_no_changes_in_values(example):
     second_values = 2.0 * np.ones((x_points.shape[0], ), dtype=float)
     interpolator = Linear2DInterpolator(x_points, first_values)
     interpolator(int_points, second_values)
-    assert np.all(interpolator.values == first_values), f'Failed with changes in self.values after __call__'
+    assert np.all(interpolator.values == first_values), 'Failed with changes in self.values after __call__'
 
 
 def test_bad_values_dtype(example):
