@@ -58,7 +58,7 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
 
         if not isinstance(points, np.ndarray):
             raise TypeError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
-        
+
         if points.ndim != 2 or points.shape[1] != 2:
             raise ValueError('Passed `points` argument has an incorrect shape')
 
@@ -104,10 +104,10 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
 
         if values.ndim > 1:
             raise ValueError(f'Wrong shape of `values` argument, expected ndim=1. Got shape {values.shape}')
-        
+
         if not isinstance(points, np.ndarray):
             raise TypeError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
-        
+
         if points.ndim != 2 or points.shape[1] != 2:
             raise ValueError('Passed `points` argument has an incorrect shape')
 
