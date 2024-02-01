@@ -76,8 +76,8 @@ def test_no_values(example):
 
 def test_no_changes_in_values(example):
     x_points, int_points = example
-    first_values = np.ones((x_points.shape[0], ), dtype=float)
-    second_values = 2.0 * np.ones((x_points.shape[0], ), dtype=float)
+    first_values = np.ones((x_points.shape[0],), dtype=float)
+    second_values = 2.0 * np.ones((x_points.shape[0],), dtype=float)
     interpolator = Linear2DInterpolator(x_points, first_values)
     interpolator(int_points, second_values)
     assert np.all(interpolator.values == first_values), 'Failed with changes in self.values after __call__'
