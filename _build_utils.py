@@ -13,7 +13,7 @@ class LazyImport(dict):
     # https://github.com/cython/cython/blob/6ad6ca0e9e7d030354b7fe7d7b56c3f6e6a4bc23/Cython/Compiler/ModuleNode.py#L773
     def __init__(self, module_name):
         self.module_name = module_name
-        return super().__init__(self, description=self.__doc__)
+        super().__init__(self, description=self.__doc__)
 
     # Must be hashable due to
     # https://github.com/cython/cython/blob/6ad6ca0e9e7d030354b7fe7d7b56c3f6e6a4bc23/Cython/Compiler/Main.py#L307

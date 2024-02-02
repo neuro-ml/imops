@@ -53,11 +53,14 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         if triangles is not None:
             if not isinstance(triangles, np.ndarray):
                 raise TypeError(f'Wrong type of `triangles` argument, expected np.ndarray. Got {type(triangles)}')
-            if triangles.ndim != 2 or triangles.shape[1] != 3 or triangles.shape[0] * 3 != triangles.size:
+            if triangles.ndim != 2 or triangles.shape[1] != 3:
                 raise ValueError('Passed `triangles` argument has an incorrect shape')
 
         if not isinstance(points, np.ndarray):
             raise TypeError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
+
+        if points.ndim != 2 or points.shape[1] != 2:
+            raise ValueError('Passed `points` argument has an incorrect shape')
 
         if values is not None:
             if not isinstance(values, np.ndarray):
@@ -81,7 +84,7 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         points: np.ndarray
             2-D array of data point coordinates to interpolate at
         values: np.ndarray
-            1-D array of fp32/fp64 values to use at initial points. If passed, existing values will be rewritten
+            1-D array of fp32/fp64 values to use at initial points
         fill_value: float
             value to fill past edges
 
@@ -90,22 +93,26 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         new_values: np.ndarray
             interpolated values at given points
         """
-        self.values = values or self.values
+        if values is None:
+            values = self.values
 
-        if self.values is None:
+        if values is None:
             raise ValueError('`values` argument was never passed neither in __init__ or __call__ methods')
 
-        if not isinstance(self.values, np.ndarray):
-            raise TypeError(f'Wrong type of `values` argument, expected np.ndarray. Got {type(self.values)}')
+        if not isinstance(values, np.ndarray):
+            raise TypeError(f'Wrong type of `values` argument, expected np.ndarray. Got {type(values)}')
 
-        if self.values.ndim > 1:
-            raise ValueError(f'Wrong shape of `values` argument, expected ndim=1. Got shape {self.values.shape}')
+        if values.ndim > 1:
+            raise ValueError(f'Wrong shape of `values` argument, expected ndim=1. Got shape {values.shape}')
+
+        if not isinstance(points, np.ndarray):
+            raise TypeError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
+
+        if points.ndim != 2 or points.shape[1] != 2:
+            raise ValueError('Passed `points` argument has an incorrect shape')
 
         _, neighbors = self.kdtree.query(
             points, 1, **{'workers': self.num_threads} if python_version()[:3] != '3.6' else {}
         )
 
-        if not isinstance(points, np.ndarray):
-            raise TypeError(f'Wrong type of `points` argument, expected np.ndarray. Got {type(points)}')
-
-        return super().__call__(points, self.values, neighbors, fill_value)
+        return super().__call__(points, values, neighbors, fill_value)
