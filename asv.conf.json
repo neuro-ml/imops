@@ -17,7 +17,8 @@
             "scikit-image": [],
             "numba": [],
             "pip+connected-components-3d": [],
-            "pip+fastremap": []
+            "pip+fastremap": [],
+            "pybind11": []
         },
         "env_nobuild": {
             "OMP_NUM_THREADS": "8",
