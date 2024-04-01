@@ -35,6 +35,9 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
     >>> cropped = crop_to_shape(x, [3, 4, 5])  # fail due to bigger resulting shape
     """
     x = np.asarray(x)
+    shape = np.asarray(shape)
+    if not np.issubdtype(shape.dtype, np.integer):
+        raise ValueError(f'`shape` must be of integer dtype, got {shape.dtype}')
     axis, shape, ratio = broadcast_axis(axis, x.ndim, shape, ratio)
 
     old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axis))
@@ -89,6 +92,10 @@ def crop_to_box(
     >>> cropped = crop_to_box(x, np.array([[0], [5]]), axis=0, padding_values=0)  # pad with 0-s to shape [5, 3, 4]
     """
     x = np.asarray(x)
+    box = np.asarray(box)
+    if not np.issubdtype(box.dtype, np.integer):
+        raise ValueError(f'`box` must be of integer dtype, got {box.dtype}')
+
     start, stop = box
     axis, start, stop = broadcast_axis(axis, x.ndim, start, stop)
 
