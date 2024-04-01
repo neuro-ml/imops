@@ -39,7 +39,7 @@ def order(request):
     return request.param
 
 
-@pytest.fixture(params=[np.float32, np.float64, bool, np.int16, np.int32, np.int64])
+@pytest.fixture(params=[np.float32, np.float64, bool, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32])
 def dtype(request):
     return request.param
 

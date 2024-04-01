@@ -81,7 +81,7 @@ def zoom(
     """
     Rescale `x` according to `scale_factor` along the `axis`.
 
-    Uses a fast parallelizable implementation for fp32 / fp64 (and bool-int16-32-64 if order == 0) inputs,
+    Uses a fast parallelizable implementation for fp32-fp64 and bool-int16-32-64-uint8-16-32 if order == 0 inputs,
     ndim <= 4 and order = 0 or 1.
 
     Parameters
@@ -136,7 +136,7 @@ def zoom_to_shape(
     """
     Rescale `x` to match `shape` along the `axis`.
 
-    Uses a fast parallelizable implementation for fp32 / fp64 (and bool-int16-32-64 if order == 0) inputs,
+    Uses a fast parallelizable implementation for fp32-fp64 and bool-int16-32-64-uint8-16-32 if order == 0 inputs,
     ndim <= 4 and order = 0 or 1.
 
     Parameters
@@ -198,7 +198,7 @@ def _zoom(
     backend: BackendLike = None,
 ) -> np.ndarray:
     """
-    Faster parallelizable version of `scipy.ndimage.zoom` for fp32 / fp64 (and bool-int16-32-64 if order == 0) inputs.
+    Faster parallelizable version of `scipy.ndimage.zoom` for fp32-fp64 and bool-int16-32-64-uint8-16-32 if order == 0
 
     Works faster only for ndim <= 4. Shares interface with `scipy.ndimage.zoom`
     except for
@@ -228,7 +228,8 @@ def _zoom(
         or (
             dtype not in (np.float32, np.float64)
             if order == 1
-            else dtype not in (bool, np.float32, np.float64, np.int16, np.int32, np.int64)
+            else dtype
+            not in (bool, np.float32, np.float64, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32)
         )
         or ndim > 4
         or output is not None
@@ -236,8 +237,8 @@ def _zoom(
         or grid_mode
     ):
         warn(
-            'Fast zoom is only supported for ndim<=4, dtype=fp32 or fp64 (and bool-int16-32-64 if order == 0), '
-            "output=None, order=0 or 1, mode='constant', grid_mode=False. Falling back to scipy's implementation.",
+            'Fast zoom is only supported for ndim<=4, dtype=fp32-fp64 and bool-int16-32-64-uint8-16-32 if order == 0, '
+            "output=None, order=0 or 1 , mode='constant', grid_mode=False. Falling back to scipy's implementation.",
             stacklevel=3,
         )
         return scipy_zoom(

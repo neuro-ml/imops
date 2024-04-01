@@ -18,6 +18,8 @@ from libc.math cimport floor, sqrt
 ctypedef cython.floating FLOAT
 ctypedef fused NUM:
     np.uint8_t
+    np.uint16_t
+    np.uint32_t
     short
     int
     long long
