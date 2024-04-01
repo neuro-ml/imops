@@ -416,6 +416,30 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#imops.interp2d.Linear2DInterpolator" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linear2DInterpolator
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Linear2DInterpolator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#imops.interp2d.Linear2DInterpolator.__call__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __call__
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#imops.morphology.binary_dilation" class="md-nav__link">
     <span class="md-ellipsis">
       binary_dilation
@@ -665,6 +689,30 @@
         
           <li class="md-nav__item">
   <a href="#imops.interp1d.interp1d.__call__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __call__
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imops.interp2d.Linear2DInterpolator" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linear2DInterpolator
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Linear2DInterpolator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#imops.interp2d.Linear2DInterpolator.__call__" class="md-nav__link">
     <span class="md-ellipsis">
       __call__
     </span>
@@ -3804,6 +3852,560 @@ cpu count + num_threads + 1 threads will be used</p>
 <a id="__codelineno-0-212" name="__codelineno-0-212"></a>        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nan</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">neginf</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
 <a id="__codelineno-0-213" name="__codelineno-0-213"></a>
 <a id="__codelineno-0-214" name="__codelineno-0-214"></a>    <span class="k">return</span> <span class="n">out</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="imops.interp2d.Linear2DInterpolator" class="doc doc-heading">
+          <code>imops.interp2d.Linear2DInterpolator</code>
+
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="imops.cpp.cpp_modules.Linear2DInterpolatorCpp">Linear2DInterpolatorCpp</span></code></p>
+
+  
+      <p>2D Delaunay triangulation and parallel linear interpolation</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>points</code></td>
+          <td>
+                <code><span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>2-D array of data point coordinates</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>values</code></td>
+          <td>
+                <code><span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>1-D array of fp32/fp64 values</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>num_threads</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>the number of threads to use for computation. Default = the cpu count. If negative value passed
+cpu count + num_threads + 1 threads will be used</p>
+            </div>
+          </td>
+          <td>
+                <code>1</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>triangels</code></td>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>optional precomputed triangulation in the form of array or arrays of points indices</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Methods:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+          <tr>
+            <td><code><a class="autorefs autorefs-internal" title="imops.interp2d.Linear2DInterpolator.__call__" href="#imops.interp2d.Linear2DInterpolator.__call__">__call__</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+    </tbody>
+  </table>
+
+
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">2</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">x_points</span> <span class="o">=</span> <span class="n">points</span><span class="p">[:</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_points</span><span class="p">),))</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">interp_points</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">n</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:]</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">num_threads</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">//</span> <span class="n">will</span> <span class="n">be</span> <span class="n">equal</span> <span class="n">to</span> <span class="n">num</span> <span class="n">of</span> <span class="n">CPU</span> <span class="n">cores</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">interpolator</span> <span class="o">=</span> <span class="n">Linear2DInterpolator</span><span class="p">(</span><span class="n">x_points</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">num_threads</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="gp">&gt;&gt;&gt; </span><span class="o">//</span> <span class="n">Also</span> <span class="n">you</span> <span class="n">can</span> <span class="k">pass</span> <span class="n">values</span> <span class="n">to</span> <span class="fm">__call__</span> <span class="ow">and</span> <span class="n">rewrite</span> <span class="n">the</span> <span class="n">ones</span> <span class="n">that</span> <span class="n">were</span> <span class="n">passed</span> <span class="n">to</span> <span class="fm">__init__</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="gp">&gt;&gt;&gt; </span><span class="n">interp_values</span> <span class="o">=</span> <span class="n">interpolator</span><span class="p">(</span><span class="n">interp_points</span><span class="p">,</span> <span class="n">values</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+</code></pre></div>
+
+            <details class="quote">
+              <summary>Source code in <code>imops/interp2d.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-11"> 11</a></span>
+<span class="normal"><a href="#__codelineno-0-12"> 12</a></span>
+<span class="normal"><a href="#__codelineno-0-13"> 13</a></span>
+<span class="normal"><a href="#__codelineno-0-14"> 14</a></span>
+<span class="normal"><a href="#__codelineno-0-15"> 15</a></span>
+<span class="normal"><a href="#__codelineno-0-16"> 16</a></span>
+<span class="normal"><a href="#__codelineno-0-17"> 17</a></span>
+<span class="normal"><a href="#__codelineno-0-18"> 18</a></span>
+<span class="normal"><a href="#__codelineno-0-19"> 19</a></span>
+<span class="normal"><a href="#__codelineno-0-20"> 20</a></span>
+<span class="normal"><a href="#__codelineno-0-21"> 21</a></span>
+<span class="normal"><a href="#__codelineno-0-22"> 22</a></span>
+<span class="normal"><a href="#__codelineno-0-23"> 23</a></span>
+<span class="normal"><a href="#__codelineno-0-24"> 24</a></span>
+<span class="normal"><a href="#__codelineno-0-25"> 25</a></span>
+<span class="normal"><a href="#__codelineno-0-26"> 26</a></span>
+<span class="normal"><a href="#__codelineno-0-27"> 27</a></span>
+<span class="normal"><a href="#__codelineno-0-28"> 28</a></span>
+<span class="normal"><a href="#__codelineno-0-29"> 29</a></span>
+<span class="normal"><a href="#__codelineno-0-30"> 30</a></span>
+<span class="normal"><a href="#__codelineno-0-31"> 31</a></span>
+<span class="normal"><a href="#__codelineno-0-32"> 32</a></span>
+<span class="normal"><a href="#__codelineno-0-33"> 33</a></span>
+<span class="normal"><a href="#__codelineno-0-34"> 34</a></span>
+<span class="normal"><a href="#__codelineno-0-35"> 35</a></span>
+<span class="normal"><a href="#__codelineno-0-36"> 36</a></span>
+<span class="normal"><a href="#__codelineno-0-37"> 37</a></span>
+<span class="normal"><a href="#__codelineno-0-38"> 38</a></span>
+<span class="normal"><a href="#__codelineno-0-39"> 39</a></span>
+<span class="normal"><a href="#__codelineno-0-40"> 40</a></span>
+<span class="normal"><a href="#__codelineno-0-41"> 41</a></span>
+<span class="normal"><a href="#__codelineno-0-42"> 42</a></span>
+<span class="normal"><a href="#__codelineno-0-43"> 43</a></span>
+<span class="normal"><a href="#__codelineno-0-44"> 44</a></span>
+<span class="normal"><a href="#__codelineno-0-45"> 45</a></span>
+<span class="normal"><a href="#__codelineno-0-46"> 46</a></span>
+<span class="normal"><a href="#__codelineno-0-47"> 47</a></span>
+<span class="normal"><a href="#__codelineno-0-48"> 48</a></span>
+<span class="normal"><a href="#__codelineno-0-49"> 49</a></span>
+<span class="normal"><a href="#__codelineno-0-50"> 50</a></span>
+<span class="normal"><a href="#__codelineno-0-51"> 51</a></span>
+<span class="normal"><a href="#__codelineno-0-52"> 52</a></span>
+<span class="normal"><a href="#__codelineno-0-53"> 53</a></span>
+<span class="normal"><a href="#__codelineno-0-54"> 54</a></span>
+<span class="normal"><a href="#__codelineno-0-55"> 55</a></span>
+<span class="normal"><a href="#__codelineno-0-56"> 56</a></span>
+<span class="normal"><a href="#__codelineno-0-57"> 57</a></span>
+<span class="normal"><a href="#__codelineno-0-58"> 58</a></span>
+<span class="normal"><a href="#__codelineno-0-59"> 59</a></span>
+<span class="normal"><a href="#__codelineno-0-60"> 60</a></span>
+<span class="normal"><a href="#__codelineno-0-61"> 61</a></span>
+<span class="normal"><a href="#__codelineno-0-62"> 62</a></span>
+<span class="normal"><a href="#__codelineno-0-63"> 63</a></span>
+<span class="normal"><a href="#__codelineno-0-64"> 64</a></span>
+<span class="normal"><a href="#__codelineno-0-65"> 65</a></span>
+<span class="normal"><a href="#__codelineno-0-66"> 66</a></span>
+<span class="normal"><a href="#__codelineno-0-67"> 67</a></span>
+<span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
+<span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
+<span class="normal"><a href="#__codelineno-0-70"> 70</a></span>
+<span class="normal"><a href="#__codelineno-0-71"> 71</a></span>
+<span class="normal"><a href="#__codelineno-0-72"> 72</a></span>
+<span class="normal"><a href="#__codelineno-0-73"> 73</a></span>
+<span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+<span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
+<span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
+<span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
+<span class="normal"><a href="#__codelineno-0-78"> 78</a></span>
+<span class="normal"><a href="#__codelineno-0-79"> 79</a></span>
+<span class="normal"><a href="#__codelineno-0-80"> 80</a></span>
+<span class="normal"><a href="#__codelineno-0-81"> 81</a></span>
+<span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
+<span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
+<span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
+<span class="normal"><a href="#__codelineno-0-85"> 85</a></span>
+<span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
+<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
+<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
+<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
+<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
+<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
+<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
+<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
+<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span>
+<span class="normal"><a href="#__codelineno-0-104">104</a></span>
+<span class="normal"><a href="#__codelineno-0-105">105</a></span>
+<span class="normal"><a href="#__codelineno-0-106">106</a></span>
+<span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span>
+<span class="normal"><a href="#__codelineno-0-111">111</a></span>
+<span class="normal"><a href="#__codelineno-0-112">112</a></span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="k">class</span> <span class="nc">Linear2DInterpolator</span><span class="p">(</span><span class="n">Linear2DInterpolatorCpp</span><span class="p">):</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="sd">    2D Delaunay triangulation and parallel linear interpolation</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    points: np.ndarray</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">        2-D array of data point coordinates</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">    values: np.ndarray</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">        1-D array of fp32/fp64 values</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">    num_threads: int</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">        the number of threads to use for computation. Default = the cpu count. If negative value passed</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">        cpu count + num_threads + 1 threads will be used</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">    triangels: np.ndarray</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">        optional precomputed triangulation in the form of array or arrays of points indices</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26"></a>
+<a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">    Methods</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">    __call__</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30"></a>
+<a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">    Examples</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">    --------</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">    &gt;&gt;&gt; n, m = 1024, 2</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    &gt;&gt;&gt; points = np.random.randint(low=0, high=1024, size=(n, m))</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    &gt;&gt;&gt; points = np.unique(points, axis=0)</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">    &gt;&gt;&gt; x_points = points[: n // 2]</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    &gt;&gt;&gt; values = np.random.uniform(low=0.0, high=1.0, size=(len(x_points),))</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">    &gt;&gt;&gt; interp_points = points[n // 2:]</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">    &gt;&gt;&gt; num_threads = -1 // will be equal to num of CPU cores</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">    &gt;&gt;&gt; interpolator = Linear2DInterpolator(x_points, values, num_threads)</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    &gt;&gt;&gt; // Also you can pass values to __call__ and rewrite the ones that were passed to __init__</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    &gt;&gt;&gt; interp_values = interpolator(interp_points, values + 1.0, fill_value=0.0)</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a>        <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a>        <span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a>        <span class="n">num_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a>        <span class="n">triangles</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a>        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="p">):</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a>        <span class="k">if</span> <span class="n">triangles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a>            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">triangles</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a>                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrong type of `triangles` argument, expected np.ndarray. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">triangles</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a>            <span class="k">if</span> <span class="n">triangles</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">triangles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a>                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Passed `triangles` argument has an incorrect shape&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrong type of `points` argument, expected np.ndarray. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>        <span class="k">if</span> <span class="n">points</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Passed `points` argument has an incorrect shape&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>        <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrong type of `values` argument, expected np.ndarray. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a>            <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrong shape of `values` argument, expected ndim=1. Got shape </span><span class="si">{</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">num_threads</span><span class="p">,</span> <span class="n">triangles</span><span class="p">)</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">kdtree</span> <span class="o">=</span> <span class="n">KDTree</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">points</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a>        <span class="c1"># FIXME: add backend dispatch</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">num_threads</span> <span class="o">=</span> <span class="n">normalize_num_threads</span><span class="p">(</span><span class="n">num_threads</span><span class="p">,</span> <span class="n">Cython</span><span class="p">(),</span> <span class="n">warn_stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fill_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a><span class="sd">        Evaluate the interpolant</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a><span class="sd">        Parameters</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a><span class="sd">        ----------</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">        points: np.ndarray</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a><span class="sd">            2-D array of data point coordinates to interpolate at</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a><span class="sd">        values: np.ndarray</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="sd">            1-D array of fp32/fp64 values to use at initial points</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a><span class="sd">        fill_value: float</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a><span class="sd">            value to fill past edges</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a><span class="sd">        Returns</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a><span class="sd">        -------</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">        new_values: np.ndarray</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a><span class="sd">            interpolated values at given points</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a>        <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>            <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>        <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`values` argument was never passed neither in __init__ or __call__ methods&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrong type of `values` argument, expected np.ndarray. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>        <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrong shape of `values` argument, expected ndim=1. Got shape </span><span class="si">{</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrong type of `points` argument, expected np.ndarray. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>        <span class="k">if</span> <span class="n">points</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Passed `points` argument has an incorrect shape&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a>        <span class="n">_</span><span class="p">,</span> <span class="n">neighbors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kdtree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a>            <span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s1">&#39;workers&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_threads</span><span class="p">}</span> <span class="k">if</span> <span class="n">python_version</span><span class="p">()[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;3.6&#39;</span> <span class="k">else</span> <span class="p">{}</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a>        <span class="p">)</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">neighbors</span><span class="p">,</span> <span class="n">fill_value</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h4 id="imops.interp2d.Linear2DInterpolator.__call__" class="doc doc-heading">
+          <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+
+</h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Evaluate the interpolant</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>points</code></td>
+          <td>
+                <code><span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>2-D array of data point coordinates to interpolate at</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>values</code></td>
+          <td>
+                <code><span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>1-D array of fp32/fp64 values to use at initial points</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>fill_value</code></td>
+          <td>
+                <code>float</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>value to fill past edges</p>
+            </div>
+          </td>
+          <td>
+                <code>0.0</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>new_values</code></td>          <td>
+                <code><span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>interpolated values at given points</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+          <details class="quote">
+            <summary>Source code in <code>imops/interp2d.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-78"> 78</a></span>
+<span class="normal"><a href="#__codelineno-0-79"> 79</a></span>
+<span class="normal"><a href="#__codelineno-0-80"> 80</a></span>
+<span class="normal"><a href="#__codelineno-0-81"> 81</a></span>
+<span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
+<span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
+<span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
+<span class="normal"><a href="#__codelineno-0-85"> 85</a></span>
+<span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
+<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
+<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
+<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
+<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
+<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
+<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
+<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
+<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span>
+<span class="normal"><a href="#__codelineno-0-104">104</a></span>
+<span class="normal"><a href="#__codelineno-0-105">105</a></span>
+<span class="normal"><a href="#__codelineno-0-106">106</a></span>
+<span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span>
+<span class="normal"><a href="#__codelineno-0-111">111</a></span>
+<span class="normal"><a href="#__codelineno-0-112">112</a></span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fill_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a><span class="sd">    Evaluate the interpolant</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">    points: np.ndarray</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a><span class="sd">        2-D array of data point coordinates to interpolate at</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a><span class="sd">    values: np.ndarray</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="sd">        1-D array of fp32/fp64 values to use at initial points</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a><span class="sd">    fill_value: float</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a><span class="sd">        value to fill past edges</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">    new_values: np.ndarray</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a><span class="sd">        interpolated values at given points</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a>    <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>        <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`values` argument was never passed neither in __init__ or __call__ methods&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrong type of `values` argument, expected np.ndarray. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>    <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrong shape of `values` argument, expected ndim=1. Got shape </span><span class="si">{</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrong type of `points` argument, expected np.ndarray. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>    <span class="k">if</span> <span class="n">points</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Passed `points` argument has an incorrect shape&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a>    <span class="n">_</span><span class="p">,</span> <span class="n">neighbors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kdtree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a>        <span class="n">points</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s1">&#39;workers&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_threads</span><span class="p">}</span> <span class="k">if</span> <span class="n">python_version</span><span class="p">()[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;3.6&#39;</span> <span class="k">else</span> <span class="p">{}</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a>    <span class="p">)</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a>    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">neighbors</span><span class="p">,</span> <span class="n">fill_value</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
