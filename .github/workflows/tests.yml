@@ -28,7 +28,7 @@ jobs:
           if [ "$GITHUB_BASE_REF" = "master" ] && [ "$MATCH" != "" ]; then exit 1; fi
       - name: Build the package
         run: |
-          python setup.py sdist
+          python -m build --sdist
 
       - name: Install
         run: |

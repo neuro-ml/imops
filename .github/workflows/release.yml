@@ -93,7 +93,7 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v5
       - name: Build
-        run: python setup.py sdist
+        run: python -m build --sdist
       - uses: actions/upload-artifact@v3
         with:
           path: dist/*.tar.gz
