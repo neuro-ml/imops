@@ -183,7 +183,18 @@ class interp1d:
             set_num_threads(old_num_threads)
 
         if use_torch:
-            out = torch.from_numpy(out).to(max(torch.from_numpy(self.y).dtype, torch.from_numpy(self.x).dtype, torch.from_numpy(x_new).dtype, key=lambda x: x.itemsize)).numpy()
+            out = (
+                torch.from_numpy(out)
+                .to(
+                    max(
+                        torch.from_numpy(self.y).dtype,
+                        torch.from_numpy(self.x).dtype,
+                        torch.from_numpy(x_new).dtype,
+                        key=lambda x: x.itemsize,
+                    )
+                )
+                .numpy()
+            )
         else:
             out = out.astype(max(self.y.dtype, self.x.dtype, x_new.dtype, key=lambda x: x.type(0).itemsize), copy=False)
 
