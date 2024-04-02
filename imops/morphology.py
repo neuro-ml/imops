@@ -80,13 +80,13 @@ def morphology_op_wrapper(
             raise ValueError('Input image and footprint number of dimensions must be the same.')
 
         if not image.any():
-            warn(f'{op_name} is applied to the fully False mask (mask.any() == False).', stacklevel=3)
+            warn(f'{op_name} is applied to the fully False mask (mask.any() == False).', stacklevel=3)  # noqa
             output.fill(False)
 
             return output
 
         if image.all():
-            warn(f'{op_name} is applied to the fully True mask (mask.all() == True).', stacklevel=3)
+            warn(f'{op_name} is applied to the fully True mask (mask.all() == True).', stacklevel=3)  # noqa
             output.fill(True)
 
             return output
