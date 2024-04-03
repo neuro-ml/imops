@@ -1,4 +1,6 @@
 #include "triangulator.h"
+#include <iostream>
+#include <cmath>
 
 class Interpolator {
 

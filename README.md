@@ -67,7 +67,8 @@ import numpy as np
 from imops.interp2d import Linear2DInterpolator
 n, m = 1024, 2
 points = np.random.randint(low=0, high=1024, size=(n, m))
-points = np.unique(points, axis=0)
+points, inv_indices = np.unique(points, axis=0, return_inverse=True)
+points = points[inv_indices]
 x_points = points[: n // 2]
 values = np.random.uniform(low=0.0, high=1.0, size=(len(x_points),))
 interp_points = points[n // 2:]

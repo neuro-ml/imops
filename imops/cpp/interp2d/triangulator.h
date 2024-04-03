@@ -5,7 +5,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/embed.h>
 #include <pybind11/stl.h>
-#include "delaunator/delaunator-header-only.hpp"
+#include "../delaunator/delaunator-header-only.hpp"
 #include "utils.h"
 
 namespace py = pybind11;
