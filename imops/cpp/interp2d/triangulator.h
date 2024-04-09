@@ -65,7 +65,7 @@ public:
 
         else {
             std::vector<double> double_points(2 * n);
-            #pragma parallel for
+            // #pragma parallel for
             for (size_t i = 0; i < n; ++i) {
                 double_points.at(2 * i) = static_cast<double>(pypoints.at(i, 0));
                 double_points.at(2 * i + 1) = static_cast<double>(pypoints.at(i, 1));
@@ -73,7 +73,7 @@ public:
             delaunator::Delaunator delaunated(double_points);
             triangles = std::move(delaunated.triangles);
 
-            #pragma parallel for
+            // #pragma parallel for
             for (size_t i = 0; i < n; ++i) {
                 size_t j = 2 * i;
                 points.at(j) = static_cast<size_t>(delaunated.coords.at(j));

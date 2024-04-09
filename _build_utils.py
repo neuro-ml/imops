@@ -63,33 +63,33 @@ def get_ext_modules():
         '/O3' if on_windows else '-O3',
     ]  # FIXME: account for higher gcc versions
 
-    # Cython extension and .pyx source file names must be the same to compile
-    # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
-    modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom']
-    modules_to_link_against_numpy_core_math_lib = ['numeric']
+    # # Cython extension and .pyx source file names must be the same to compile
+    # # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
+    # modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom']
+    # modules_to_link_against_numpy_core_math_lib = ['numeric']
 
-    src_dir = Path(__file__).parent / name / 'src'
-    for module in modules:
-        shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
+    # src_dir = Path(__file__).parent / name / 'src'
+    # for module in modules:
+    #     shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
 
     return [
-        Extension(
-            f'{name}.src._{prefix}{module}',
-            [f'{name}/src/_{prefix}{module}.pyx'],
-            include_dirs=[LazyImport('numpy')],
-            library_dirs=[NumpyLibImport()] if module in modules_to_link_against_numpy_core_math_lib else [],
-            libraries=['npymath'] + ['m'] * (not on_windows)
-            if module in modules_to_link_against_numpy_core_math_lib
-            else [],
-            extra_compile_args=args + additional_args,
-            extra_link_args=args + additional_args,
-            define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
-        )
-        for module in modules
-        # FIXME: import of `ffast-math` compiled modules changes global FPU state, so now `fast=True` will just
-        # fallback to standard `-O2` compiled versions until https://github.com/neuro-ml/imops/issues/37 is resolved
-        # for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
-        for prefix, additional_args in zip(['', 'fast_'], [[], []])
+        # Extension(
+        #     f'{name}.src._{prefix}{module}',
+        #     [f'{name}/src/_{prefix}{module}.pyx'],
+        #     include_dirs=[LazyImport('numpy')],
+        #     library_dirs=[NumpyLibImport()] if module in modules_to_link_against_numpy_core_math_lib else [],
+        #     libraries=['npymath'] + ['m'] * (not on_windows)
+        #     if module in modules_to_link_against_numpy_core_math_lib
+        #     else [],
+        #     extra_compile_args=args + additional_args,
+        #     extra_link_args=args + additional_args,
+        #     define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
+        # )
+        # for module in modules
+        # # FIXME: import of `ffast-math` compiled modules changes global FPU state, so now `fast=True` will just
+        # # fallback to standard `-O2` compiled versions until https://github.com/neuro-ml/imops/issues/37 is resolved
+        # # for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
+        # for prefix, additional_args in zip(['', 'fast_'], [[], []])
     ] + [
         Extension(
             f'{name}.cpp.cpp_modules',
