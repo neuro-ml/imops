@@ -196,3 +196,8 @@ def check_len(*args) -> None:
     lengths = list(map(len, args))
     if any(length != lengths[0] for length in lengths):
         raise ValueError(f'Arguments of equal length are required: {", ".join(map(str, lengths))}')
+
+
+def assert_subdtype(dtype, ref_dtype, name):
+    if not np.issubdtype(dtype, ref_dtype):
+        raise ValueError(f'`{name}` must be of {ref_dtype.__name__} dtype, got {dtype}')
