@@ -2,7 +2,6 @@ from typing import Union
 from warnings import warn
 
 import numpy as np
-import torch
 from scipy.interpolate import interp1d as scipy_interp1d
 
 from .backend import BackendLike, resolve_backend
@@ -181,14 +180,14 @@ class interp1d:
         if self.backend.name == 'Numba':
             set_num_threads(old_num_threads)
 
-        out = torch.from_numpy(out).to(max(torch.from_numpy(self.y).dtype, torch.from_numpy(self.x).dtype, torch.from_numpy(x_new).dtype, key=lambda x: x.itemsize)).numpy()
+        out = out.astype(max(self.y.dtype, self.x.dtype, x_new.dtype, key=lambda x: x.type(0).itemsize), copy=False)
 
         if self.n_dummy:
             out = out[(0,) * self.n_dummy]
         if self.axis not in (-1, out.ndim - 1):
             out = np.swapaxes(out, -1, self.axis)
         # FIXME: fix behaviour with np.inf-s
-        if torch.isnan(torch.from_numpy(out)).any():
+        if np.isnan(out).any():
             if not np.isinf(out).any():
                 raise RuntimeError("Can't decide how to handle nans in the output.")
 
