@@ -74,7 +74,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload coverage results
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
           files: reports/coverage-${{ matrix.python-version }}.xml
