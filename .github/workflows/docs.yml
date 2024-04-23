@@ -11,8 +11,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: fregante/setup-git-user@v1
+      - uses: actions/checkout@v4
+      - uses: fregante/setup-git-user@v2
       - run: git fetch origin gh-pages --depth=1
       - uses: actions/setup-python@v5
         with:
