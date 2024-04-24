@@ -3,7 +3,7 @@ import numpy as np
 from .backend import BackendLike
 from .numeric import _NUMERIC_DEFAULT_NUM_THREADS
 from .pad import pad
-from .utils import AxesLike, AxesParams, broadcast_axis, fill_by_indices
+from .utils import AxesLike, AxesParams, assert_subdtype, broadcast_axis, fill_by_indices
 
 
 def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: AxesParams = 0.5) -> np.ndarray:
@@ -35,6 +35,9 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
     >>> cropped = crop_to_shape(x, [3, 4, 5])  # fail due to bigger resulting shape
     """
     x = np.asarray(x)
+    shape = np.asarray(shape)
+    assert_subdtype(shape.dtype, np.integer, 'shape')
+
     axis, shape, ratio = broadcast_axis(axis, x.ndim, shape, ratio)
 
     old_shape, new_shape = np.array(x.shape), np.array(fill_by_indices(x.shape, shape, axis))
@@ -89,6 +92,9 @@ def crop_to_box(
     >>> cropped = crop_to_box(x, np.array([[0], [5]]), axis=0, padding_values=0)  # pad with 0-s to shape [5, 3, 4]
     """
     x = np.asarray(x)
+    box = np.asarray(box)
+    assert_subdtype(box.dtype, np.integer, 'box')
+
     start, stop = box
     axis, start, stop = broadcast_axis(axis, x.ndim, start, stop)
 

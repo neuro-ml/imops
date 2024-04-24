@@ -52,7 +52,21 @@ def test_raises():
 @seeded_by(SEED)
 def test_crop_to_shape():
     x = np.random.rand(3, 10, 10)
-    shape = 3, 4, 8
+    shape = (3, 4, 8)
     assert crop_to_shape(x, shape).shape == shape
     with pytest.raises(ValueError):
         crop_to_shape(x, (3, 15, 10))
+
+
+def test_crop_to_float_shape():
+    x = np.random.rand(3, 10, 10)
+    float_shape = (1.337, 3.1415, 2.7182)
+    with pytest.raises(ValueError):
+        crop_to_shape(x, float_shape)
+
+
+def test_crop_to_float_box():
+    x = np.random.rand(3, 10, 10)
+    float_box = [[0, 1], [4, 4.5], [3.1, 9]]
+    with pytest.raises(ValueError):
+        crop_to_box(x, float_box)

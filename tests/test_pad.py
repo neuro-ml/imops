@@ -140,6 +140,9 @@ def test_restore_crop_invalid_box():
     with pytest.raises(ValueError):
         restore_crop(x, np.array([[0, 0, 0], [1, 1, 1]]), [4, 4, 4])
 
+    with pytest.raises(ValueError):
+        restore_crop(x, np.array([[0.5, 0.5, 0.5], [1.5, 1.5, 1.5]]), [4.5, 4.5, 4.5])
+
 
 def test_pad_to_divisible():
     x = np.zeros((4, 8, 12))
