@@ -130,9 +130,11 @@ def pointwise_add(
 
     Examples
     --------
-    >>> sum = pointwise_add(x, 1, x)  # inplace addition
-    >>> sum = pointwise_add(x, 1, backend='Scipy')  # just `np.add`
-    >>> sum = pointwise_add(x.astype('float32'), x.astype('float16'))  # will fail because of different dtypes
+    ```python
+    sum = pointwise_add(x, 1, x)  # inplace addition
+    sum = pointwise_add(x, 1, backend='Scipy')  # just `np.add`
+    sum = pointwise_add(x.astype('float32'), x.astype('float16'))  # will fail because of different dtypes
+    ```
     """
     backend = resolve_backend(backend, warn_stacklevel=3)
     if backend.name not in ('Scipy', 'Cython'):
@@ -215,9 +217,11 @@ def fill_(
 
     Examples
     --------
-    >>> fill_(x, 1)
-    >>> fill_(np.empty((2, 3, 4)), 42)
-    >>> fill_(x.astype('uint16'), 3)  # will fail because of unsupported uint16 dtype
+    ```python
+    fill_(x, 1)
+    fill_(np.empty((2, 3, 4)), 42)
+    fill_(x.astype('uint16'), 3)  # will fail because of unsupported uint16 dtype
+    ```
     """
     backend = resolve_backend(backend, warn_stacklevel=3)
     if backend.name not in ('Scipy', 'Cython'):
@@ -280,9 +284,11 @@ def full(
 
     Examples
     --------
-    >>> x = full((2, 3, 4), 1.0)  # same as `np.ones((2, 3, 4))`
-    >>> x = full((2, 3, 4), 1.5, dtype=int)  # same as np.ones((2, 3, 4), dtype=int)
-    >>> x = full((2, 3, 4), 1, dtype='uint16')  # will fail because of unsupported uint16 dtype
+    ```python
+    x = full((2, 3, 4), 1.0)  # same as `np.ones((2, 3, 4))`
+    x = full((2, 3, 4), 1.5, dtype=int)  # same as np.ones((2, 3, 4), dtype=int)
+    x = full((2, 3, 4), 1, dtype='uint16')  # will fail because of unsupported uint16 dtype
+    ```
     """
     dtype = dtype or np.array(fill_value).dtype
 
@@ -329,9 +335,11 @@ def copy(
 
     Examples
     --------
-    >>> copied = copy(x)
-    >>> copied = copy(x, backend='Scipy')  # same as `np.copy`
-    >>> copy(x, output=y)  # copied into `y`
+    ```python
+    copied = copy(x)
+    copied = copy(x, backend='Scipy')  # same as `np.copy`
+    copy(x, output=y)  # copied into `y`
+    ```
     """
     backend = resolve_backend(backend, warn_stacklevel=3)
     if backend.name not in ('Scipy', 'Cython'):

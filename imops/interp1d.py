@@ -53,13 +53,15 @@ class interp1d:
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from imops.interp1d import interp1d
-    >>> x = np.arange(0, 10)
-    >>> y = np.exp(-x/3.0)
-    >>> f = interp1d(x, y)
-    >>> xnew = np.arange(0, 9, 0.1)
-    >>> ynew = f(xnew)   # use interpolation function returned by `interp1d`
+    ```python
+    import numpy as np
+    from imops.interp1d import interp1d
+    x = np.arange(0, 10)
+    y = np.exp(-x/3.0)
+    f = interp1d(x, y)
+    xnew = np.arange(0, 9, 0.1)
+    ynew = f(xnew)   # use interpolation function returned by `interp1d`
+    ```
     """
 
     def __init__(

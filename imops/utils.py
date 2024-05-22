@@ -172,10 +172,12 @@ def build_slices(start: Sequence[int], stop: Sequence[int] = None, step: Sequenc
 
     Examples
     --------
-    >>> build_slices([1, 2, 3], [4, 5, 6])
+    ```python
+    build_slices([1, 2, 3], [4, 5, 6])
     (slice(1, 4), slice(2, 5), slice(3, 6))
-    >>> build_slices([10, 11])
+    build_slices([10, 11])
     (slice(10), slice(11))
+    ```
     """
 
     check_len(*filter(lambda x: x is not None, [start, stop, step]))

@@ -78,10 +78,12 @@ def label(
 
     Examples
     --------
-    >>> labeled = label(x)
-    >>> labeled, num_components, sizes = label(x, return_num=True, return_sizes=True)
-    >>> out = label(x, return_labels=True, return_sizes=True)
-    >>> out.labeled_image, out.labels, out.sizes  # output fields can be accessed this way
+    ```python
+    labeled = label(x)
+    labeled, num_components, sizes = label(x, return_num=True, return_sizes=True)
+    out = label(x, return_labels=True, return_sizes=True)
+    out.labeled_image, out.labels, out.sizes  # output fields can be accessed this way
+    ```
     """
     ndim = label_image.ndim
     connectivity = connectivity or ndim
@@ -169,7 +171,9 @@ def center_of_mass(
 
     Examples
     --------
-    >>> center = center_of_mass(np.ones((2, 2)))  # (0.5, 0.5)
+    ```python
+    center = center_of_mass(np.ones((2, 2)))  # (0.5, 0.5)
+    ```
     """
     if (labels is None) ^ (index is None):
         raise ValueError('`labels` and `index` should be both specified or both not specified.')

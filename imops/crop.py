@@ -29,10 +29,12 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
 
     Examples
     --------
-    >>> x  # array of shape [2, 3, 4]
-    >>> cropped = crop_to_shape(x, [1, 2, 3], ratio=0)  # crop to shape [1, 2, 3] from the right
-    >>> cropped = crop_to_shape(x, 2, axis=1, ratio=1)  # crop to shape [2, 2, 4] from the left
-    >>> cropped = crop_to_shape(x, [3, 4, 5])  # fail due to bigger resulting shape
+    ```python
+    x  # array of shape [2, 3, 4]
+    cropped = crop_to_shape(x, [1, 2, 3], ratio=0)  # crop to shape [1, 2, 3] from the right
+    cropped = crop_to_shape(x, 2, axis=1, ratio=1)  # crop to shape [2, 2, 4] from the left
+    cropped = crop_to_shape(x, [3, 4, 5])  # fail due to bigger resulting shape
+    ```
     """
     x = np.asarray(x)
     shape = np.asarray(shape)
@@ -86,10 +88,12 @@ def crop_to_box(
 
     Examples
     --------
-    >>> x  # array of shape [2, 3, 4]
-    >>> cropped = crop_to_box(x, np.array([[0, 0, 0], [1, 1, 1]]))  # crop to shape [1, 1, 1]
-    >>> cropped = crop_to_box(x, np.array([[0, 0, 0], [5, 5, 5]]))  # fail, box exceeds the input's limits
-    >>> cropped = crop_to_box(x, np.array([[0], [5]]), axis=0, padding_values=0)  # pad with 0-s to shape [5, 3, 4]
+    ```python
+    x  # array of shape [2, 3, 4]
+    cropped = crop_to_box(x, np.array([[0, 0, 0], [1, 1, 1]]))  # crop to shape [1, 1, 1]
+    cropped = crop_to_box(x, np.array([[0, 0, 0], [5, 5, 5]]))  # fail, box exceeds the input's limits
+    cropped = crop_to_box(x, np.array([[0], [5]]), axis=0, padding_values=0)  # pad with 0-s to shape [5, 3, 4]
+    ```
     """
     x = np.asarray(x)
     box = np.asarray(box)

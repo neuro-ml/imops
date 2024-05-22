@@ -30,16 +30,18 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
 
     Examples
     --------
-    >>> n, m = 1024, 2
-    >>> points = np.random.randint(low=0, high=1024, size=(n, m))
-    >>> points = np.unique(points, axis=0)
-    >>> x_points = points[: n // 2]
-    >>> values = np.random.uniform(low=0.0, high=1.0, size=(len(x_points),))
-    >>> interp_points = points[n // 2:]
-    >>> num_threads = -1 // will be equal to num of CPU cores
-    >>> interpolator = Linear2DInterpolator(x_points, values, num_threads)
-    >>> // Also you can pass values to __call__ and rewrite the ones that were passed to __init__
-    >>> interp_values = interpolator(interp_points, values + 1.0, fill_value=0.0)
+    ```python
+    n, m = 1024, 2
+    points = np.random.randint(low=0, high=1024, size=(n, m))
+    points = np.unique(points, axis=0)
+    x_points = points[: n // 2]
+    values = np.random.uniform(low=0.0, high=1.0, size=(len(x_points),))
+    interp_points = points[n // 2:]
+    num_threads = -1  # will be equal to num of CPU cores
+    interpolator = Linear2DInterpolator(x_points, values, num_threads)
+    # Also you can pass values to __call__ and rewrite the ones that were passed to __init__
+    interp_values = interpolator(interp_points, values + 1.0, fill_value=0.0)
+    ```
     """
 
     def __init__(

@@ -109,9 +109,11 @@ def zoom(
 
     Examples
     --------
-    >>> zoomed = zoom(x, 2, axis=[0, 1])  # 3d array
-    >>> zoomed = zoom(x, [1, 2, 3])  # different scales along each axes
-    >>> zoomed = zoom(x.astype(int))  # will fall back to scipy's implementation because of int dtype
+    ```python
+    zoomed = zoom(x, 2, axis=[0, 1])  # 3d array
+    zoomed = zoom(x, [1, 2, 3])  # different scales along each axes
+    zoomed = zoom(x.astype(int))  # will fall back to scipy's implementation because of int dtype
+    ```
     """
     x = np.asarray(x)
     axis, scale_factor = broadcast_axis(axis, x.ndim, scale_factor)
@@ -164,9 +166,11 @@ def zoom_to_shape(
 
     Examples
     --------
-    >>> zoomed = zoom_to_shape(x, [3, 4, 5])  # 3d array
-    >>> zoomed = zoom_to_shape(x, [6, 7], axis=[1, 2])  # zoom to shape along specified axes
-    >>> zoomed = zoom_to_shape(x.astype(int))  # will fall back to scipy's implementation because of int dtype
+    ```python
+    zoomed = zoom_to_shape(x, [3, 4, 5])  # 3d array
+    zoomed = zoom_to_shape(x, [6, 7], axis=[1, 2])  # zoom to shape along specified axes
+    zoomed = zoom_to_shape(x.astype(int))  # will fall back to scipy's implementation because of int dtype
+    ```
     """
     x = np.asarray(x)
     axis, shape = broadcast_axis(axis, x.ndim, shape)
