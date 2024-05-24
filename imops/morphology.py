@@ -193,7 +193,9 @@ def binary_dilation(
 
     Examples
     --------
-    >>> dilated = binary_dilation(x)
+    ```python
+    dilated = binary_dilation(x)
+    ```
     """
     return _binary_dilation(image, footprint, output, boxed, num_threads, backend)
 
@@ -245,7 +247,9 @@ def binary_erosion(
 
     Examples
     --------
-    >>> eroded = binary_erosion(x)
+    ```python
+    eroded = binary_erosion(x)
+    ```
     """
     return _binary_erosion(image, footprint, output, boxed, num_threads, backend)
 
@@ -297,7 +301,9 @@ def binary_closing(
 
     Examples
     --------
-    >>> closed = binary_closing(x)
+    ```python
+    closed = binary_closing(x)
+    ```
     """
 
     return _binary_closing(image, footprint, output, boxed, num_threads, backend)
@@ -350,7 +356,9 @@ def binary_opening(
 
     Examples
     --------
-    >>> opened = binary_opening(x)
+    ```python
+    opened = binary_opening(x)
+    ```
     """
 
     return _binary_opening(image, footprint, output, boxed, num_threads, backend)

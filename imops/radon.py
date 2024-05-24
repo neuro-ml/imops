@@ -49,9 +49,11 @@ def radon(
 
     Examples
     --------
-    >>> sinogram = radon(image)  # 2d image
-    >>> sinogram, fill_value = radon(image, return_fill=True)  # 2d image with fill value
-    >>> sinogram = radon(image, axes=(-2, -1))  # nd image
+    ```python
+    sinogram = radon(image)  # 2d image
+    sinogram, fill_value = radon(image, return_fill=True)  # 2d image with fill value
+    sinogram = radon(image, axes=(-2, -1))  # nd image
+    ```
     """
     backend = resolve_backend(backend, warn_stacklevel=3)
     if backend.name not in ('Cython',):
@@ -139,9 +141,11 @@ def inverse_radon(
 
     Examples
     --------
-    >>> image = inverse_radon(sinogram)  # 2d image
-    >>> image = inverse_radon(sinogram, fill_value=-1000)  # 2d image with fill value
-    >>> image = inverse_radon(sinogram, axes=(-2, -1))  # nd image
+    ```python
+    image = inverse_radon(sinogram)  # 2d image
+    image = inverse_radon(sinogram, fill_value=-1000)  # 2d image with fill value
+    image = inverse_radon(sinogram, axes=(-2, -1))  # nd image
+    ```
     """
     backend = resolve_backend(backend, warn_stacklevel=3)
     if backend.name not in ('Cython',):

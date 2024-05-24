@@ -45,8 +45,10 @@ def pad(
 
     Examples
     --------
-    >>> padded = pad(x, 2)  # pad 2 zeros on each side of each axes
-    >>> padded = pad(x, [1, 1], axis=(-1, -2))  # pad 1 zero on each side of last 2 axes
+    ```python
+    padded = pad(x, 2)  # pad 2 zeros on each side of each axes
+    padded = pad(x, [1, 1], axis=(-1, -2))  # pad 1 zero on each side of last 2 axes
+    ```
     """
     x = np.asarray(x)
     padding = np.asarray(padding)
@@ -110,8 +112,10 @@ def pad_to_shape(
 
     Examples
     --------
-    >>> padded = pad_to_shape(x, [4, 5, 6])  # pad 3d array
-    >>> padded = pad_to_shape(x, [4, 5], axis=[0, 1], ratio=0)  # pad first 2 axes on the right
+    ```python
+    padded = pad_to_shape(x, [4, 5, 6])  # pad 3d array
+    padded = pad_to_shape(x, [4, 5], axis=[0, 1], ratio=0)  # pad first 2 axes on the right
+    ```
     """
     x = np.asarray(x)
     axis, shape, ratio = broadcast_axis(axis, x.ndim, shape, ratio)
@@ -169,10 +173,12 @@ def pad_to_divisible(
 
     Examples
     --------
-    >>> x  # array of shape [2, 3, 4]
-    >>> padded = pad_to_divisible(x, 6)  # pad to shape [6, 6, 6]
-    >>> padded = pad_to_divisible(x, [4, 3], axis=[0, 1], ratio=1)  # pad first 2 axes on the left, shape - [4, 3, 4]
-    >>> padded = pad_to_divisible(x, 3, remainder=1)  # pad to shape [4, 4, 4]
+    ```python
+    x  # array of shape [2, 3, 4]
+    padded = pad_to_divisible(x, 6)  # pad to shape [6, 6, 6]
+    padded = pad_to_divisible(x, [4, 3], axis=[0, 1], ratio=1)  # pad first 2 axes on the left, shape - [4, 3, 4]
+    padded = pad_to_divisible(x, 3, remainder=1)  # pad to shape [4, 4, 4]
+    ```
     """
     x = np.asarray(x)
     axis = axis_from_dim(axis, x.ndim)
@@ -220,10 +226,12 @@ def restore_crop(
 
     Examples
     --------
-    >>> x  # array of shape [2, 3, 4]
-    >>> padded = restore_crop(x, np.array([[0, 0, 0], [2, 3, 4]]), [4, 4, 4])  # pad to shape [4, 4, 4]
-    >>> padded = restore_crop(x, np.array([[0, 0, 0], [1, 1, 1]]), [4, 4, 4])  # fail, box is inconsistent with an array
-    >>> padded = restore_crop(x, np.array([[1, 2, 3], [3, 5, 7]]), [3, 5, 7])  # pad to shape [3, 5, 7]
+    ```python
+    x  # array of shape [2, 3, 4]
+    padded = restore_crop(x, np.array([[0, 0, 0], [2, 3, 4]]), [4, 4, 4])  # pad to shape [4, 4, 4]
+    padded = restore_crop(x, np.array([[0, 0, 0], [1, 1, 1]]), [4, 4, 4])  # fail, box is inconsistent with an array
+    padded = restore_crop(x, np.array([[1, 2, 3], [3, 5, 7]]), [3, 5, 7])  # pad to shape [3, 5, 7]
+    ```
     """
     start, stop = np.asarray(box)
 
