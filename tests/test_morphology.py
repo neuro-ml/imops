@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import pytest
+from scipy.ndimage import distance_transform_edt as scipy_distance_transform_edt
 from skimage.morphology import (
     binary_closing as sk_binary_closing,
     binary_dilation as sk_binary_dilation,
@@ -11,7 +12,7 @@ from skimage.morphology import (
 
 from imops._configs import morphology_configs
 from imops.backend import Backend, Scipy
-from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening
+from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening, distance_transform_edt
 from imops.pad import restore_crop
 
 
@@ -62,11 +63,16 @@ def test_alien_backend(alien_backend):
     with pytest.raises(ValueError):
         binary_dilation(inp, backend=alien_backend)
 
+    with pytest.raises(ValueError):
+        distance_transform_edt(inp, backend=alien_backend)
+
 
 def test_single_threaded_warning(pair):
     _, imops_op = pair
     with pytest.warns(UserWarning):
         imops_op(np.ones(1), num_threads=2, backend='Scipy')
+    with pytest.warns(UserWarning):
+        distance_transform_edt(np.ones(1), num_threads=2, backend='Scipy')
 
 
 def test_empty(pair, backend):
@@ -94,6 +100,9 @@ def test_scipy_warning(pair, backend):
     if backend != Scipy():
         with pytest.warns(UserWarning):
             imops_op(inp, backend=backend)
+
+        with pytest.warns(UserWarning):
+            distance_transform_edt(inp, backend=backend)
 
 
 def test_output_shape_mismatch(pair, backend, boxed):
@@ -185,3 +194,50 @@ def test_stress(pair, backend, footprint_shape_modifier, boxed):
             desired_out,
             err_msg=f'{i, shape, footprint, box_coord if boxed else None}',
         )
+
+
+@pytest.fixture(params=range(1, 4))
+def num_threads(request):
+    return request.param
+
+
+@pytest.fixture(params=[False, True])
+def return_distances(request):
+    return request.param
+
+
+@pytest.fixture(params=[False, True])
+def return_indices(request):
+    return request.param
+
+
+def test_stress_edt(backend, num_threads, return_distances, return_indices):
+    if not return_distances and not return_indices:
+        with pytest.raises(RuntimeError):
+            distance_transform_edt(
+                np.ones(1),
+                return_distances=return_distances,
+                return_indices=return_indices,
+                num_threads=num_threads,
+                backend=backend,
+            )
+        return
+
+    for _ in range(n_samples):
+        shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
+        x = np.random.randint(5, size=shape)
+
+        out = distance_transform_edt(
+            x,
+            return_distances=return_distances,
+            return_indices=return_indices,
+            num_threads=num_threads,
+            backend=backend,
+        )
+        ref_out = scipy_distance_transform_edt(x, return_distances=return_distances, return_indices=return_indices)
+
+        if isinstance(out, tuple):
+            np.testing.assert_allclose(out[0], ref_out[0])
+            np.testing.assert_equal(out[1], ref_out[1])
+        else:
+            np.testing.assert_allclose(out, ref_out)
