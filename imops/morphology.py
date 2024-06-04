@@ -4,7 +4,7 @@ from warnings import warn
 import numpy as np
 from edt import edt
 from scipy.ndimage import distance_transform_edt as scipy_distance_transform_edt, generate_binary_structure
-from scipy.ndimage._morphology import _distance_tranform_arg_check, _ni_support
+from scipy.ndimage._morphology import _ni_support
 from scipy.ndimage._nd_image import euclidean_feature_transform
 from skimage.morphology import (
     binary_closing as scipy_binary_closing,
@@ -476,7 +476,8 @@ def distance_transform_edt(
         warn("Fast Euclidean Distance Transform is only supported for ndim<=3. Falling back to scipy's implementation.")
         return scipy_distance_transform_edt(input, sampling, return_distances, return_indices)
 
-    _distance_tranform_arg_check(False, False, return_distances, return_indices)
+    if (not return_distances) and (not return_indices):
+        raise RuntimeError('At least one of `return_distances`/`return_indices` must be True')
 
     input = np.atleast_1d(np.where(input, 1, 0).astype(np.int8))
     if sampling is not None:
