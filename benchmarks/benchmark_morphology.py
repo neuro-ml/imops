@@ -14,7 +14,7 @@ except ModuleNotFoundError:
         *[Cython(fast) for fast in [False, True]],
     ]
 
-from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening
+from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening, distance_transform_edt
 
 from .common import IMAGE_TYPE_BENCHMARK, IMAGE_TYPES_BENCHMARK, NUMS_THREADS_TO_BENCHMARK, discard_arg, load_npy_gz
 
@@ -104,3 +104,41 @@ class MorphologySuite:
             binary_closing(im, num_threads=num_threads, backend=backend, boxed=boxed)
         except TypeError:
             binary_closing(im, num_threads=num_threads, backend=backend)
+
+
+class EDTSuite:
+    params = [morphology_configs, ('bool', 'int32', 'int64'), NUMS_THREADS_TO_BENCHMARK, [False, True], [False, True]]
+    param_names = ['backend', 'dtype', 'num_threads', 'return_distances', 'return_indices']
+
+    @discard_arg(1)
+    @discard_arg(-1)
+    @discard_arg(-1)
+    @discard_arg(-1)
+    def setup(self, dtype):
+        self.image = np.random.randint(0, 5 if 'int' in dtype else 2, (512, 512, 512)).astype(dtype, copy=False)
+
+    @discard_arg(2)
+    def time_edt(self, backend, num_threads, return_distances, return_indices):
+        if not return_distances and not return_indices:
+            return
+
+        distance_transform_edt(
+            self.image,
+            return_distances=return_distances,
+            return_indices=return_indices,
+            backend=backend,
+            num_threads=num_threads,
+        )
+
+    @discard_arg(2)
+    def peakmem_edt(self, backend, num_threads, return_distances, return_indices):
+        if not return_distances and not return_indices:
+            return
+
+        distance_transform_edt(
+            self.image,
+            return_distances=return_distances,
+            return_indices=return_indices,
+            backend=backend,
+            num_threads=num_threads,
+        )
