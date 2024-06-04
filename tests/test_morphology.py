@@ -211,7 +211,12 @@ def return_indices(request):
     return request.param
 
 
-def test_stress_edt(backend, num_threads, return_distances, return_indices):
+@pytest.fixture(params=[False, True])
+def sampling_enabled(request):
+    return request.param
+
+
+def test_stress_edt(backend, num_threads, return_distances, return_indices, sampling_enabled):
     if not return_distances and not return_indices:
         with pytest.raises(RuntimeError):
             distance_transform_edt(
@@ -224,20 +229,27 @@ def test_stress_edt(backend, num_threads, return_distances, return_indices):
         return
 
     for _ in range(n_samples):
-        shape = np.random.randint(64, 128, size=np.random.randint(1, 4))
+        sampling = None
+        size = np.random.randint(1, 4)
+        if sampling_enabled:
+            sampling = tuple(np.random.uniform(0.5, 1.5, size=size))
+        shape = np.random.randint(64, 128, size=size)
         x = np.random.randint(5, size=shape)
 
         out = distance_transform_edt(
             x,
+            sampling=sampling,
             return_distances=return_distances,
             return_indices=return_indices,
             num_threads=num_threads,
             backend=backend,
         )
-        ref_out = scipy_distance_transform_edt(x, return_distances=return_distances, return_indices=return_indices)
+        ref_out = scipy_distance_transform_edt(
+            x, sampling=sampling, return_distances=return_distances, return_indices=return_indices
+        )
 
         if isinstance(out, tuple):
-            np.testing.assert_allclose(out[0], ref_out[0])
+            np.testing.assert_allclose(out[0], ref_out[0], rtol=1e-6)
             np.testing.assert_equal(out[1], ref_out[1])
         else:
-            np.testing.assert_allclose(out, ref_out)
+            np.testing.assert_allclose(out, ref_out, rtol=1e-6)

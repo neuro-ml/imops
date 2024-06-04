@@ -481,7 +481,7 @@ def distance_transform_edt(
     input = np.atleast_1d(np.where(input, 1, 0).astype(np.int8))
     if sampling is not None:
         sampling = _ni_support._normalize_sequence(sampling, input.ndim)
-        sampling = np.asarray(sampling, dtype=np.float32)
+        sampling = np.asarray(sampling, dtype=np.float64)
         if not sampling.flags.contiguous:
             sampling = sampling.copy()
 
@@ -490,7 +490,7 @@ def distance_transform_edt(
         euclidean_feature_transform(input, sampling, ft)
 
     if return_distances:
-        dt = edt(input, anisotropy=sampling)
+        dt = edt(input, anisotropy=sampling.astype(np.float32)) if sampling is not None else edt(input)
 
     result = []
     if return_distances:
