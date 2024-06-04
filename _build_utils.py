@@ -78,9 +78,9 @@ def get_ext_modules():
             [f'{name}/src/_{prefix}{module}.pyx'],
             include_dirs=[LazyImport('numpy')],
             library_dirs=[NumpyLibImport()] if module in modules_to_link_against_numpy_core_math_lib else [],
-            libraries=['npymath'] + ['m'] * (not on_windows)
-            if module in modules_to_link_against_numpy_core_math_lib
-            else [],
+            libraries=(
+                ['npymath'] + ['m'] * (not on_windows) if module in modules_to_link_against_numpy_core_math_lib else []
+            ),
             extra_compile_args=args + additional_args,
             extra_link_args=args + additional_args,
             define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],

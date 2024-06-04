@@ -1,8 +1,11 @@
-from typing import Callable
+from typing import Callable, Tuple, Union
 from warnings import warn
 
 import numpy as np
-from scipy.ndimage import generate_binary_structure
+from edt import edt
+from scipy.ndimage import distance_transform_edt as scipy_distance_transform_edt, generate_binary_structure
+from scipy.ndimage._morphology import _distance_tranform_arg_check, _ni_support
+from scipy.ndimage._nd_image import euclidean_feature_transform
 from skimage.morphology import (
     binary_closing as scipy_binary_closing,
     binary_dilation as scipy_binary_dilation,
@@ -354,3 +357,151 @@ def binary_opening(
     """
 
     return _binary_opening(image, footprint, output, boxed, num_threads, backend)
+
+
+def distance_transform_edt(
+    input: np.ndarray,
+    sampling: Tuple[float] = None,
+    return_distances: bool = True,
+    return_indices: bool = False,
+    num_threads: int = -1,
+    backend: BackendLike = None,
+) -> Union[np.ndarray, Tuple[np.ndarray]]:
+    """
+    Fast parallelizable Euclidean distance transform for <= 3D inputs
+
+    This function calculates the distance transform of the `input`, by
+    replacing each foreground (non-zero) element, with its
+    shortest distance to the background (any zero-valued element).
+
+    In addition to the distance transform, the feature transform can
+    be calculated. In this case the index of the closest background
+    element to each foreground element is returned in a separate array.
+
+    Parameters
+    ----------
+    input : array_like
+        input data to transform. Can be any type but will be converted
+        into binary: 1 wherever input equates to True, 0 elsewhere
+    sampling : tuple of `input.ndim` floats, optional
+        spacing of elements along each dimension. If a sequence, must be of
+        length equal to the input rank; if a single number, this is used for
+        all axes. If not specified, a grid spacing of unity is implied
+    return_distances : bool, optional
+        whether to calculate the distance transform.
+        Default is True
+    return_indices : bool, optional
+        whether to calculate the feature transform.
+        Default is False
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `cython` and `scipy` are available, `cython` is used by default
+
+    Returns
+    -------
+    distances : float32 ndarray, optional
+        the calculated distance transform. Returned only when
+        `return_distances` is True and `distances` is not supplied.
+        It will have the same shape as the input array
+    indices : int32 ndarray, optional
+        the calculated feature transform. It has an input-shaped array for each
+        dimension of the input. See example below.
+        Returned only when `return_indices` is True and `indices` is not
+        supplied
+
+    Notes
+    -----
+    The Euclidean distance transform gives values of the Euclidean
+    distance::
+
+                    n
+      y_i = sqrt(sum (x[i]-b[i])**2)
+                    i
+
+    where b[i] is the background point (value 0) with the smallest
+    Euclidean distance to input points x[i], and n is the
+    number of dimensions.
+
+    Examples
+    --------
+    import numpy as np
+    a = np.array(([0,1,1,1,1],
+                  [0,0,1,1,1],
+                  [0,1,1,1,1],
+                  [0,1,1,1,0],
+                  [0,1,1,0,0]))
+    distance_transform_edt(a)
+    array([[ 0.    ,  1.    ,  1.4142,  2.2361,  3.    ],
+           [ 0.    ,  0.    ,  1.    ,  2.    ,  2.    ],
+           [ 0.    ,  1.    ,  1.4142,  1.4142,  1.    ],
+           [ 0.    ,  1.    ,  1.4142,  1.    ,  0.    ],
+           [ 0.    ,  1.    ,  1.    ,  0.    ,  0.    ]])
+
+    With a sampling of 2 units along x, 1 along y:
+
+    distance_transform_edt(a, sampling=[2, 1])
+    array([[ 0.    ,  1.    ,  2.    ,  2.8284,  3.6056],
+           [ 0.    ,  0.    ,  1.    ,  2.    ,  3.    ],
+           [ 0.    ,  1.    ,  2.    ,  2.2361,  2.    ],
+           [ 0.    ,  1.    ,  2.    ,  1.    ,  0.    ],
+           [ 0.    ,  1.    ,  1.    ,  0.    ,  0.    ]])
+
+    Asking for indices as well:
+
+    edt, inds = distance_transform_edt(a, return_indices=True)
+    inds
+    array([[[0, 0, 1, 1, 3],
+            [1, 1, 1, 1, 3],
+            [2, 2, 1, 3, 3],
+            [3, 3, 4, 4, 3],
+            [4, 4, 4, 4, 4]],
+           [[0, 0, 1, 1, 4],
+            [0, 1, 1, 1, 4],
+            [0, 0, 1, 4, 4],
+            [0, 0, 3, 3, 4],
+            [0, 0, 3, 3, 4]]])
+    """
+    backend = resolve_backend(backend, warn_stacklevel=3)
+    if backend.name not in ('Scipy', 'Cython'):
+        raise ValueError(f'Unsupported backend "{backend.name}".')
+
+    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
+
+    if backend.name == 'Scipy':
+        return scipy_distance_transform_edt(input, sampling, return_distances, return_indices)
+
+    if input.ndim > 3:
+        warn("Fast Euclidean Distance Transform is only supported for ndim<=3. Falling back to scipy's implementation.")
+        return scipy_distance_transform_edt(input, sampling, return_distances, return_indices)
+
+    _distance_tranform_arg_check(False, False, return_distances, return_indices)
+
+    input = np.atleast_1d(np.where(input, 1, 0).astype(np.int8))
+    if sampling is not None:
+        sampling = _ni_support._normalize_sequence(sampling, input.ndim)
+        sampling = np.asarray(sampling, dtype=np.float32)
+        if not sampling.flags.contiguous:
+            sampling = sampling.copy()
+
+    if return_indices:
+        ft = np.zeros((input.ndim,) + input.shape, dtype=np.int32)
+        euclidean_feature_transform(input, sampling, ft)
+
+    if return_distances:
+        dt = edt(input, anisotropy=sampling)
+
+    result = []
+    if return_distances:
+        result.append(dt)
+    if return_indices:
+        result.append(ft)
+
+    if len(result) == 2:
+        return tuple(result)
+
+    if len(result) == 1:
+        return result[0]
+
+    return None

@@ -5,3 +5,4 @@ dataclasses; python_version < '3.7'
 scikit-image
 connected-components-3d
 fastremap
+edt>=2.0.0,<3.0.0
