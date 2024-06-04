@@ -4,8 +4,8 @@ from warnings import warn
 import numpy as np
 from edt import edt
 from scipy.ndimage import distance_transform_edt as scipy_distance_transform_edt, generate_binary_structure
-from scipy.ndimage.morphology import _ni_support
 from scipy.ndimage._nd_image import euclidean_feature_transform
+from scipy.ndimage.morphology import _ni_support
 from skimage.morphology import (
     binary_closing as scipy_binary_closing,
     binary_dilation as scipy_binary_dilation,
