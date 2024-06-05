@@ -484,8 +484,8 @@ def distance_transform_edt(
 
     if (not return_distances) and (not return_indices):
         raise RuntimeError('At least one of `return_distances`/`return_indices` must be True')
-
-    input = np.atleast_1d(np.where(input, 1, 0).astype(np.int8))
+    if input.dtype != bool:
+        input = np.atleast_1d(np.where(input, 1, 0))
     if sampling is not None:
         sampling = _ni_support._normalize_sequence(sampling, input.ndim)
         sampling = np.asarray(sampling, dtype=np.float64)
@@ -497,7 +497,10 @@ def distance_transform_edt(
         euclidean_feature_transform(input, sampling, ft)
 
     if return_distances:
-        dt = edt(input, anisotropy=sampling.astype(np.float32)) if sampling is not None else edt(input)
+        if sampling is not None:
+            dt = edt(input, anisotropy=sampling.astype(np.float32), parallel=num_threads)
+        else:
+            dt = edt(input, parallel=num_threads)
 
     result = []
     if return_distances:
