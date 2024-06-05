@@ -46,6 +46,8 @@ pip install imops[numba]  # additionally install Numba backend
 
 ::: imops.morphology.binary_closing
 
+::: imops.morphology.distance_transform_edt
+
 ::: imops.measure.label
 
 ::: imops.measure.center_of_mass
