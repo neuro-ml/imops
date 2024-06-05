@@ -33,13 +33,13 @@ jobs:
           gcc --version
           g++ --version
       - name: Install g++-11 for ubuntu
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         id: install_cc
         uses: rlalik/setup-cpp-compiler@master
         with:
           compiler: g++-11
       - name: Check compilers for ubuntu
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           ls /usr/bin/gcc*
           ls /usr/bin/g++*
