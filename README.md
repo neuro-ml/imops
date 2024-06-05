@@ -156,4 +156,4 @@ Available backends:
 
 Some parts of our code for radon/inverse radon transform as well as the code for linear interpolation are inspired by
 the implementations from [`scikit-image`](https://github.com/scikit-image/scikit-image) and [`scipy`](https://github.com/scipy/scipy).
-Also we used [`fastremap`](https://github.com/seung-lab/fastremap) and [`cc3d`](https://github.com/seung-lab/connected-components-3d) out of the box.
+Also we used [`fastremap`](https://github.com/seung-lab/fastremap), [`edt`](https://github.com/seung-lab/euclidean-distance-transform-3d) and [`cc3d`](https://github.com/seung-lab/connected-components-3d) out of the box.
