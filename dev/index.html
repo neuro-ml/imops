@@ -5688,7 +5688,10 @@ array([[[0, 0, 1, 1, 3],
 <span class="normal"><a href="#__codelineno-0-511">511</a></span>
 <span class="normal"><a href="#__codelineno-0-512">512</a></span>
 <span class="normal"><a href="#__codelineno-0-513">513</a></span>
-<span class="normal"><a href="#__codelineno-0-514">514</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-368" name="__codelineno-0-368"></a><span class="k">def</span> <span class="nf">distance_transform_edt</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-514">514</a></span>
+<span class="normal"><a href="#__codelineno-0-515">515</a></span>
+<span class="normal"><a href="#__codelineno-0-516">516</a></span>
+<span class="normal"><a href="#__codelineno-0-517">517</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-368" name="__codelineno-0-368"></a><span class="k">def</span> <span class="nf">distance_transform_edt</span><span class="p">(</span>
 <a id="__codelineno-0-369" name="__codelineno-0-369"></a>    <span class="nb">input</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
 <a id="__codelineno-0-370" name="__codelineno-0-370"></a>    <span class="n">sampling</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-371" name="__codelineno-0-371"></a>    <span class="n">return_distances</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -5807,8 +5810,8 @@ array([[[0, 0, 1, 1, 3],
 <a id="__codelineno-0-484" name="__codelineno-0-484"></a>
 <a id="__codelineno-0-485" name="__codelineno-0-485"></a>    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">return_distances</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">return_indices</span><span class="p">):</span>
 <a id="__codelineno-0-486" name="__codelineno-0-486"></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;At least one of `return_distances`/`return_indices` must be True&#39;</span><span class="p">)</span>
-<a id="__codelineno-0-487" name="__codelineno-0-487"></a>
-<a id="__codelineno-0-488" name="__codelineno-0-488"></a>    <span class="nb">input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">))</span>
+<a id="__codelineno-0-487" name="__codelineno-0-487"></a>    <span class="k">if</span> <span class="nb">input</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-0-488" name="__codelineno-0-488"></a>        <span class="nb">input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 <a id="__codelineno-0-489" name="__codelineno-0-489"></a>    <span class="k">if</span> <span class="n">sampling</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 <a id="__codelineno-0-490" name="__codelineno-0-490"></a>        <span class="n">sampling</span> <span class="o">=</span> <span class="n">_ni_support</span><span class="o">.</span><span class="n">_normalize_sequence</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="nb">input</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
 <a id="__codelineno-0-491" name="__codelineno-0-491"></a>        <span class="n">sampling</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -5820,21 +5823,24 @@ array([[[0, 0, 1, 1, 3],
 <a id="__codelineno-0-497" name="__codelineno-0-497"></a>        <span class="n">euclidean_feature_transform</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">ft</span><span class="p">)</span>
 <a id="__codelineno-0-498" name="__codelineno-0-498"></a>
 <a id="__codelineno-0-499" name="__codelineno-0-499"></a>    <span class="k">if</span> <span class="n">return_distances</span><span class="p">:</span>
-<a id="__codelineno-0-500" name="__codelineno-0-500"></a>        <span class="n">dt</span> <span class="o">=</span> <span class="n">edt</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">anisotropy</span><span class="o">=</span><span class="n">sampling</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span> <span class="k">if</span> <span class="n">sampling</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">edt</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-<a id="__codelineno-0-501" name="__codelineno-0-501"></a>
-<a id="__codelineno-0-502" name="__codelineno-0-502"></a>    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
-<a id="__codelineno-0-503" name="__codelineno-0-503"></a>    <span class="k">if</span> <span class="n">return_distances</span><span class="p">:</span>
-<a id="__codelineno-0-504" name="__codelineno-0-504"></a>        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
-<a id="__codelineno-0-505" name="__codelineno-0-505"></a>    <span class="k">if</span> <span class="n">return_indices</span><span class="p">:</span>
-<a id="__codelineno-0-506" name="__codelineno-0-506"></a>        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ft</span><span class="p">)</span>
-<a id="__codelineno-0-507" name="__codelineno-0-507"></a>
-<a id="__codelineno-0-508" name="__codelineno-0-508"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-<a id="__codelineno-0-509" name="__codelineno-0-509"></a>        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-0-500" name="__codelineno-0-500"></a>        <span class="k">if</span> <span class="n">sampling</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-501" name="__codelineno-0-501"></a>            <span class="n">dt</span> <span class="o">=</span> <span class="n">edt</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">anisotropy</span><span class="o">=</span><span class="n">sampling</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">parallel</span><span class="o">=</span><span class="n">num_threads</span><span class="p">)</span>
+<a id="__codelineno-0-502" name="__codelineno-0-502"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-503" name="__codelineno-0-503"></a>            <span class="n">dt</span> <span class="o">=</span> <span class="n">edt</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="n">num_threads</span><span class="p">)</span>
+<a id="__codelineno-0-504" name="__codelineno-0-504"></a>
+<a id="__codelineno-0-505" name="__codelineno-0-505"></a>    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-506" name="__codelineno-0-506"></a>    <span class="k">if</span> <span class="n">return_distances</span><span class="p">:</span>
+<a id="__codelineno-0-507" name="__codelineno-0-507"></a>        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+<a id="__codelineno-0-508" name="__codelineno-0-508"></a>    <span class="k">if</span> <span class="n">return_indices</span><span class="p">:</span>
+<a id="__codelineno-0-509" name="__codelineno-0-509"></a>        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ft</span><span class="p">)</span>
 <a id="__codelineno-0-510" name="__codelineno-0-510"></a>
-<a id="__codelineno-0-511" name="__codelineno-0-511"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<a id="__codelineno-0-512" name="__codelineno-0-512"></a>        <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-0-511" name="__codelineno-0-511"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-0-512" name="__codelineno-0-512"></a>        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 <a id="__codelineno-0-513" name="__codelineno-0-513"></a>
-<a id="__codelineno-0-514" name="__codelineno-0-514"></a>    <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-0-514" name="__codelineno-0-514"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-0-515" name="__codelineno-0-515"></a>        <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-0-516" name="__codelineno-0-516"></a>
+<a id="__codelineno-0-517" name="__codelineno-0-517"></a>    <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
