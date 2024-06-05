@@ -35,9 +35,10 @@ jobs:
       - name: Install g++-11 for ubuntu
         if: matrix.os == 'ubuntu-20.04'
         id: install_cc
-        uses: rlalik/setup-cpp-compiler@master
-        with:
-          compiler: g++-11
+        run: |
+          sudo apt-get update -y
+          sudo apt-get upgrade
+          sudo apt-get install gcc-11 g++-11 -y
       - name: Check compilers for ubuntu
         if: matrix.os == 'ubuntu-20.04'
         run: |
