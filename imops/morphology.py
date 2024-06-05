@@ -374,7 +374,7 @@ def binary_opening(
 
 
 def distance_transform_edt(
-    input: np.ndarray,
+    image: np.ndarray,
     sampling: Tuple[float] = None,
     return_distances: bool = True,
     return_indices: bool = False,
@@ -384,7 +384,7 @@ def distance_transform_edt(
     """
     Fast parallelizable Euclidean distance transform for <= 3D inputs
 
-    This function calculates the distance transform of the `input`, by
+    This function calculates the distance transform of the `image`, by
     replacing each foreground (non-zero) element, with its
     shortest distance to the background (any zero-valued element).
 
@@ -394,10 +394,10 @@ def distance_transform_edt(
 
     Parameters
     ----------
-    input : array_like
+    image : array_like
         input data to transform. Can be any type but will be converted
         into binary: 1 wherever input equates to True, 0 elsewhere
-    sampling : tuple of `input.ndim` floats, optional
+    sampling : tuple of `image.ndim` floats, optional
         spacing of elements along each dimension. If a sequence, must be of
         length equal to the input rank; if a single number, this is used for
         all axes. If not specified, a grid spacing of unity is implied
@@ -484,28 +484,31 @@ def distance_transform_edt(
     num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
 
     if backend.name == 'Scipy':
-        return scipy_distance_transform_edt(input, sampling, return_distances, return_indices)
+        return scipy_distance_transform_edt(image, sampling, return_distances, return_indices)
 
-    if input.ndim > 3:
+    if image.ndim > 3:
         warn("Fast Euclidean Distance Transform is only supported for ndim<=3. Falling back to scipy's implementation.")
-        return scipy_distance_transform_edt(input, sampling, return_distances, return_indices)
+        return scipy_distance_transform_edt(image, sampling, return_distances, return_indices)
 
     if (not return_distances) and (not return_indices):
         raise RuntimeError('At least one of `return_distances`/`return_indices` must be True')
-
-    input = np.atleast_1d(np.where(input, 1, 0).astype(np.int8))
+    if image.dtype != bool:
+        image = np.atleast_1d(np.where(image, 1, 0))
     if sampling is not None:
-        sampling = _ni_support._normalize_sequence(sampling, input.ndim)
+        sampling = _ni_support._normalize_sequence(sampling, image.ndim)
         sampling = np.asarray(sampling, dtype=np.float64)
         if not sampling.flags.contiguous:
             sampling = sampling.copy()
 
     if return_indices:
-        ft = np.zeros((input.ndim,) + input.shape, dtype=np.int32)
-        euclidean_feature_transform(input, sampling, ft)
+        ft = np.zeros((image.ndim,) + image.shape, dtype=np.int32)
+        euclidean_feature_transform(image, sampling, ft)
 
     if return_distances:
-        dt = edt(input, anisotropy=sampling.astype(np.float32)) if sampling is not None else edt(input)
+        if sampling is not None:
+            dt = edt(image, anisotropy=sampling.astype(np.float32), parallel=num_threads)
+        else:
+            dt = edt(image, parallel=num_threads)
 
     result = []
     if return_distances:

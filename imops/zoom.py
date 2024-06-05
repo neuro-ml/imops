@@ -189,7 +189,7 @@ def zoom_to_shape(
 
 
 def _zoom(
-    input: np.ndarray,
+    image: np.ndarray,
     zoom: Sequence[float],
     output: np.ndarray = None,
     order: int = 1,
@@ -216,15 +216,15 @@ def _zoom(
     if backend.name not in ('Scipy', 'Numba', 'Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
-    ndim = input.ndim
-    dtype = input.dtype
+    ndim = image.ndim
+    dtype = image.dtype
     cval = np.dtype(dtype).type(cval)
-    zoom = fill_by_indices(np.ones(input.ndim, 'float64'), zoom, range(input.ndim))
+    zoom = fill_by_indices(np.ones(image.ndim, 'float64'), zoom, range(image.ndim))
     num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=4)
 
     if backend.name == 'Scipy':
         return scipy_zoom(
-            input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
+            image, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
 
     if (
@@ -246,7 +246,7 @@ def _zoom(
             stacklevel=3,
         )
         return scipy_zoom(
-            input, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
+            image, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
         )
 
     if backend.name == 'Cython':
@@ -264,28 +264,28 @@ def _zoom(
     n_dummy = 3 - ndim if ndim <= 3 else 0
 
     if n_dummy:
-        input = input[(None,) * n_dummy]
+        image = image[(None,) * n_dummy]
         zoom = [*(1,) * n_dummy, *zoom]
 
     zoom = np.array(zoom, dtype=np.float64)
-    is_contiguous = input.data.c_contiguous
+    is_contiguous = image.data.c_contiguous
     c_contiguous_permutaion = None
     args = () if backend.name in ('Numba',) else (num_threads,)
 
     if not is_contiguous:
-        c_contiguous_permutaion = get_c_contiguous_permutaion(input)
+        c_contiguous_permutaion = get_c_contiguous_permutaion(image)
         if c_contiguous_permutaion is not None:
             out = src_zoom(
-                np.transpose(input, c_contiguous_permutaion),
+                np.transpose(image, c_contiguous_permutaion),
                 zoom[c_contiguous_permutaion],
                 cval,
                 *args,
             )
         else:
             warn("Input array can't be represented as C-contiguous, performance can drop a lot.", stacklevel=3)
-            out = src_zoom(input, zoom, cval, *args)
+            out = src_zoom(image, zoom, cval, *args)
     else:
-        out = src_zoom(input, zoom, cval, *args)
+        out = src_zoom(image, zoom, cval, *args)
 
     if c_contiguous_permutaion is not None:
         out = np.transpose(out, inverse_permutation(c_contiguous_permutaion))
