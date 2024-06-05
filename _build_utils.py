@@ -109,3 +109,5 @@ def get_ext_modules():
                     define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
                 )
             )
+
+    return extensions
