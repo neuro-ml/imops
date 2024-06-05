@@ -9,7 +9,7 @@ jobs:
   build_wheels:
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2019, macOS-11 ]
+        os: [ubuntu-22.04, windows-2019, macOS-11 ]
 
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -35,11 +35,9 @@ jobs:
       - name: Install g++-11 for ubuntu
         if: matrix.os == 'ubuntu-20.04'
         id: install_cc
-        run: |
-          sudo apt-get update -y
-          sudo apt-get upgrade
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa -y
-          sudo apt-get install gcc-11 g++-11 -y
+        uses: rlalik/setup-cpp-compiler@master
+        with:
+          compiler: g++-11
       - name: Check compilers for ubuntu
         if: matrix.os == 'ubuntu-20.04'
         run: |
