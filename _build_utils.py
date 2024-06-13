@@ -80,7 +80,16 @@ def get_ext_modules():
             extra_compile_args=args + cpp_args,
             extra_link_args=args + cpp_args,
             language='c++',
-        )
+        ),
+        Extension(
+            f'{name}.src._utils',
+            [f'{name}/src/_utils.pyx'],
+            language='c++',
+            include_dirs=[LazyImport('numpy')],
+            extra_compile_args=args + cpp_args,
+            extra_link_args=args + cpp_args,
+            define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
+        ),
     ]
     for module in modules:
         libraries = []
@@ -93,6 +102,7 @@ def get_ext_modules():
             if not on_windows:
                 libraries.append('m')
 
+        # TODO: mb throw `ffast-math` away?
         # FIXME: import of `ffast-math` compiled modules changes global FPU state, so now `fast=True` will just
         # fallback to standard `-O2` compiled versions until https://github.com/neuro-ml/imops/issues/37 is resolved
         # for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
@@ -101,6 +111,7 @@ def get_ext_modules():
                 Extension(
                     f'{name}.src._{prefix}{module}',
                     [f'{name}/src/_{prefix}{module}.pyx'],
+                    language='c',
                     include_dirs=include_dirs,
                     library_dirs=library_dirs,
                     libraries=libraries,

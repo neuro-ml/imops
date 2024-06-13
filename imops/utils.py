@@ -6,7 +6,8 @@ from warnings import warn
 
 import numpy as np
 
-from .backend import BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Backend
+from .backend import BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Backend, Cython
+from .src._utils import _isin as cython_isin
 
 
 AxesLike = Union[int, Sequence[int]]
@@ -201,3 +202,18 @@ def check_len(*args) -> None:
 def assert_subdtype(dtype, ref_dtype, name):
     if not np.issubdtype(dtype, ref_dtype):
         raise ValueError(f'`{name}` must be of {ref_dtype.__name__} dtype, got {dtype}')
+
+
+def isin(element: np.ndarray, test_elements: np.ndarray, num_threads: int = 1) -> np.ndarray:
+    if element.dtype not in ('int16', 'int32', 'int64'):
+        raise ValueError(f'Supported dtypes: int16, int32, int64, got {element.dtype}')
+
+    num_threads = normalize_num_threads(num_threads, Cython(), warn_stacklevel=2)
+
+    contiguos_element = np.ascontiguousarray(element)
+    test_elements = np.asarray(test_elements, dtype=element.dtype)
+    out = np.zeros_like(contiguos_element, dtype=bool)
+
+    cython_isin(contiguos_element.ravel(), test_elements, out.ravel(), num_threads)
+
+    return out
