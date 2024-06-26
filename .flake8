@@ -5,8 +5,12 @@
 # I251: allow absolute imports in upper files
 # B028: !r is not supported for python<3.8
 # W604: backticks in str-s are ok
-ignore = W503,E203,B028,W604
+# S101: asserts are ok for now
+# S102: exec in build scripts is ok
+ignore = W503,E203,B028,W604,S101
 per-file-ignores =
+    setup.py:S102
+    _build_utils.py:S102
     __init__.py:F401
     tests/*:I251
     benchmarks/*:I251
