@@ -15,6 +15,7 @@ from imops.backend import Backend, Scipy
 from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening, distance_transform_edt
 from imops.pad import restore_crop
 
+from imops.utils import make_immutable
 
 np.random.seed(1337)
 
@@ -163,8 +164,14 @@ def test_stress(pair, backend, footprint_shape_modifier, boxed):
         else:
             inp = np.random.binomial(1, 0.5, shape).astype(bool)
 
+        if np.random.binomial(1, 0.5):
+            make_immutable(inp)
+
         footprint_shape = footprint_shape_modifier(np.random.randint(1, 4, size=inp.ndim))
         footprint = np.random.binomial(1, 0.5, footprint_shape) if np.random.binomial(1, 0.5) else None
+
+        if footprint is not None and np.random.binomial(1, 0.5):
+            make_immutable(footprint)
 
         if backend == Scipy() and boxed:
             with pytest.raises(ValueError):
@@ -235,6 +242,9 @@ def test_stress_edt(backend, num_threads, return_distances, return_indices, samp
             sampling = tuple(np.random.uniform(0.5, 1.5, size=size))
         shape = np.random.randint(64, 128, size=size)
         x = np.random.randint(5, size=shape)
+
+        if np.random.binomial(1, 0.5):
+            make_immutable(x)
 
         out = distance_transform_edt(
             x,
