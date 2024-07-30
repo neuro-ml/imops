@@ -27,12 +27,12 @@ ctypedef fused NUM:
     double
 
 
-def _interp1d(FLOAT[:, :, :] input,
+def _interp1d(const FLOAT[:, :, :] input,
               double[:] old_locations, double[:] new_locations,
               np.uint8_t bounds_error, double fill_value, np.uint8_t extrapolate, np.uint8_t assume_sorted,
               Py_ssize_t num_threads) -> np.ndarray:
     cdef Py_ssize_t rows = input.shape[0], cols = input.shape[1], dims = len(new_locations)
-    cdef FLOAT[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
+    cdef const FLOAT[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
 
     cdef FLOAT[:, :, ::1] interpolated = np.empty_like(contiguous_input, shape=(rows, cols, dims))
     cdef double[:] dd = np.zeros(dims)
@@ -124,7 +124,7 @@ cdef inline double get_slope(double x1, double y1, double x2, double y2) noexcep
     return (y2 - y1) / (x2 - x1)
 
 
-cdef inline NUM get_pixel3d(NUM* input,
+cdef inline NUM get_pixel3d(const NUM* input,
                             Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
                             Py_ssize_t r, Py_ssize_t c, Py_ssize_t d,
                             NUM cval) noexcept nogil:
@@ -133,7 +133,7 @@ cdef inline NUM get_pixel3d(NUM* input,
     return input[r * cols * dims + c * dims + d]
 
 
-cdef inline NUM get_pixel4d(NUM* input,
+cdef inline NUM get_pixel4d(const NUM* input,
                             Py_ssize_t stride1, Py_ssize_t stride2, Py_ssize_t stride3, Py_ssize_t stride4,
                             Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
                             Py_ssize_t c1, Py_ssize_t c2, Py_ssize_t c3, Py_ssize_t c4,
@@ -159,7 +159,7 @@ cdef inline double distance4d(double x1, double y1, double z1, double d1,
     return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2 + (d1 - d2) ** 2)
 
 
-cdef inline FLOAT interpolate3d_linear(FLOAT* input,
+cdef inline FLOAT interpolate3d_linear(const FLOAT* input,
                                        Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
                                        double r, double c, double d,
                                        FLOAT cval) noexcept nogil:
@@ -200,7 +200,7 @@ cdef inline FLOAT interpolate3d_linear(FLOAT* input,
 
 
 # FIXME: figure out how to avoid duplication between `linear` and `learest` without slowing down
-cdef inline NUM interpolate3d_nearest(NUM* input,
+cdef inline NUM interpolate3d_nearest(const NUM* input,
                                       Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
                                       double r, double c, double d,
                                       NUM cval) noexcept nogil:
@@ -248,7 +248,7 @@ cdef inline NUM interpolate3d_nearest(NUM* input,
     )
 
 
-cdef inline FLOAT interpolate4d_linear(FLOAT* input,
+cdef inline FLOAT interpolate4d_linear(const FLOAT* input,
                                        Py_ssize_t stride1, Py_ssize_t stride2, Py_ssize_t stride3, Py_ssize_t stride4,
                                        Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
                                        double c1, double c2, double c3, double c4,
@@ -310,7 +310,7 @@ cdef inline FLOAT interpolate4d_linear(FLOAT* input,
     return c0_ * (1 - dc4) + c1_ * dc4
 
 
-cdef inline NUM interpolate4d_nearest(NUM* input,
+cdef inline NUM interpolate4d_nearest(const NUM* input,
                                       Py_ssize_t stride1, Py_ssize_t stride2, Py_ssize_t stride3, Py_ssize_t stride4,
                                       Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
                                       double c1, double c2, double c3, double c4,
@@ -369,8 +369,8 @@ cdef inline NUM interpolate4d_nearest(NUM* input,
     )
 
 
-def _zoom3d_linear(FLOAT[:, :, :] input, double[:] zoom, FLOAT cval, Py_ssize_t num_threads):
-    cdef FLOAT[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
+def _zoom3d_linear(const FLOAT[:, :, :] input, double[:] zoom, FLOAT cval, Py_ssize_t num_threads):
+    cdef const FLOAT[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
 
     cdef Py_ssize_t old_rows = input.shape[0], old_cols = input.shape[1], old_dims = input.shape[2]
     cdef double row_coef = zoom[0], col_coef = zoom[1], dim_coef = zoom[2]
@@ -399,8 +399,8 @@ def _zoom3d_linear(FLOAT[:, :, :] input, double[:] zoom, FLOAT cval, Py_ssize_t 
     return np.asarray(zoomed)
 
 
-def _zoom3d_nearest(NUM[:, :, :] input, double[:] zoom, NUM cval, Py_ssize_t num_threads):
-    cdef NUM[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
+def _zoom3d_nearest(const NUM[:, :, :] input, double[:] zoom, NUM cval, Py_ssize_t num_threads):
+    cdef const NUM[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
 
     cdef Py_ssize_t old_rows = input.shape[0], old_cols = input.shape[1], old_dims = input.shape[2]
     cdef double row_coef = zoom[0], col_coef = zoom[1], dim_coef = zoom[2]
@@ -429,8 +429,8 @@ def _zoom3d_nearest(NUM[:, :, :] input, double[:] zoom, NUM cval, Py_ssize_t num
     return np.asarray(zoomed)
 
 
-def _zoom4d_linear(FLOAT[:, :, :, :] input, double[:] zoom, FLOAT cval, Py_ssize_t num_threads):
-    cdef FLOAT[:, :, :, ::1] contiguous_input = np.ascontiguousarray(input)
+def _zoom4d_linear(const FLOAT[:, :, :, :] input, double[:] zoom, FLOAT cval, Py_ssize_t num_threads):
+    cdef const FLOAT[:, :, :, ::1] contiguous_input = np.ascontiguousarray(input)
 
     cdef Py_ssize_t old_dim1 = input.shape[0]
     cdef Py_ssize_t old_dim2 = input.shape[1]
@@ -478,8 +478,8 @@ def _zoom4d_linear(FLOAT[:, :, :, :] input, double[:] zoom, FLOAT cval, Py_ssize
     return np.asarray(zoomed)
 
 
-def _zoom4d_nearest(NUM[:, :, :, :] input, double[:] zoom, NUM cval, Py_ssize_t num_threads):
-    cdef NUM[:, :, :, ::1] contiguous_input = np.ascontiguousarray(input)
+def _zoom4d_nearest(const NUM[:, :, :, :] input, double[:] zoom, NUM cval, Py_ssize_t num_threads):
+    cdef const NUM[:, :, :, ::1] contiguous_input = np.ascontiguousarray(input)
 
     cdef Py_ssize_t old_dim1 = input.shape[0]
     cdef Py_ssize_t old_dim2 = input.shape[1]
