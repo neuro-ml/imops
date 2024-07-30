@@ -29,6 +29,7 @@ _SKIMAGE2CC3D = {
 }
 
 
+# TODO: Make it work and test on immutable arrays as soon as `cc3d` package is fixed
 def label(
     label_image: np.ndarray,
     background: int = None,
