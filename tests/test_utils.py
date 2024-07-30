@@ -157,3 +157,10 @@ def test_make_immutable():
     make_immutable(x)
     with pytest.raises(ValueError):
         x[0] = 1337
+
+
+def test_make_mutable():
+    x = np.ones(3)
+    make_immutable(x)
+    make_mutable(x)
+    x[0] = 1337
