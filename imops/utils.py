@@ -217,3 +217,7 @@ def isin(element: np.ndarray, test_elements: np.ndarray, num_threads: int = 1) -
     cython_isin(contiguos_element.ravel(), test_elements, out.ravel(), num_threads)
 
     return out
+
+
+def make_immutable(array: np.ndarray) -> None:
+    array.flags.writeable = False

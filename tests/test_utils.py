@@ -12,6 +12,7 @@ from imops.utils import (
     check_len,
     imops_num_threads,
     isin,
+    make_immutable,
     normalize_num_threads,
     set_num_threads,
 )
@@ -144,3 +145,10 @@ def test_bad_dtype(num_threads, bad_dtype):
 
     with pytest.raises(ValueError):
         isin(elements, test_elements, num_threads)
+
+
+def test_make_immutable():
+    x = np.ones(3)
+    make_immutable(x)
+    with pytest.raises(ValueError):
+        x[0] = 1337
