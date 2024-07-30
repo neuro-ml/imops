@@ -18,14 +18,14 @@ ctypedef cython.integral INT
 
 # most of this code is taken from skimage and optimized for direct Radon transform
 
-cdef inline FLOAT get_pixel2d(FLOAT* image, Py_ssize_t size, long r, long c) noexcept nogil:
+cdef inline FLOAT get_pixel2d(const FLOAT* image, Py_ssize_t size, long r, long c) noexcept nogil:
     if (r < 0) or (r >= size) or (c < 0) or (c >= size):
         return 0
     else:
         return image[r * size + c]
 
 
-cdef inline FLOAT interpolate2d(FLOAT* image, Py_ssize_t size, FLOAT r, FLOAT c) noexcept nogil:
+cdef inline FLOAT interpolate2d(const FLOAT* image, Py_ssize_t size, FLOAT r, FLOAT c) noexcept nogil:
     cdef FLOAT dr, dc
     cdef long minr, minc, maxr, maxc
 
@@ -49,8 +49,8 @@ cdef inline FLOAT interpolate2d(FLOAT* image, Py_ssize_t size, FLOAT r, FLOAT c)
     return (1 - dr) * top + dr * bottom
 
 
-cdef inline FLOAT accumulate(FLOAT* image, Py_ssize_t* size, FLOAT* sin, FLOAT* cos,
-                             FLOAT* r_shift, FLOAT* c_shift, Py_ssize_t j, INT* limit) noexcept nogil:
+cdef inline FLOAT accumulate(const FLOAT* image, const Py_ssize_t* size, const FLOAT* sin, const FLOAT* cos,
+                             const FLOAT* r_shift, const FLOAT* c_shift, Py_ssize_t j, const INT* limit) noexcept nogil:
     cdef FLOAT result = 0
     cdef Py_ssize_t i
 
@@ -64,9 +64,9 @@ cdef inline FLOAT accumulate(FLOAT* image, Py_ssize_t* size, FLOAT* sin, FLOAT* 
     return result
 
 
-def radon3d(FLOAT[:, :, :] image, FLOAT[:] theta, INT[:] limits, Py_ssize_t num_threads):
+def radon3d(const FLOAT[:, :, :] image, const FLOAT[:] theta, const INT[:] limits, Py_ssize_t num_threads):
     cdef Py_ssize_t size = image.shape[1], n_slices = image.shape[0], n_angles = len(theta)
-    cdef FLOAT[:, :, ::1] img = np.ascontiguousarray(image)
+    cdef const FLOAT[:, :, ::1] img = np.ascontiguousarray(image)
     cdef FLOAT[:, :, :] out = np.zeros_like(img, shape=(n_slices, size, n_angles))
 
     sins = np.sin(theta)

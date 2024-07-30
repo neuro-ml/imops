@@ -221,3 +221,7 @@ def isin(element: np.ndarray, test_elements: np.ndarray, num_threads: int = 1) -
 
 def make_immutable(array: np.ndarray) -> None:
     array.flags.writeable = False
+
+
+def make_mutable(array: np.ndarray) -> None:
+    array.flags.writeable = True
