@@ -23,7 +23,7 @@ ctypedef fused LABEL:
     unsigned long long
 
 
-cdef inline Py_ssize_t _find(LABEL num, LABEL[:] nums) nogil:
+cdef inline Py_ssize_t _find(LABEL num, LABEL[:] nums) noexcept nogil:
     cdef Py_ssize_t i
 
     for i in range(len(nums)):

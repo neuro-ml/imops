@@ -22,7 +22,7 @@ cdef struct array_iterator:
     int backstrides[3]
 
 
-cdef int init_array_iterator(array_iterator *arr_iter, int *shape, int *strides) nogil:
+cdef int init_array_iterator(array_iterator *arr_iter, int *shape, int *strides) noexcept nogil:
     cdef int i
 
     arr_iter.rank_m1 = 2
@@ -49,7 +49,7 @@ cdef int init_filter_iterator(
     int *f_shape,
     int filter_size,
     np.uint8_t is_dilation
-) nogil:
+) noexcept nogil:
     cdef int i, rank = 3, step, orgn
 
     filter_iter[0].strides[rank - 1] = filter_size
@@ -76,7 +76,7 @@ cdef int init_filter_offsets(
     int footprint_size,
     int **offsets, int *border_flag_value,
     np.uint8_t is_dilation
-) nogil:
+) noexcept nogil:
     cdef int i, j, k
     cdef int filter_size = 1, offsets_size = 1
     cdef int max_size = 0, max_stride = 0
@@ -165,7 +165,7 @@ cdef int init_filter_offsets(
     return 0
 
 
-cdef inline int filter_iterator_offset(filter_iterator *filter_iter, int *coordinates) nogil:
+cdef inline int filter_iterator_offset(filter_iterator *filter_iter, int *coordinates) noexcept nogil:
     cdef int i, position, offset = 0
 
     for i in range(3):
@@ -191,7 +191,7 @@ cdef inline int worker(
     int start, int end,
     np.uint8_t border_value,
     np.uint8_t is_dilation,
-) nogil:
+) noexcept nogil:
     cdef np.uint8_t _true = not is_dilation
     cdef np.uint8_t _false = not _true
 

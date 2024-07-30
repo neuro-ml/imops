@@ -120,14 +120,14 @@ def _interp1d(FLOAT[:, :, :] input,
     return np.asarray(interpolated)
 
 
-cdef inline double get_slope(double x1, double y1, double x2, double y2) nogil:
+cdef inline double get_slope(double x1, double y1, double x2, double y2) noexcept nogil:
     return (y2 - y1) / (x2 - x1)
 
 
 cdef inline NUM get_pixel3d(NUM* input,
                             Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
                             Py_ssize_t r, Py_ssize_t c, Py_ssize_t d,
-                            NUM cval) nogil:
+                            NUM cval) noexcept nogil:
     if (r < 0) or (r >= rows) or (c < 0) or (c >= cols) or (d < 0) or (d >= dims):
         return cval
     return input[r * cols * dims + c * dims + d]
@@ -137,32 +137,32 @@ cdef inline NUM get_pixel4d(NUM* input,
                             Py_ssize_t stride1, Py_ssize_t stride2, Py_ssize_t stride3, Py_ssize_t stride4,
                             Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
                             Py_ssize_t c1, Py_ssize_t c2, Py_ssize_t c3, Py_ssize_t c4,
-                            NUM cval) nogil:
+                            NUM cval) noexcept nogil:
     if (c1 < 0) or (c1 >= dim1) or (c2 < 0) or (c2 >= dim2) or (c3 < 0) or (c3 >= dim3) or (c4 < 0) or (c4 >= dim4):
         return cval
     return input[c1 * stride1 + c2 * stride2 + c3 * stride3 + c4 * stride4]
 
 
-cdef inline double adjusted_coef(Py_ssize_t old_n, Py_ssize_t new_n) nogil:
+cdef inline double adjusted_coef(Py_ssize_t old_n, Py_ssize_t new_n) noexcept nogil:
     if new_n == 1:
         return old_n
     return  (<double>old_n - 1) / (<double>new_n - 1)
 
 
 cdef inline double distance3d(double x1, double y1, double z1,
-                              double x2, double y2, double z2) nogil:
+                              double x2, double y2, double z2) noexcept nogil:
     return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
 
 
 cdef inline double distance4d(double x1, double y1, double z1, double d1,
-                              double x2, double y2, double z2, double d2) nogil:
+                              double x2, double y2, double z2, double d2) noexcept nogil:
     return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2 + (d1 - d2) ** 2)
 
 
 cdef inline FLOAT interpolate3d_linear(FLOAT* input,
                                        Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
                                        double r, double c, double d,
-                                       FLOAT cval) nogil:
+                                       FLOAT cval) noexcept nogil:
     cdef double dr, dc, dd
     cdef Py_ssize_t minr, minc, mind, maxr, maxc, maxd
 
@@ -203,7 +203,7 @@ cdef inline FLOAT interpolate3d_linear(FLOAT* input,
 cdef inline NUM interpolate3d_nearest(NUM* input,
                                       Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
                                       double r, double c, double d,
-                                      NUM cval) nogil:
+                                      NUM cval) noexcept nogil:
     cdef double minr, minc, mind, maxr, maxc, maxd, curr, curc, curd, distance, min_distance = 3.0
     cdef short i, j, k, i_nearest = -1, j_nearest = -1, k_nearest = -1
 
@@ -252,7 +252,7 @@ cdef inline FLOAT interpolate4d_linear(FLOAT* input,
                                        Py_ssize_t stride1, Py_ssize_t stride2, Py_ssize_t stride3, Py_ssize_t stride4,
                                        Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
                                        double c1, double c2, double c3, double c4,
-                                       FLOAT cval) nogil:
+                                       FLOAT cval) noexcept nogil:
     cdef double dc1, dc2, dc3, dc4
     cdef Py_ssize_t minc1, minc2, minc3, minc4, maxc1, maxc2, maxc3, maxc4
 
@@ -314,7 +314,7 @@ cdef inline NUM interpolate4d_nearest(NUM* input,
                                       Py_ssize_t stride1, Py_ssize_t stride2, Py_ssize_t stride3, Py_ssize_t stride4,
                                       Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
                                       double c1, double c2, double c3, double c4,
-                                      NUM cval) nogil:
+                                      NUM cval) noexcept nogil:
     cdef double minc1, minc2, minc3, minc4, maxc1, maxc2, maxc3, maxc4, curc1, curc2, curc3, curc4
     cdef double distance, min_distance = 3.0
     cdef short i1, i2, i3, i4, i1_nearest = -1, i2_nearest = -1, i3_nearest = -1, i4_nearest = -1

@@ -18,14 +18,14 @@ ctypedef cython.integral INT
 
 # most of this code is taken from skimage and optimized for direct Radon transform
 
-cdef inline FLOAT get_pixel2d(FLOAT* image, Py_ssize_t size, long r, long c) nogil:
+cdef inline FLOAT get_pixel2d(FLOAT* image, Py_ssize_t size, long r, long c) noexcept nogil:
     if (r < 0) or (r >= size) or (c < 0) or (c >= size):
         return 0
     else:
         return image[r * size + c]
 
 
-cdef inline FLOAT interpolate2d(FLOAT* image, Py_ssize_t size, FLOAT r, FLOAT c) nogil:
+cdef inline FLOAT interpolate2d(FLOAT* image, Py_ssize_t size, FLOAT r, FLOAT c) noexcept nogil:
     cdef FLOAT dr, dc
     cdef long minr, minc, maxr, maxc
 
@@ -50,7 +50,7 @@ cdef inline FLOAT interpolate2d(FLOAT* image, Py_ssize_t size, FLOAT r, FLOAT c)
 
 
 cdef inline FLOAT accumulate(FLOAT* image, Py_ssize_t* size, FLOAT* sin, FLOAT* cos,
-                             FLOAT* r_shift, FLOAT* c_shift, Py_ssize_t j, INT* limit) nogil:
+                             FLOAT* r_shift, FLOAT* c_shift, Py_ssize_t j, INT* limit) noexcept nogil:
     cdef FLOAT result = 0
     cdef Py_ssize_t i
 
