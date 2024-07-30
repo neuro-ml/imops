@@ -53,8 +53,8 @@ cdef FLOAT accumulate(FLOAT x, FLOAT y, const FLOAT* sinuses, const FLOAT* cosin
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cpdef FLOAT[:, :, :] backprojection3d(const FLOAT[:, :, :] sinogram, const FLOAT[:] theta, FLOAT[:] xs,
-                                      const uint8[:, :] inside_circle, FLOAT fill_value, int image_size, int output_size,
-                                      Py_ssize_t num_threads):
+                                      const uint8[:, :] inside_circle, FLOAT fill_value, int image_size,
+                                      int output_size, Py_ssize_t num_threads):
     cdef FLOAT[:, :, :] result = np.zeros_like(sinogram, shape=(len(sinogram), output_size, output_size))
     cdef Py_ssize_t slc, i, j, n_angles = len(theta), n_slices = len(sinogram)
     cdef FLOAT min_val = image_size // 2, right_lim = image_size - 1

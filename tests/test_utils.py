@@ -13,6 +13,7 @@ from imops.utils import (
     imops_num_threads,
     isin,
     make_immutable,
+    make_mutable,
     normalize_num_threads,
     set_num_threads,
 )

@@ -33,7 +33,8 @@ cdef inline Py_ssize_t _find(LABEL num, const LABEL[:] nums) noexcept nogil:
     return -1
 
 
-def _labeled_center_of_mass(const double[:, :, :] nums, const LABEL[:, :, :] labels, const LABEL[:] index) -> np.ndarray:
+def _labeled_center_of_mass(const double[:, :, :] nums, const LABEL[:, :, :] labels,
+                            const LABEL[:] index) -> np.ndarray:
     cdef const double[:, :, ::1] contiguous_nums = np.ascontiguousarray(nums)
     cdef const LABEL[:, :, ::1] contiguous_labels = np.ascontiguousarray(labels)
     cdef const LABEL[:] contiguous_index = np.ascontiguousarray(index)

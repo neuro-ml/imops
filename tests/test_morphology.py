@@ -14,8 +14,8 @@ from imops._configs import morphology_configs
 from imops.backend import Backend, Scipy
 from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening, distance_transform_edt
 from imops.pad import restore_crop
-
 from imops.utils import make_immutable
+
 
 np.random.seed(1337)
 

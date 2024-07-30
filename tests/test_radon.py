@@ -8,7 +8,7 @@ from imops._configs import radon_configs
 from imops.backend import Backend
 from imops.radon import inverse_radon, radon
 from imops.testing import fill_outside, sample_ct, sk_iradon, sk_radon
-from imops.utils import make_immutable, make_mutable
+from imops.utils import make_immutable
 
 
 np.random.seed(1337)
