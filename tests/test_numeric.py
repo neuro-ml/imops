@@ -8,6 +8,7 @@ from numpy.testing import assert_allclose as allclose
 from imops._configs import numeric_configs
 from imops.backend import Backend
 from imops.numeric import _STR_TYPES, copy, fill_, full, pointwise_add
+from imops.utils import make_immutable
 
 
 np.random.seed(1337)
@@ -288,6 +289,9 @@ def test_stress_copy(backend, num_threads, dtype):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
 
         nums = (32 * np.random.randn(*shape)).astype(dtype)
+        if np.random.binomial(1, 0.5):
+            make_immutable(nums)
+
         old_nums = np.copy(nums)
         copy_nums = copy(
             nums,
