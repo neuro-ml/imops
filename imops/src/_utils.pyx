@@ -30,7 +30,7 @@ ctypedef fused NUM:
     long long
 
 
-cpdef void _isin(NUM[:] elements, NUM[:] test_elements, np.uint8_t[:] res, Py_ssize_t num_threads):
+cpdef void _isin(const NUM[:] elements, const NUM[:] test_elements, np.uint8_t[:] res, Py_ssize_t num_threads):
     cdef unordered_set[NUM] test_elements_set
     cdef Py_ssize_t i
     cdef Py_ssize_t elements_len = elements.shape[0]

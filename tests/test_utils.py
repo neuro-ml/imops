@@ -135,6 +135,11 @@ def test_isin(num_threads, dtype):
         elements = np.random.randint(0, 5, size=shape, dtype=dtype)
         test_elements = np.random.randint(0, 5, size=np.random.randint(1, 10))
 
+        if np.random.binomial(1, 0.5):
+            make_immutable(elements)
+        if np.random.binomial(1, 0.5):
+            make_immutable(test_elements)
+
         assert (np.isin(elements, test_elements) == isin(elements, test_elements, num_threads)).all()
 
 
