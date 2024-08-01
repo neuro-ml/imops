@@ -7,7 +7,7 @@
     "dvcs": "git",
     "environment_type": "conda",
     "show_commit_url": "https://github.com/neuro-ml/imops/commit",
-    "pythons": ["3.12"],
+    "pythons": ["3.12.3"],
     "conda_channels": ["defaults", "conda-forge"],
     "matrix": {
         "req": {
