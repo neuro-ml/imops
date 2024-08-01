@@ -40,7 +40,7 @@ cdef inline FLOAT interpolate(FLOAT x, const FLOAT* ys, FLOAT radius, FLOAT righ
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef FLOAT accumulate(FLOAT x, FLOAT y, const FLOAT* sinuses, const FLOAT* cosinuses, FLOAT* ys,
+cdef FLOAT accumulate(FLOAT x, FLOAT y, const FLOAT* sinuses, const FLOAT* cosinuses, const FLOAT* ys,
                       Py_ssize_t size, Py_ssize_t image_size, FLOAT radius, FLOAT right_limit) noexcept nogil:
     cdef FLOAT accumulator = 0
     cdef Py_ssize_t k
@@ -52,7 +52,7 @@ cdef FLOAT accumulate(FLOAT x, FLOAT y, const FLOAT* sinuses, const FLOAT* cosin
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef FLOAT[:, :, :] backprojection3d(const FLOAT[:, :, :] sinogram, const FLOAT[:] theta, FLOAT[:] xs,
+cpdef FLOAT[:, :, :] backprojection3d(const FLOAT[:, :, :] sinogram, const FLOAT[:] theta, const FLOAT[:] xs,
                                       const uint8[:, :] inside_circle, FLOAT fill_value, int image_size,
                                       int output_size, Py_ssize_t num_threads):
     cdef FLOAT[:, :, :] result = np.zeros_like(sinogram, shape=(len(sinogram), output_size, output_size))
