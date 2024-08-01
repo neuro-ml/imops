@@ -205,6 +205,32 @@ def assert_subdtype(dtype, ref_dtype, name):
 
 
 def isin(element: np.ndarray, test_elements: np.ndarray, num_threads: int = 1) -> np.ndarray:
+    """
+    Calculates `element in test_elements`, broadcasting over `element` only.
+    Returns a boolean array of the same shape as `element` that is True where
+    an element of `element` is in `test_elements` and False otherwise.
+
+    Parameters
+    ----------
+    element: np.ndarray
+        n-dimensional array
+    test_elements: np.ndarray
+        1-d array of the values against which to test each value of element
+    num_threads: int
+        the number of threads to use for computation. Default = 1. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+
+    Returns
+    -------
+    isin: np.ndarray, bool
+        has the same shape as `element`. The values `element[isin]` are in `test_elements`
+
+    Examples
+    --------
+    element = 2*np.arange(4).reshape((2, 2))
+    test_elements = [1, 2, 4, 8]
+    mask = isin(element, test_elements)
+    """
     if element.dtype not in ('int16', 'int32', 'int64'):
         raise ValueError(f'Supported dtypes: int16, int32, int64, got {element.dtype}')
 
