@@ -53,7 +53,7 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_ENVIRONMENT_MACOS: >
-            PATH="/opt/homebrew/opt/llvm/bin:$PATH" LDFLAGS="-L/opt/homebrew/opt/llvm/lib" CPPFLAGS="-I/opt/homebrew/opt/llvm/include" CC="/usr/local/bin/gcc-11" CXX="/usr/local/bin/g++-11"
+            PATH="/opt/homebrew/opt/llvm/bin:$PATH" LDFLAGS="-L/opt/homebrew/opt/llvm/lib" CPPFLAGS="-I/opt/homebrew/opt/llvm/include" CC="/usr/local/bin/gcc" CXX="/usr/local/bin/g++"
           CIBW_BUILD: cp39-* cp312-*
           CIBW_SKIP: "*musllinux* *manylinux_x86_64"
           CIBW_BEFORE_BUILD_LINUX: 'if [ $(python -c "import sys; print(sys.version_info[1])") -ge 9 ]; then python -m pip install "numpy<3.0.0" --config-settings=setup-args="-Dallow-noblas=true"; fi'
