@@ -6,6 +6,12 @@ from warnings import warn
 
 import numpy as np
 
+
+try:
+    from numpy.lib.array_utils import normalize_axis_tuple
+except ModuleNotFoundError:
+    from numpy.core.numeric import normalize_axis_tuple
+
 from .backend import BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Backend, Cython
 from .src._utils import _isin as cython_isin
 
@@ -109,7 +115,7 @@ def axis_from_dim(axis: Union[AxesLike, None], dim: int) -> tuple:
     if axis is None:
         return tuple(range(dim))
 
-    return np.lib.array_utils.normalize_axis_tuple(axis, dim, 'axis')
+    return normalize_axis_tuple(axis, dim, 'axis')
 
 
 def broadcast_axis(axis: Union[AxesLike, None], dim: int, *values: Union[AxesLike, AxesParams]):

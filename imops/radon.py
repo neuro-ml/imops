@@ -12,6 +12,12 @@ from .src._radon import radon3d
 from .utils import normalize_num_threads
 
 
+try:
+    from numpy.lib.array_utils import normalize_axis_tuple
+except ModuleNotFoundError:
+    from numpy.core.numeric import normalize_axis_tuple
+
+
 def radon(
     image: np.ndarray,
     axes: Tuple[int, int] = None,
@@ -204,7 +210,7 @@ def normalize_axes(x: np.ndarray, axes):
             raise ValueError('For arrays of higher dimensionality the `axis` arguments is required')
         axes = [0, 1]
 
-    axes = np.lib.array_utils.normalize_axis_tuple(axes, x.ndim, 'axes')
+    axes = normalize_axis_tuple(axes, x.ndim, 'axes')
     x = np.moveaxis(x, axes, (-2, -1))
     extra = x.shape[:-2]
     x = x.reshape(-1, *x.shape[-2:])
