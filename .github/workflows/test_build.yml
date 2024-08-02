@@ -24,6 +24,7 @@ jobs:
       - name: Install gcc for mac
         if: matrix.os == 'macOS-14'
         run: |
+          brew install llvm
           which gcc
           which g++
           gcc --version
@@ -49,7 +50,7 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_ENVIRONMENT_MACOS: >
-            PATH="/opt/homebrew/opt/llvm/bin:$PATH" LDFLAGS="-L/opt/homebrew/opt/llvm/lib" CPPFLAGS="-I/opt/homebrew/opt/llvm/include" CC="/usr/bin/gcc" CXX="/usr/bin/g++"
+            PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="-L/usr/local/opt/llvm/lib" CPPFLAGS="-I/usr/local/opt/llvm/include" CC="/usr/local/opt/llvm/bin/clang" CXX="/usr/local/opt/llvm/bin/clang++"
           CIBW_BUILD: cp39-* cp312-*
           CIBW_SKIP: "*musllinux* *manylinux_x86_64"
           CIBW_BEFORE_BUILD_LINUX: 'if [ $(python -c "import sys; print(sys.version_info[1])") -ge 9 ]; then python -m pip install "numpy<3.0.0" --config-settings=setup-args="-Dallow-noblas=true"; fi'
