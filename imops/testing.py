@@ -1,14 +1,9 @@
 import warnings
 
 import numpy as np
-
-
-try:
-    from numpy.exceptions import VisibleDeprecationWarning
-except ModuleNotFoundError:
-    from numpy import VisibleDeprecationWarning
-
 from skimage.transform import iradon as iradon_, radon as radon_
+
+from .compat import VisibleDeprecationWarning
 
 
 def sk_iradon(xs):

@@ -6,13 +6,8 @@ from warnings import warn
 
 import numpy as np
 
-
-try:
-    from numpy.lib.array_utils import normalize_axis_tuple
-except ModuleNotFoundError:
-    from numpy.core.numeric import normalize_axis_tuple
-
 from .backend import BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Backend, Cython
+from .compat import normalize_axis_tuple
 from .src._utils import _isin as cython_isin
 
 

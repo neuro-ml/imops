@@ -4,18 +4,13 @@ import numpy as np
 from scipy.fftpack import fft, ifft
 
 from .backend import BackendLike, resolve_backend
+from .compat import normalize_axis_tuple
 from .numeric import copy
 from .src._backprojection import backprojection3d
 from .src._fast_backprojection import backprojection3d as fast_backprojection3d
 from .src._fast_radon import radon3d as fast_radon3d
 from .src._radon import radon3d
 from .utils import normalize_num_threads
-
-
-try:
-    from numpy.lib.array_utils import normalize_axis_tuple
-except ModuleNotFoundError:
-    from numpy.core.numeric import normalize_axis_tuple
 
 
 def radon(
