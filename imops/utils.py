@@ -109,7 +109,7 @@ def axis_from_dim(axis: Union[AxesLike, None], dim: int) -> tuple:
     if axis is None:
         return tuple(range(dim))
 
-    return np.core.numeric.normalize_axis_tuple(axis, dim, 'axis')
+    return np.lib.array_utils.normalize_axis_tuple(axis, dim, 'axis')
 
 
 def broadcast_axis(axis: Union[AxesLike, None], dim: int, *values: Union[AxesLike, AxesParams]):

@@ -204,7 +204,7 @@ def normalize_axes(x: np.ndarray, axes):
             raise ValueError('For arrays of higher dimensionality the `axis` arguments is required')
         axes = [0, 1]
 
-    axes = np.core.numeric.normalize_axis_tuple(axes, x.ndim, 'axes')
+    axes = np.lib.array_utils.normalize_axis_tuple(axes, x.ndim, 'axes')
     x = np.moveaxis(x, axes, (-2, -1))
     extra = x.shape[:-2]
     x = x.reshape(-1, *x.shape[-2:])

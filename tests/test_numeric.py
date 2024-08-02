@@ -222,9 +222,10 @@ def test_stress_pointwise_add_inplace(backend, num_threads, dtype):
 
 def test_stress_fill_(backend, num_threads, dtype):
     def sample_value(dtype):
-        x = dtype.type(32 * np.random.randn(1))
+        x = np.random.randn(1)
         if isinstance(x, np.ndarray):
             x = x[0]
+        x = dtype.type(x)
 
         dice = np.random.randint(3)
 
