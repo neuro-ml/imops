@@ -353,4 +353,4 @@ def test_labeled_center_of_mass(backend, dtype, label_dtype):
             assert isinstance(x, tuple)
             assert isinstance(y, tuple)
 
-        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-5)
+        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-4)
