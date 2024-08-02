@@ -25,12 +25,7 @@ jobs:
         if: matrix.os == 'macOS-14'
         run: |
           which gcc
-          brew install llvm libomp
-          echo $PATH
-          ln -sf /usr/local/bin/gcc-11 /usr/local/bin/gcc
-          ln -sf /usr/local/bin/g++-11 /usr/local/bin/g++
-          ls /usr/local/bin/gcc*
-          ls /usr/local/bin/g++*
+          which g++
           gcc --version
           g++ --version
       - name: Install g++-11 for ubuntu
@@ -54,7 +49,7 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_ENVIRONMENT_MACOS: >
-            PATH="/opt/homebrew/opt/llvm/bin:$PATH" LDFLAGS="-L/opt/homebrew/opt/llvm/lib" CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
+            PATH="/opt/homebrew/opt/llvm/bin:$PATH" LDFLAGS="-L/opt/homebrew/opt/llvm/lib" CPPFLAGS="-I/opt/homebrew/opt/llvm/include" CC="/usr/bin/gcc" CXX="/usr/bin/g++"
           CIBW_BUILD: cp39-* cp312-*
           CIBW_SKIP: "*musllinux* *manylinux_x86_64"
           CIBW_BEFORE_BUILD_LINUX: 'if [ $(python -c "import sys; print(sys.version_info[1])") -ge 9 ]; then python -m pip install "numpy<3.0.0" --config-settings=setup-args="-Dallow-noblas=true"; fi'
