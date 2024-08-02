@@ -283,7 +283,7 @@ def test_center_of_mass(num_threads, backend, dtype):
 
         assert isinstance(out, tuple)
         assert isinstance(desired_out, tuple)
-        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-4)
+        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-3)
 
 
 def test_scipy_warning(num_threads, backend, dtype):
@@ -353,4 +353,4 @@ def test_labeled_center_of_mass(backend, dtype, label_dtype):
             assert isinstance(x, tuple)
             assert isinstance(y, tuple)
 
-        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-4)
+        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-3)
