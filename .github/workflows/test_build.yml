@@ -24,7 +24,8 @@ jobs:
       - name: Install gcc for mac
         if: matrix.os == 'macOS-14'
         run: |
-          brew install llvm libomp gcc
+          which gcc
+          brew install llvm libomp
           echo $PATH
           ln -sf /usr/local/bin/gcc-11 /usr/local/bin/gcc
           ln -sf /usr/local/bin/g++-11 /usr/local/bin/g++
