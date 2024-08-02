@@ -6566,8 +6566,8 @@ used</p>
 <a id="__codelineno-0-210" name="__codelineno-0-210"></a>
 <a id="__codelineno-0-211" name="__codelineno-0-211"></a>        <span class="n">src_center_of_mass</span> <span class="o">=</span> <span class="n">_fast_labeled_center_of_mass</span> <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">fast</span> <span class="k">else</span> <span class="n">_labeled_center_of_mass</span>
 <a id="__codelineno-0-212" name="__codelineno-0-212"></a>
-<a id="__codelineno-0-213" name="__codelineno-0-213"></a>    <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="s1">&#39;float64&#39;</span><span class="p">:</span>
-<a id="__codelineno-0-214" name="__codelineno-0-214"></a>        <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<a id="__codelineno-0-213" name="__codelineno-0-213"></a>    <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">,</span> <span class="s1">&#39;float64&#39;</span><span class="p">):</span>
+<a id="__codelineno-0-214" name="__codelineno-0-214"></a>        <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 <a id="__codelineno-0-215" name="__codelineno-0-215"></a>
 <a id="__codelineno-0-216" name="__codelineno-0-216"></a>    <span class="n">n_dummy</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">-</span> <span class="n">ndim</span>
 <a id="__codelineno-0-217" name="__codelineno-0-217"></a>    <span class="k">if</span> <span class="n">n_dummy</span><span class="p">:</span>
