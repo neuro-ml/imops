@@ -9,7 +9,7 @@ from scipy.ndimage import zoom as scipy_zoom
 
 from imops._configs import zoom_configs
 from imops.backend import Backend
-from imops.utils import ZOOM_SRC_DIM, get_c_contiguous_permutaion, inverse_permutation
+from imops.utils import ZOOM_SRC_DIM, get_c_contiguous_permutaion, inverse_permutation, make_immutable
 from imops.zoom import _zoom, zoom, zoom_to_shape
 
 
@@ -250,6 +250,8 @@ def test_stress(backend, order, dtype):
         scale = np.random.uniform(0.5, 2, size=inp.ndim if np.random.binomial(1, 0.5) else 1)
         if len(scale) == 1:
             scale = scale[0]
+        if np.random.binomial(1, 0.5):
+            make_immutable(inp)
 
         without_borders = np.index_exp[:-1, :-1, :-1, :-1, :-1][: inp.ndim]
         desired_out = scipy_zoom(inp, scale, order=order)[without_borders]

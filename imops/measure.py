@@ -29,6 +29,7 @@ _SKIMAGE2CC3D = {
 }
 
 
+# TODO: Make it work and test on immutable arrays as soon as `cc3d` package is fixed
 def label(
     label_image: np.ndarray,
     background: int = None,
@@ -213,8 +214,8 @@ def center_of_mass(
 
         src_center_of_mass = _fast_labeled_center_of_mass if backend.fast else _labeled_center_of_mass
 
-    if array.dtype != 'float64':
-        array = array.astype(float)
+    if array.dtype not in ('float32', 'float64'):
+        array = array.astype(np.float32)
 
     n_dummy = 3 - ndim
     if n_dummy:

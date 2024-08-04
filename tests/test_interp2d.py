@@ -7,6 +7,7 @@ from deli import load
 from scipy.interpolate import griddata
 
 from imops.interp2d import Linear2DInterpolator
+from imops.utils import make_immutable
 
 
 tests_root = Path(__file__).parent
@@ -33,6 +34,14 @@ def test_test_data(num_threads):
         int_points = np.transpose((np.isnan(x)).nonzero())
         x_points: np.ndarray = np.transpose((~np.isnan(x)).nonzero())
         x_values = x[~np.isnan(x)]
+
+        if np.random.binomial(1, 0.5):
+            make_immutable(x_points)
+        if np.random.binomial(1, 0.5):
+            make_immutable(x_values)
+        if np.random.binomial(1, 0.5):
+            make_immutable(int_points)
+
         imops_values = Linear2DInterpolator(x_points, x_values, num_threads=num_threads)(int_points, fill_value=0.0)
         triangles = scipy.spatial.Delaunay(x_points).simplices
         delaunay_values = Linear2DInterpolator(x_points, x_values, num_threads=num_threads, triangles=triangles)(

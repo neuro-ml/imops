@@ -3,12 +3,14 @@ import warnings
 import numpy as np
 from skimage.transform import iradon as iradon_, radon as radon_
 
+from .compat import VisibleDeprecationWarning
+
 
 def sk_iradon(xs):
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', module='numpy')
         warnings.simplefilter('ignore', DeprecationWarning)
-        warnings.simplefilter('ignore', np.VisibleDeprecationWarning)
+        warnings.simplefilter('ignore', VisibleDeprecationWarning)
         return np.stack([iradon_(x) for x in xs])
 
 
@@ -16,7 +18,7 @@ def sk_radon(xs):
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', module='numpy')
         warnings.simplefilter('ignore', DeprecationWarning)
-        warnings.simplefilter('ignore', np.VisibleDeprecationWarning)
+        warnings.simplefilter('ignore', VisibleDeprecationWarning)
         warnings.filterwarnings('error', '.*image must be zero.*', module='skimage')
         return np.stack([radon_(x) for x in xs])
 

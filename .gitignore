@@ -1,6 +1,7 @@
 __pycache__/
 .pytest_cache/
 build/
+imops/src/*.cpp
 imops/src/*.c
 imops/src/*.so
 imops/src/_fast*.pyx

@@ -4,6 +4,7 @@ import numpy as np
 from scipy.fftpack import fft, ifft
 
 from .backend import BackendLike, resolve_backend
+from .compat import normalize_axis_tuple
 from .numeric import copy
 from .src._backprojection import backprojection3d
 from .src._fast_backprojection import backprojection3d as fast_backprojection3d
@@ -208,7 +209,7 @@ def normalize_axes(x: np.ndarray, axes):
             raise ValueError('For arrays of higher dimensionality the `axis` arguments is required')
         axes = [0, 1]
 
-    axes = np.core.numeric.normalize_axis_tuple(axes, x.ndim, 'axes')
+    axes = normalize_axis_tuple(axes, x.ndim, 'axes')
     x = np.moveaxis(x, axes, (-2, -1))
     extra = x.shape[:-2]
     x = x.reshape(-1, *x.shape[-2:])

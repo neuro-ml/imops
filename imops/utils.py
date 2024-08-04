@@ -6,7 +6,9 @@ from warnings import warn
 
 import numpy as np
 
-from .backend import BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Backend
+from .backend import BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME, SINGLE_THREADED_BACKENDS, Backend, Cython
+from .compat import normalize_axis_tuple
+from .src._utils import _isin as cython_isin
 
 
 AxesLike = Union[int, Sequence[int]]
@@ -108,7 +110,7 @@ def axis_from_dim(axis: Union[AxesLike, None], dim: int) -> tuple:
     if axis is None:
         return tuple(range(dim))
 
-    return np.core.numeric.normalize_axis_tuple(axis, dim, 'axis')
+    return normalize_axis_tuple(axis, dim, 'axis')
 
 
 def broadcast_axis(axis: Union[AxesLike, None], dim: int, *values: Union[AxesLike, AxesParams]):
@@ -203,3 +205,52 @@ def check_len(*args) -> None:
 def assert_subdtype(dtype, ref_dtype, name):
     if not np.issubdtype(dtype, ref_dtype):
         raise ValueError(f'`{name}` must be of {ref_dtype.__name__} dtype, got {dtype}')
+
+
+def isin(element: np.ndarray, test_elements: np.ndarray, num_threads: int = 1) -> np.ndarray:
+    """
+    Calculates `element in test_elements`, broadcasting over `element` only.
+    Returns a boolean array of the same shape as `element` that is True where
+    an element of `element` is in `test_elements` and False otherwise.
+
+    Parameters
+    ----------
+    element: np.ndarray
+        n-dimensional array
+    test_elements: np.ndarray
+        1-d array of the values against which to test each value of element
+    num_threads: int
+        the number of threads to use for computation. Default = 1. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+
+    Returns
+    -------
+    isin: np.ndarray, bool
+        has the same shape as `element`. The values `element[isin]` are in `test_elements`
+
+    Examples
+    --------
+    element = 2*np.arange(4).reshape((2, 2))
+    test_elements = [1, 2, 4, 8]
+    mask = isin(element, test_elements)
+    """
+    if element.dtype not in ('int16', 'int32', 'int64'):
+        raise ValueError(f'Supported dtypes: int16, int32, int64, got {element.dtype}')
+
+    num_threads = normalize_num_threads(num_threads, Cython(), warn_stacklevel=2)
+
+    contiguos_element = np.ascontiguousarray(element)
+    test_elements = np.asarray(test_elements, dtype=element.dtype)
+    out = np.zeros_like(contiguos_element, dtype=bool)
+
+    cython_isin(contiguos_element.ravel(), test_elements, out.ravel(), num_threads)
+
+    return out
+
+
+def make_immutable(array: np.ndarray) -> None:
+    array.flags.writeable = False
+
+
+def make_mutable(array: np.ndarray) -> None:
+    array.flags.writeable = True

@@ -11,6 +11,7 @@ from skimage.measure import label as sk_label
 from imops._configs import measure_configs
 from imops.backend import Backend, Scipy
 from imops.measure import center_of_mass, label
+from imops.utils import make_immutable
 
 
 np.random.seed(1337)
@@ -195,6 +196,7 @@ def test_stress(connectivity, ndim):
             if ndim == 4 or np.random.binomial(1, 0.2)
             else np.random.randint(0, 5, size=np.random.randint(32, 64, size=ndim))
         )
+
         sk_labeled, sk_num_components = sk_label(inp, connectivity=connectivity, return_num=True)
         labeled, num_components = label(inp, connectivity=connectivity, return_num=True)
 
@@ -273,13 +275,15 @@ def test_center_of_mass(num_threads, backend, dtype):
             if dtype == 'bool' or 'u' in dtype
             else (32 * np.random.randn(*shape)).astype(dtype) + 4
         )
+        if np.random.binomial(1, 0.5):
+            make_immutable(inp)
 
         out = center_of_mass(inp, num_threads=num_threads, backend=backend)
         desired_out = scipy_center_of_mass(inp)
 
         assert isinstance(out, tuple)
         assert isinstance(desired_out, tuple)
-        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-4)
+        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-3)
 
 
 def test_scipy_warning(num_threads, backend, dtype):
@@ -337,6 +341,10 @@ def test_labeled_center_of_mass(backend, dtype, label_dtype):
             if label_dtype != 'bool'
             else np.random.choice(np.array([[False], [True], [False, True], [True, False]], dtype=object))
         )
+        if np.random.binomial(1, 0.5):
+            make_immutable(inp)
+        if np.random.binomial(1, 0.5):
+            make_immutable(labels)
 
         out = center_of_mass(inp, labels, index, num_threads=1, backend=backend)
         desired_out = scipy_center_of_mass(inp, labels, index)
@@ -345,4 +353,4 @@ def test_labeled_center_of_mass(backend, dtype, label_dtype):
             assert isinstance(x, tuple)
             assert isinstance(y, tuple)
 
-        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-5)
+        allclose(out, desired_out, err_msg=(inp, inp.shape), rtol=1e-3)

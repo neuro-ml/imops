@@ -50,9 +50,10 @@ setup(
     install_requires=requirements,
     extras_require={'numba': ['numba'], 'all': ['numba']},
     setup_requires=[
-        # Setuptools 18.0 properly handles Cython extensions.
-        'setuptools>=18.0',
-        'Cython<3.0.0',
+        'setuptools<69.0.0',
+        'Cython>=3.0.0,<4.0.0',
+        'numpy<3.0.0',
+        'pybind11',
     ],
     ext_modules=ext_modules,
     python_requires='>=3.7',

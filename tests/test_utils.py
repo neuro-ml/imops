@@ -11,6 +11,9 @@ from imops.utils import (
     build_slices,
     check_len,
     imops_num_threads,
+    isin,
+    make_immutable,
+    make_mutable,
     normalize_num_threads,
     set_num_threads,
 )
@@ -19,6 +22,21 @@ from imops.utils import (
 assert_eq = np.testing.assert_array_equal
 
 MANY_THREADS = 42069
+
+
+@pytest.fixture(params=[np.int16, np.int32, np.int64])
+def dtype(request):
+    return request.param
+
+
+@pytest.fixture(params=[bool, np.float32, np.uint8])
+def bad_dtype(request):
+    return request.param
+
+
+@pytest.fixture(params=[1, 2, 3])
+def num_threads(request):
+    return request.param
 
 
 def test_check_len():
@@ -110,3 +128,40 @@ def test_broadcast_axis():
 
     with pytest.raises(ValueError):
         broadcast_axis([0, 1], 2, *arrays)
+
+
+def test_isin(num_threads, dtype):
+    for _ in range(16):
+        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+        elements = np.random.randint(0, 5, size=shape, dtype=dtype)
+        test_elements = np.random.randint(0, 5, size=np.random.randint(1, 10))
+
+        if np.random.binomial(1, 0.5):
+            make_immutable(elements)
+        if np.random.binomial(1, 0.5):
+            make_immutable(test_elements)
+
+        assert (np.isin(elements, test_elements) == isin(elements, test_elements, num_threads)).all()
+
+
+def test_bad_dtype(num_threads, bad_dtype):
+    shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+    elements = np.random.randint(0, 5, size=shape).astype(bad_dtype)
+    test_elements = np.random.randint(0, 5, size=np.random.randint(1, 10))
+
+    with pytest.raises(ValueError):
+        isin(elements, test_elements, num_threads)
+
+
+def test_make_immutable():
+    x = np.ones(3)
+    make_immutable(x)
+    with pytest.raises(ValueError):
+        x[0] = 1337
+
+
+def test_make_mutable():
+    x = np.ones(3)
+    make_immutable(x)
+    make_mutable(x)
+    x[0] = 1337

@@ -8,6 +8,7 @@ from scipy.interpolate import interp1d as scipy_interp1d
 from imops._configs import interp1d_configs
 from imops.backend import Backend, Scipy
 from imops.interp1d import interp1d
+from imops.utils import make_immutable
 
 
 np.random.seed(1337)
@@ -175,6 +176,8 @@ def test_stress(backend):
     for i in range(2 * n_samples):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
         inp = np.random.randn(*shape)
+        if np.random.binomial(1, 0.5):
+            make_immutable(inp)
 
         axis = np.random.choice(np.arange(inp.ndim))
         old_locations = np.random.randn(shape[axis])
