@@ -59,7 +59,7 @@ def get_ext_modules():
     on_windows = platform.system() == 'Windows'
     args = ['/openmp' if on_windows else '-fopenmp']
     cpp_args = [
-        '/std:c++17' if on_windows else '-std=c++17',
+        '/std:c++20' if on_windows else '-std=c++17',
         '/O3' if on_windows else '-O3',
     ]  # FIXME: account for higher gcc versions
 
