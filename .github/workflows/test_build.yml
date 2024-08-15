@@ -26,12 +26,7 @@ jobs:
         run: |
           brew install llvm libomp
           echo $PATH
-          ln -sf /usr/local/bin/gcc-11 /usr/local/bin/gcc
-          ln -sf /usr/local/bin/g++-11 /usr/local/bin/g++
-          ls /usr/local/bin/gcc*
-          ls /usr/local/bin/g++*
-          gcc --version
-          g++ --version
+          export CC=/usr/local/opt/llvm/bin/clang
       - name: Install g++-11 for ubuntu
         if: matrix.os == 'ubuntu-22.04'
         id: install_cc
