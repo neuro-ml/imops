@@ -10,3 +10,4 @@ imops/src/_fast*.pyx
 dist/
 *.so
 .vscode/
+.idea/
