@@ -77,6 +77,7 @@ def zoom(
     fill_value: Union[float, Callable] = 0,
     num_threads: int = -1,
     backend: BackendLike = None,
+    warn_stacklevel_add: int = 0,
 ) -> np.ndarray:
     """
     Rescale `x` according to `scale_factor` along the `axis`.
@@ -101,6 +102,8 @@ def zoom(
         cpu count + num_threads + 1 threads will be used
     backend: BackendLike
         which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default
+    warn_stacklevel_add: int
+        number to add to stacklevel of inner warnings
 
     Returns
     -------
@@ -121,7 +124,15 @@ def zoom(
         fill_value = fill_value(x)
 
     # TODO: does `fill_value/cval` change anythng?
-    return _zoom(x, scale_factor, order=order, cval=fill_value, num_threads=num_threads, backend=backend)
+    return _zoom(
+        x,
+        scale_factor,
+        order=order,
+        cval=fill_value,
+        num_threads=num_threads,
+        backend=backend,
+        warn_stacklevel_add=warn_stacklevel_add,
+    )
 
 
 def zoom_to_shape(
@@ -181,6 +192,7 @@ def zoom_to_shape(
         fill_value=fill_value,
         num_threads=num_threads,
         backend=backend,
+        warn_stacklevel_add=1,
     )
 
 
@@ -196,6 +208,7 @@ def _zoom(
     grid_mode: bool = False,
     num_threads: int = -1,
     backend: BackendLike = None,
+    warn_stacklevel_add: int = 0,
 ) -> np.ndarray:
     """
     Faster parallelizable version of `scipy.ndimage.zoom` for fp32-fp64 and bool-int16-32-64-uint8-16-32 if order == 0
@@ -208,7 +221,7 @@ def _zoom(
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.zoom.html`
     """
-    backend = resolve_backend(backend, warn_stacklevel=4)
+    backend = resolve_backend(backend, warn_stacklevel=4 + warn_stacklevel_add)
     if backend.name not in ('Scipy', 'Numba', 'Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
@@ -216,7 +229,7 @@ def _zoom(
     dtype = image.dtype
     cval = np.dtype(dtype).type(cval)
     zoom = fill_by_indices(np.ones(image.ndim, 'float64'), zoom, range(image.ndim))
-    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=4)
+    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=4 + warn_stacklevel_add)
 
     if backend.name == 'Scipy':
         return scipy_zoom(
@@ -239,7 +252,7 @@ def _zoom(
         warn(
             'Fast zoom is only supported for ndim<=4, dtype=fp32-fp64 and bool-int16-32-64-uint8-16-32 if order == 0, '
             "output=None, order=0 or 1 , mode='constant', grid_mode=False. Falling back to scipy's implementation.",
-            stacklevel=3,
+            stacklevel=3 + warn_stacklevel_add,
         )
         return scipy_zoom(
             image, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
@@ -278,7 +291,10 @@ def _zoom(
                 *args,
             )
         else:
-            warn("Input array can't be represented as C-contiguous, performance can drop a lot.", stacklevel=3)
+            warn(
+                "Input array can't be represented as C-contiguous, performance can drop a lot.",
+                stacklevel=3 + warn_stacklevel_add,
+            )
             out = src_zoom(image, zoom, cval, *args)
     else:
         out = src_zoom(image, zoom, cval, *args)
