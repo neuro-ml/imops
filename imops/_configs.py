@@ -1,6 +1,6 @@
 from itertools import product
 
-from .backend import Cython, Numba, Scipy
+from .backend import Cupy, Cython, Numba, Scipy
 
 
 scipy_configs = [Scipy()]
@@ -21,6 +21,7 @@ zoom_configs = [
     Scipy(),
     *[Cython(fast) for fast in [False, True]],
     *[Numba(*flags) for flags in product([False, True], repeat=3)],
+    Cupy(),
 ]
 interp1d_configs = [
     Scipy(),

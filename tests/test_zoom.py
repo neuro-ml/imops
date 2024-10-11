@@ -1,14 +1,13 @@
 from dataclasses import dataclass
-from functools import partial
 from itertools import permutations
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose as allclose
+from numpy.testing import assert_allclose
 from scipy.ndimage import zoom as scipy_zoom
 
 from imops._configs import zoom_configs
-from imops.backend import Backend
+from imops.backend import SINGLE_THREADED_BACKENDS, Backend
 from imops.utils import ZOOM_SRC_DIM, get_c_contiguous_permutaion, inverse_permutation, make_immutable
 from imops.zoom import _zoom, zoom, zoom_to_shape
 
@@ -18,9 +17,13 @@ from imops.zoom import _zoom, zoom, zoom_to_shape
 
 np.random.seed(1337)
 
+
 # FIXME: fix inconsistency
 # rtol=1e-6 as there is still some inconsistency
-allclose = partial(allclose, rtol=1e-6)
+def allclose(*args, rtol=1e-6, **kwargs):
+    return assert_allclose(*args, rtol=rtol, **kwargs)
+
+
 n_samples = 8
 
 
@@ -55,8 +58,9 @@ def test_alien_backend(alien_backend):
 def test_single_threaded_warning(order):
     inp = np.random.randn(32, 32, 32)
 
-    with pytest.warns(UserWarning):
-        zoom(inp, 2, order=order, num_threads=2, backend='Scipy')
+    for backend in SINGLE_THREADED_BACKENDS:
+        with pytest.warns(UserWarning):
+            zoom(inp, 2, order=order, num_threads=2, backend=backend)
 
 
 def test_numba_num_threads(order):
@@ -123,7 +127,12 @@ def test_dtype(backend, order, dtype):
             out = zoom(inp, scale, order=order, backend=backend)
             desired_out = scipy_zoom(inp, scale, order=order)
 
-            allclose(out[without_borders], desired_out[without_borders], err_msg=f'{i, dtype, scale_dtype}')
+            allclose(
+                out[without_borders],
+                desired_out[without_borders],
+                err_msg=f'{i, dtype, scale_dtype}',
+                rtol=5e-3 if backend.name == 'Cupy' else 1e-6,
+            )
             assert out.dtype == desired_out.dtype == dtype, f'{i, out.dtype, desired_out.dtype, dtype, scale_dtype}'
 
             allclose(inp, inp_copy, err_msg=f'{i, dtype, scale_dtype}')
@@ -180,6 +189,8 @@ def test_contiguity_awareness(backend, order, dtype):
                 np.transpose(out_permuted, inverse_permutation(np.array(permutation)))[without_borders],
                 desired_out[without_borders],
                 err_msg=f'{i, permutation}',
+                rtol=1e-4 if backend.name == 'Cupy' else 1e-6,
+                atol=1e-6,
             )
 
             assert get_c_contiguous_permutaion(permuted) is not None, f"Didn't find permutation for {i, permutation}"
@@ -201,7 +212,7 @@ def test_nocontiguous(backend, order, dtype):
     desired_out = scipy_zoom(inp, scale, order=order)
     without_borders = np.index_exp[:-1, :-1, :-1][: inp.ndim]
 
-    if backend.name == 'Scipy':
+    if backend.name in ('Scipy', 'Cupy'):
         allclose(zoom(inp, 2, order=order, backend=backend)[without_borders], desired_out[without_borders])
     else:
         with pytest.warns(UserWarning):
@@ -232,6 +243,7 @@ def test_thin(backend, order, dtype):
                 zoom(inp, scale, order=order, backend=backend)[without_borders],
                 scipy_zoom(inp, scale, order=order)[without_borders],
                 err_msg=f'{i, j, shape, scale}',
+                rtol=1e-4 if backend.name == 'Cupy' else 1e-6,
             )
 
 
@@ -265,4 +277,5 @@ def test_stress(backend, order, dtype):
             _zoom(inp, scale, order=order, backend=backend)[without_borders],
             desired_out,
             err_msg=f'{i, shape, scale}',
+            rtol=1e-4 if backend.name == 'Cupy' else 1e-6,
         )

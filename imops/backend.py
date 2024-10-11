@@ -20,6 +20,7 @@ class Backend:
     Cython: 'Cython'
     Numba: 'Numba'
     Scipy: 'Scipy'
+    Cupy: 'Cupy'
 
 
 BackendLike = Union[str, Backend, Type[Backend], None]
@@ -89,7 +90,16 @@ class Scipy(Backend):
     pass
 
 
+@dataclass(frozen=True)
+class Cupy(Backend):
+    def __post_init__(self):
+        try:
+            import cupy  # noqa: F401
+        except ModuleNotFoundError:  # pragma: no cover
+            raise ModuleNotFoundError('Install `cupy` package (pip install cupy-*) to use "cupy" backend.')
+
+
 DEFAULT_BACKEND = Cython()
 
 BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME = {Cython.__name__: 'OMP_NUM_THREADS', Numba.__name__: 'NUMBA_NUM_THREADS'}
-SINGLE_THREADED_BACKENDS = (Scipy.__name__,)
+SINGLE_THREADED_BACKENDS = (Scipy.__name__, Cupy.__name__)

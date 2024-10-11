@@ -32,6 +32,7 @@ include_package_data = true
 
 [project.optional-dependencies]
 numba = ['numba']
+cupy = ['cupy']
 
 [project.urls]
 'Homepage' = 'https://github.com/neuro-ml/imops'

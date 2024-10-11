@@ -101,7 +101,7 @@ def zoom(
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
     backend: BackendLike
-        which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default
+        which backend to use. `numba`, `cython`, `scipy` and `cupy` are available, `cython` is used by default
     warn_stacklevel_add: int
         number to add to stacklevel of inner warnings
 
@@ -166,7 +166,7 @@ def zoom_to_shape(
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
     backend: BackendLike
-        which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default
+        which backend to use. `numba`, `cython`, `scipy` and `cupy` are available, `cython` is used by default
 
     Returns
     -------
@@ -216,13 +216,13 @@ def _zoom(
     Works faster only for ndim <= 4. Shares interface with `scipy.ndimage.zoom`
     except for
     - `num_threads` argument defining how many threads to use (all available threads are used by default).
-    - `backend` argument defining which backend to use. `numba`, `cython` and `scipy` are available,
+    - `backend` argument defining which backend to use. `numba`, `cython`, `scipy` and `cupy` are available,
         `cython` is used by default.
 
     See `https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.zoom.html`
     """
     backend = resolve_backend(backend, warn_stacklevel=4 + warn_stacklevel_add)
-    if backend.name not in ('Scipy', 'Numba', 'Cython'):
+    if backend.name not in ('Scipy', 'Numba', 'Cython', 'Cupy'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
 
     ndim = image.ndim
@@ -234,6 +234,23 @@ def _zoom(
     if backend.name == 'Scipy':
         return scipy_zoom(
             image, zoom, output=output, order=order, mode=mode, cval=cval, prefilter=prefilter, grid_mode=grid_mode
+        )
+
+    if backend.name == 'Cupy':
+        from cupy import asarray, asnumpy
+        from cupyx.scipy.ndimage import zoom as cupy_zoom
+
+        return asnumpy(
+            cupy_zoom(
+                asarray(image),
+                zoom,
+                output=asarray(output) if output is not None else None,
+                order=order,
+                mode=mode,
+                cval=cval,
+                prefilter=prefilter,
+                grid_mode=grid_mode,
+            )
         )
 
     if (
