@@ -6,7 +6,7 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy.ndimage import zoom as scipy_zoom
 
-from imops._configs import zoom_configs
+from imops._configs import available_backends, to_repr, zoom_backends
 from imops.backend import SINGLE_THREADED_BACKENDS, Backend
 from imops.utils import ZOOM_SRC_DIM, get_c_contiguous_permutaion, inverse_permutation, make_immutable
 from imops.zoom import _zoom, zoom, zoom_to_shape
@@ -32,9 +32,12 @@ class Alien1(Backend):
     pass
 
 
-@pytest.fixture(params=zoom_configs, ids=map(str, zoom_configs))
+tested_backends = available_backends(zoom_backends)
+
+
+@pytest.fixture(params=tested_backends, ids=map(to_repr, tested_backends))
 def backend(request):
-    return request.param
+    return request.param()
 
 
 @pytest.fixture(params=[0, 1])
