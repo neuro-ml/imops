@@ -1,3 +1,4 @@
+from itertools import product
 from typing import Callable, Tuple, Union
 from warnings import warn
 
@@ -5,12 +6,15 @@ import numpy as np
 from edt import edt
 from scipy.ndimage import distance_transform_edt as scipy_distance_transform_edt, generate_binary_structure
 from scipy.ndimage._nd_image import euclidean_feature_transform
+from scipy.spatial import ConvexHull, QhullError
 from skimage.morphology import (
     binary_closing as scipy_binary_closing,
     binary_dilation as scipy_binary_dilation,
     binary_erosion as scipy_binary_erosion,
     binary_opening as scipy_binary_opening,
 )
+from skimage.util import unique_rows
+from skimage._shared.utils import warn as skimage_warn
 
 from .backend import BackendLike, Cython, Scipy, resolve_backend
 from .box import add_margin, box_to_shape, mask_to_box, shape_to_box
@@ -22,6 +26,7 @@ from .src._fast_morphology import (
     _binary_erosion as cython_fast_binary_erosion,
 )
 from .src._morphology import _binary_dilation as cython_binary_dilation, _binary_erosion as cython_binary_erosion
+from .src._convex_hull import _grid_points_in_poly
 from .utils import morphology_composition_args, normalize_num_threads
 
 
@@ -517,3 +522,90 @@ def distance_transform_edt(
         return result[0]
 
     return None
+
+
+def convex_hull_image_2d(image, offset_coordinates=True):
+    """
+    Fast convex hull of an image. Similar to skimage.morphology.convex_hull_image with include_borders=True
+
+    Parameters
+    ----------
+    image: np.ndarray
+        input image, must be 2D
+    offset_coordinates: bool
+        If True, a pixel at coordinate, e.g., (4, 7) will be represented by coordinates
+        (3.5, 7), (4.5, 7), (4, 6.5), and (4, 7.5). 
+        This adds some “extent” to a pixel when computing the hull.
+
+    Returns
+    -------
+    output: np.ndarray
+        resulting convex hull of the input image
+
+    Examples
+    --------
+    ```python
+    chull = convex_hull_image_2d(x)
+    ```
+    """
+
+    ndim = image.ndim
+    assert ndim == 2, f'Expected image to have ndim=2 got {ndim}'
+    if ndim != 2:
+        raise RuntimeError()
+
+    if np.count_nonzero(image) == 0:
+        warn(
+            "Input image is entirely zero, no valid convex hull. "
+            "Returning empty image",
+            UserWarning,
+        )
+        return np.zeros(image.shape, dtype=bool)
+
+    # In 2D, we do an optimisation by choosing only pixels that are
+    # the starting or ending pixel of a row or column.  This vastly
+    # limits the number of coordinates to examine for the virtual hull.
+    image = np.ascontiguousarray(image, dtype=np.uint8)
+
+    im_any = np.any(image, axis=1)
+    x_indices = np.arange(0, image.shape[0])[im_any]
+    y_indices_left = np.argmax(image[im_any], axis=1)
+    y_indices_right = image.shape[1] - 1 - np.argmax(image[im_any][:,::-1], axis=1)
+
+    left = np.stack((x_indices, y_indices_left), axis=-1)
+    right = np.stack((x_indices, y_indices_right), axis=-1)
+
+    coords = np.vstack((left, right))
+    if offset_coordinates:
+        offsets = _offsets_diamond(ndim)
+        coords = (coords[:, np.newaxis, :] + offsets).reshape(-1, ndim)
+    coords = unique_rows(coords)
+
+    # Find the convex hull
+    try:
+        hull = ConvexHull(coords)
+    except QhullError as err:
+        skimage_warn(
+            f"Failed to get convex hull image. "
+            f"Returning empty image, see error message below:\n"
+            f"{err}"
+        )
+        return np.zeros(image.shape, dtype=bool)
+
+    vertices = hull.points[hull.vertices]
+
+    #return vertices
+
+    # If 2D, use fast Cython function to locate convex hull pixels
+    labels = _grid_points_in_poly(
+        np.ascontiguousarray(vertices[:,0], dtype=np.float32),
+        np.ascontiguousarray(vertices[:,1], dtype=np.float32),
+        image.shape[0],
+        image.shape[1],
+        len(vertices),
+    )
+
+    # edge points and vertices are included
+    mask = labels.view(bool)
+
+    return mask
