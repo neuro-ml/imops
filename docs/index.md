@@ -48,7 +48,7 @@ pip install imops[numba]  # additionally install Numba backend
 
 ::: imops.morphology.distance_transform_edt
 
-::: imops.morphology.convex_hull_image_2d
+::: imops.morphology.convex_hull_image
 
 ::: imops.measure.label
 

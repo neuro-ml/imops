@@ -524,7 +524,7 @@ def distance_transform_edt(
     return None
 
 
-def convex_hull_image_2d(image, offset_coordinates=True):
+def convex_hull_image(image, offset_coordinates=True):
     """
     Fast convex hull of an image. Similar to skimage.morphology.convex_hull_image with include_borders=True
 
@@ -545,13 +545,13 @@ def convex_hull_image_2d(image, offset_coordinates=True):
     Examples
     --------
     ```python
-    chull = convex_hull_image_2d(x)
+    chull = convex_hull_image(x)
     ```
     """
 
     ndim = image.ndim
     if ndim != 2:
-        raise RuntimeError(f'Expected image to have ndim=2 got {ndim}')
+        raise RuntimeError(f'convex_hull_image is currently implemented only for 2D arrays, got {ndim}D array')
 
     if np.count_nonzero(image) == 0:
         warn(
