@@ -1,10 +1,9 @@
-#cython: cdivision=True
-#cython: boundscheck=False
-#cython: nonecheck=False
-#cython: wraparound=False
+# cython: cdivision=True
+# cython: boundscheck=False
+# cython: nonecheck=False
+# cython: wraparound=False
 import numpy as np
 
-cimport cython
 cimport numpy as cnp
 from libc.math cimport ceilf, floorf
 
@@ -27,13 +26,12 @@ INT_BOUND_DTYPE = np.dtype([
 def _grid_points_in_poly(float[:] vx, float[:] vy, Py_ssize_t M, Py_ssize_t N, Py_ssize_t nr_verts):
     cdef intBound tmp_int_bound
     cdef Py_ssize_t m, n, i
-    cdef float prev_x, prev_y, curr_x, curr_ys
+    cdef float prev_x, prev_y, curr_x, curr_y
     cdef float tmp_from_x, tmp_from_y, tmp_to_x, tmp_to_y
     cdef float lerp_t, bound_y
     cdef Py_ssize_t x_set, x_start, x_stop
 
-    cdef cnp.ndarray[dtype=cnp.uint8_t, ndim=2, mode="c"] out = \
-         np.zeros((M, N), dtype=np.uint8)
+    cdef cnp.ndarray[dtype=cnp.uint8_t, ndim=2, mode="c"] out = np.zeros((M, N), dtype=np.uint8)
 
     cdef fpBound[:] fpBounds = np.empty(M, dtype=FP_BOUND_DTYPE)
     cdef intBound[:] intBounds = np.empty(M, dtype=INT_BOUND_DTYPE)
@@ -86,7 +84,7 @@ def _grid_points_in_poly(float[:] vx, float[:] vy, Py_ssize_t M, Py_ssize_t N, P
         prev_y = curr_y
 
     # bounds are computed as point interpolation
-    # so bounds must be valid indices for out array 
+    # so bounds must be valid indices for out array
     for m in range(M):
         intBounds[m] = intify(fpBounds[m], 0, N - 1)
 
@@ -104,7 +102,11 @@ def _grid_points_in_poly(float[:] vx, float[:] vy, Py_ssize_t M, Py_ssize_t N, P
 # TODO: maybe use round instead of floorf and ceilf?
 cdef inline intBound intify(fpBound bound, Py_ssize_t min_idx, Py_ssize_t max_idx):
     if bound.assigned:
-        return intBound(lb = max(min_idx, <int>floorf(bound.lb)), rb = min(max_idx, <int>ceilf(bound.rb)), assigned=True)
+        return intBound(
+            lb = max(min_idx, <int>floorf(bound.lb)), 
+            rb = min(max_idx, <int>ceilf(bound.rb)), 
+            assigned=True
+        )
 
     return intBound(lb=0, rb=0, assigned=False)
 
@@ -125,7 +127,7 @@ cdef inline float lerp(float y0, float y1, float t):
     return y0 * (1 - t) + y1 * t
 
 
-cpdef _left_right_bounds(cnp.uint8_t[:,:] image):
+cpdef _left_right_bounds(cnp.uint8_t[:, :] image):
     cdef Py_ssize_t i, j, M = image.shape[0], N = image.shape[1], curr_pos = 0, left, right
     cdef cnp.ndarray[dtype=int, ndim=2, mode="c"] left_right_bounds = np.zeros((2 * M, 2), dtype=np.int32)
     cdef unsigned char found = False
@@ -156,63 +158,63 @@ cpdef _left_right_bounds(cnp.uint8_t[:,:] image):
     return np.ascontiguousarray(left_right_bounds[: 2 * curr_pos, :])
 
 
-cdef inline int set_unique_curr(float* expanded_bounds, int x, int l, int r):
-    if l == r:
+cdef inline int set_unique_curr(float* expanded_bounds, int x, int l_b, int r_b):
+    if l_b == r_b:
         expanded_bounds[0] = x
-        expanded_bounds[1] = l - 0.5
+        expanded_bounds[1] = l_b - 0.5
 
         expanded_bounds[2] = x - 0.5
-        expanded_bounds[3] = l
+        expanded_bounds[3] = l_b
 
         expanded_bounds[4] = x
-        expanded_bounds[5] = l + 0.5
+        expanded_bounds[5] = l_b + 0.5
 
         return 3
-    elif r == l + 1:
+    elif r_b == l_b + 1:
         expanded_bounds[0] = x
-        expanded_bounds[1] = l - 0.5
+        expanded_bounds[1] = l_b - 0.5
 
         expanded_bounds[2] = x - 0.5
-        expanded_bounds[3] = l
+        expanded_bounds[3] = l_b
 
         expanded_bounds[4] = x
-        expanded_bounds[5] = l + 0.5
+        expanded_bounds[5] = l_b + 0.5
 
         expanded_bounds[6] = x - 0.5
-        expanded_bounds[7] = r
+        expanded_bounds[7] = r_b
 
         expanded_bounds[8] = x
-        expanded_bounds[9] = r + 0.5
+        expanded_bounds[9] = r_b + 0.5
 
         return 5
 
     else:
         expanded_bounds[0] = x
-        expanded_bounds[1] = l - 0.5
+        expanded_bounds[1] = l_b - 0.5
 
         expanded_bounds[2] = x - 0.5
-        expanded_bounds[3] = l
+        expanded_bounds[3] = l_b
 
         expanded_bounds[4] = x
-        expanded_bounds[5] = l + 0.5
+        expanded_bounds[5] = l_b + 0.5
 
         expanded_bounds[6] = x
-        expanded_bounds[7] = r - 0.5
+        expanded_bounds[7] = r_b - 0.5
 
         expanded_bounds[8] = x - 0.5
-        expanded_bounds[9] = r
+        expanded_bounds[9] = r_b
 
         expanded_bounds[10] = x
-        expanded_bounds[11] = r + 0.5
+        expanded_bounds[11] = r_b + 0.5
 
         return 6
 
 
-cpdef _offset_unique(int[:,:] left_right_bounds):
+cpdef _offset_unique(int[:, :] left_right_bounds):
     cdef Py_ssize_t N = left_right_bounds.shape[0], i, curr_pos = 0
     cdef cnp.ndarray[dtype=float, ndim=2, mode="c"] expanded_bounds = np.zeros((4 * N, 2), dtype=np.float32)
 
-    cdef int x_l_prev, y_l_prev, x_r_prev, y_r_prev, x_l_curr, y_l_curr, x_r_curr, y_r_curr, shift
+    cdef int x_l_prev, y_l_prev, x_r_prev, y_r_prev, x_l_curr, y_l_curr, x_r_curr, y_r_curr
 
     x_l_prev = left_right_bounds[0, 0]
     y_l_prev = left_right_bounds[0, 1]
@@ -256,6 +258,5 @@ cpdef _offset_unique(int[:,:] left_right_bounds):
         expanded_bounds[curr_pos, 0] = x_l_prev + 0.5
         expanded_bounds[curr_pos, 1] = y_r_prev
         curr_pos += 1
-
 
     return np.ascontiguousarray(expanded_bounds[:curr_pos, :])
