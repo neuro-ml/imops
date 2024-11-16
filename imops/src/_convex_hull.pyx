@@ -103,8 +103,8 @@ def _grid_points_in_poly(float[:] vx, float[:] vy, Py_ssize_t M, Py_ssize_t N, P
 cdef inline intBound intify(fpBound bound, Py_ssize_t min_idx, Py_ssize_t max_idx):
     if bound.assigned:
         return intBound(
-            lb = max(min_idx, <int>floorf(bound.lb)), 
-            rb = min(max_idx, <int>ceilf(bound.rb)), 
+            lb = max(min_idx, <int>floorf(bound.lb)),
+            rb = min(max_idx, <int>ceilf(bound.rb)),
             assigned=True
         )
 
