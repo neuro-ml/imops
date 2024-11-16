@@ -26,7 +26,7 @@ from .src._fast_morphology import (
     _binary_erosion as cython_fast_binary_erosion,
 )
 from .src._morphology import _binary_dilation as cython_binary_dilation, _binary_erosion as cython_binary_erosion
-from .src._convex_hull import _grid_points_in_poly
+from .src._convex_hull import _grid_points_in_poly, _left_right_bounds
 from .utils import morphology_composition_args, normalize_num_threads
 
 
@@ -567,15 +567,8 @@ def convex_hull_image_2d(image, offset_coordinates=True):
     # limits the number of coordinates to examine for the virtual hull.
     image = np.ascontiguousarray(image, dtype=np.uint8)
 
-    im_any = np.any(image, axis=1)
-    x_indices = np.arange(0, image.shape[0])[im_any]
-    y_indices_left = np.argmax(image[im_any], axis=1)
-    y_indices_right = image.shape[1] - 1 - np.argmax(image[im_any][:,::-1], axis=1)
+    coords = _left_right_bounds(image)
 
-    left = np.stack((x_indices, y_indices_left), axis=-1)
-    right = np.stack((x_indices, y_indices_right), axis=-1)
-
-    coords = np.vstack((left, right))
     if offset_coordinates:
         offsets = _offsets_diamond(ndim)
         coords = (coords[:, np.newaxis, :] + offsets).reshape(-1, ndim)
