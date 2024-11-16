@@ -1,4 +1,3 @@
-from itertools import product
 from typing import Callable, Tuple, Union
 from warnings import warn
 

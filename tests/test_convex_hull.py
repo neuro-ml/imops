@@ -4,7 +4,7 @@ from skimage.morphology import convex_hull_image
 from skimage.morphology.convex_hull import _offsets_diamond
 from skimage.util import invert, unique_rows
 
-from imops.morphology import convex_hull_image
+from imops.morphology import convex_hull_image as convex_hull_image_fast
 from imops.src._convex_hull import _left_right_bounds, _offset_unique
 
 
@@ -46,7 +46,7 @@ def test_convex_hull_image():
 
     chull_ref = convex_hull_image(image, offset_coordinates=True, include_borders=True)
 
-    chull = convex_hull_image(image, offset_coordinates=True)
+    chull = convex_hull_image_fast(image, offset_coordinates=True)
 
     assert not (chull < image).any()
     assert not (chull < chull_ref).any()
