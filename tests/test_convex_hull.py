@@ -10,12 +10,12 @@ from imops.src._convex_hull import _left_right_bounds, _offset_unique
 
 def test_bounds():
     image = np.zeros((100, 100), dtype=bool)
-    image[20:70, 20:90] = (np.random.randn(50, 70) > 0.5)
+    image[20:70, 20:90] = np.random.randn(50, 70) > 0.5
 
     im_any = np.any(image, axis=1)
     x_indices = np.arange(0, image.shape[0])[im_any]
     y_indices_left = np.argmax(image[im_any], axis=1)
-    y_indices_right = image.shape[1] - 1 - np.argmax(image[im_any][:,::-1], axis=1)
+    y_indices_right = image.shape[1] - 1 - np.argmax(image[im_any][:, ::-1], axis=1)
     left = np.stack((x_indices, y_indices_left), axis=-1)
     right = np.stack((x_indices, y_indices_right), axis=-1)
     coords_ref = np.vstack((left, right))
@@ -28,7 +28,7 @@ def test_bounds():
 
 def test_offset():
     image = np.zeros((100, 100), dtype=bool)
-    image[20:70, 20:90] = (np.random.randn(50, 70) > 0.5)
+    image[20:70, 20:90] = np.random.randn(50, 70) > 0.5
 
     coords = _left_right_bounds(image)
 

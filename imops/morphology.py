@@ -7,6 +7,7 @@ from edt import edt
 from scipy.ndimage import distance_transform_edt as scipy_distance_transform_edt, generate_binary_structure
 from scipy.ndimage._nd_image import euclidean_feature_transform
 from scipy.spatial import ConvexHull, QhullError
+from skimage._shared.utils import warn as skimage_warn
 from skimage.morphology import (
     binary_closing as scipy_binary_closing,
     binary_dilation as scipy_binary_dilation,
@@ -14,19 +15,18 @@ from skimage.morphology import (
     binary_opening as scipy_binary_opening,
 )
 from skimage.util import unique_rows
-from skimage._shared.utils import warn as skimage_warn
 
 from .backend import BackendLike, Cython, Scipy, resolve_backend
 from .box import add_margin, box_to_shape, mask_to_box, shape_to_box
 from .compat import _ni_support
 from .crop import crop_to_box
 from .pad import restore_crop
+from .src._convex_hull import _grid_points_in_poly, _left_right_bounds, _offset_unique
 from .src._fast_morphology import (
     _binary_dilation as cython_fast_binary_dilation,
     _binary_erosion as cython_fast_binary_erosion,
 )
 from .src._morphology import _binary_dilation as cython_binary_dilation, _binary_erosion as cython_binary_erosion
-from .src._convex_hull import _grid_points_in_poly, _left_right_bounds, _offset_unique
 from .utils import morphology_composition_args, normalize_num_threads
 
 
@@ -534,7 +534,7 @@ def convex_hull_image(image, offset_coordinates=True):
         input image, must be 2D
     offset_coordinates: bool
         If True, a pixel at coordinate, e.g., (4, 7) will be represented by coordinates
-        (3.5, 7), (4.5, 7), (4, 6.5), and (4, 7.5). 
+        (3.5, 7), (4.5, 7), (4, 6.5), and (4, 7.5).
         This adds some “extent” to a pixel when computing the hull.
 
     Returns
@@ -555,8 +555,7 @@ def convex_hull_image(image, offset_coordinates=True):
 
     if np.count_nonzero(image) == 0:
         warn(
-            "Input image is entirely zero, no valid convex hull. "
-            "Returning empty image",
+            "Input image is entirely zero, no valid convex hull. " "Returning empty image",
             UserWarning,
         )
         return np.zeros(image.shape, dtype=bool)
@@ -577,21 +576,17 @@ def convex_hull_image(image, offset_coordinates=True):
     try:
         hull = ConvexHull(coords)
     except QhullError as err:
-        skimage_warn(
-            f"Failed to get convex hull image. "
-            f"Returning empty image, see error message below:\n"
-            f"{err}"
-        )
+        skimage_warn(f"Failed to get convex hull image. " f"Returning empty image, see error message below:\n" f"{err}")
         return np.zeros(image.shape, dtype=bool)
 
     vertices = hull.points[hull.vertices]
 
-    #return vertices
+    # return vertices
 
     # If 2D, use fast Cython function to locate convex hull pixels
     labels = _grid_points_in_poly(
-        np.ascontiguousarray(vertices[:,0], dtype=np.float32),
-        np.ascontiguousarray(vertices[:,1], dtype=np.float32),
+        np.ascontiguousarray(vertices[:, 0], dtype=np.float32),
+        np.ascontiguousarray(vertices[:, 1], dtype=np.float32),
         image.shape[0],
         image.shape[1],
         len(vertices),

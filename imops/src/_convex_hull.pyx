@@ -4,10 +4,10 @@
 #cython: wraparound=False
 import numpy as np
 
+cimport cython
+cimport numpy as cnp
 from libc.math cimport ceilf, floorf
 
-cimport numpy as cnp
-cimport cython
 
 cnp.import_array()
 
