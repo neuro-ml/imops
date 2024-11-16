@@ -554,7 +554,7 @@ def convex_hull_image(image, offset_coordinates=True):
 
     if np.count_nonzero(image) == 0:
         warn(
-            "Input image is entirely zero, no valid convex hull. " "Returning empty image",
+            'Input image is entirely zero, no valid convex hull. ' 'Returning empty image',
             UserWarning,
         )
         return np.zeros(image.shape, dtype=bool)
@@ -575,7 +575,7 @@ def convex_hull_image(image, offset_coordinates=True):
     try:
         hull = ConvexHull(coords)
     except QhullError as err:
-        skimage_warn(f"Failed to get convex hull image. " f"Returning empty image, see error message below:\n" f"{err}")
+        skimage_warn(f'Failed to get convex hull image. ' f'Returning empty image, see error message below:\n' f'{err}')
         return np.zeros(image.shape, dtype=bool)
 
     vertices = hull.points[hull.vertices]
