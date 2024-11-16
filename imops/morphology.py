@@ -550,9 +550,8 @@ def convex_hull_image_2d(image, offset_coordinates=True):
     """
 
     ndim = image.ndim
-    assert ndim == 2, f'Expected image to have ndim=2 got {ndim}'
     if ndim != 2:
-        raise RuntimeError()
+        raise RuntimeError(f'Expected image to have ndim=2 got {ndim}')
 
     if np.count_nonzero(image) == 0:
         warn(
