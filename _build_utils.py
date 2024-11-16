@@ -63,7 +63,7 @@ def get_ext_modules():
         '/O3' if on_windows else '-O3',
     ]  # FIXME: account for higher gcc versions
 
-    modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom']
+    modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom', 'convex_hull']
     modules_to_link_against_numpy_core_math_lib = ['numeric']
 
     src_dir = Path(__file__).parent / name / 'src'
