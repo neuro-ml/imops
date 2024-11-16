@@ -26,7 +26,7 @@ from .src._fast_morphology import (
     _binary_erosion as cython_fast_binary_erosion,
 )
 from .src._morphology import _binary_dilation as cython_binary_dilation, _binary_erosion as cython_binary_erosion
-from .src._convex_hull import _grid_points_in_poly, _left_right_bounds
+from .src._convex_hull import _grid_points_in_poly, _left_right_bounds, _offset_unique
 from .utils import morphology_composition_args, normalize_num_threads
 
 
@@ -569,9 +569,9 @@ def convex_hull_image_2d(image, offset_coordinates=True):
     coords = _left_right_bounds(image)
 
     if offset_coordinates:
-        offsets = _offsets_diamond(ndim)
-        coords = (coords[:, np.newaxis, :] + offsets).reshape(-1, ndim)
-    coords = unique_rows(coords)
+        coords = _offset_unique(coords)
+    else:
+        coords = unique_rows(coords)
 
     # Find the convex hull
     try:

@@ -154,3 +154,108 @@ cpdef _left_right_bounds(cnp.uint8_t[:,:] image):
             curr_pos += 1
 
     return np.ascontiguousarray(left_right_bounds[: 2 * curr_pos, :])
+
+
+cdef inline int set_unique_curr(float* expanded_bounds, int x, int l, int r):
+    if l == r:
+        expanded_bounds[0] = x
+        expanded_bounds[1] = l - 0.5
+
+        expanded_bounds[2] = x - 0.5
+        expanded_bounds[3] = l
+
+        expanded_bounds[4] = x
+        expanded_bounds[5] = l + 0.5
+
+        return 3
+    elif r == l + 1:
+        expanded_bounds[0] = x
+        expanded_bounds[1] = l - 0.5
+
+        expanded_bounds[2] = x - 0.5
+        expanded_bounds[3] = l
+
+        expanded_bounds[4] = x
+        expanded_bounds[5] = l + 0.5
+
+        expanded_bounds[6] = x - 0.5
+        expanded_bounds[7] = r
+
+        expanded_bounds[8] = x
+        expanded_bounds[9] = r + 0.5
+
+        return 5
+
+    else:
+        expanded_bounds[0] = x
+        expanded_bounds[1] = l - 0.5
+
+        expanded_bounds[2] = x - 0.5
+        expanded_bounds[3] = l
+
+        expanded_bounds[4] = x
+        expanded_bounds[5] = l + 0.5
+
+        expanded_bounds[6] = x
+        expanded_bounds[7] = r - 0.5
+
+        expanded_bounds[8] = x - 0.5
+        expanded_bounds[9] = r
+
+        expanded_bounds[10] = x
+        expanded_bounds[11] = r + 0.5
+
+        return 6
+
+
+cpdef _offset_unique(int[:,:] left_right_bounds):
+    cdef Py_ssize_t N = left_right_bounds.shape[0], i, curr_pos = 0
+    cdef cnp.ndarray[dtype=float, ndim=2, mode="c"] expanded_bounds = np.zeros((4 * N, 2), dtype=np.float32)
+
+    cdef int x_l_prev, y_l_prev, x_r_prev, y_r_prev, x_l_curr, y_l_curr, x_r_curr, y_r_curr, shift
+
+    x_l_prev = left_right_bounds[0, 0]
+    y_l_prev = left_right_bounds[0, 1]
+    x_r_prev = left_right_bounds[1, 0]
+    y_r_prev = left_right_bounds[1, 1]
+
+    curr_pos += set_unique_curr(&expanded_bounds[0, 0], x_l_prev, y_l_prev, y_r_prev)
+
+    for i in range(1, N // 2):
+        x_l_curr = left_right_bounds[2 * i, 0]
+        y_l_curr = left_right_bounds[2 * i, 1]
+        x_r_curr = left_right_bounds[2 * i + 1, 0]
+        y_r_curr = left_right_bounds[2 * i + 1, 1]
+
+        curr_pos += set_unique_curr(&expanded_bounds[curr_pos, 0], x_l_curr, y_l_curr, y_r_curr)
+
+        if x_l_prev + 1 == x_l_curr and (y_l_prev == y_l_curr or y_l_prev == y_r_curr):
+            pass
+        else:
+            expanded_bounds[curr_pos, 0] = x_l_prev + 0.5
+            expanded_bounds[curr_pos, 1] = y_l_prev
+            curr_pos += 1
+
+        if x_l_prev + 1 == x_l_curr and (y_r_prev == y_l_curr or y_r_prev == y_r_curr) and (y_r_prev != y_l_prev):
+            pass
+        else:
+            expanded_bounds[curr_pos, 0] = x_l_prev + 0.5
+            expanded_bounds[curr_pos, 1] = y_r_prev
+            curr_pos += 1
+
+        x_l_prev = x_l_curr
+        y_l_prev = y_l_curr
+        x_r_prev = x_r_curr
+        y_r_prev = y_r_curr
+
+    expanded_bounds[curr_pos, 0] = x_l_prev + 0.5
+    expanded_bounds[curr_pos, 1] = y_l_prev
+    curr_pos += 1
+
+    if y_r_prev != y_l_prev:
+        expanded_bounds[curr_pos, 0] = x_l_prev + 0.5
+        expanded_bounds[curr_pos, 1] = y_r_prev
+        curr_pos += 1
+
+
+    return np.ascontiguousarray(expanded_bounds[:curr_pos, :])
