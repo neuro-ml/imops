@@ -5,7 +5,7 @@ import numpy as np
 from edt import edt
 from scipy.ndimage import distance_transform_edt as scipy_distance_transform_edt, generate_binary_structure
 from scipy.ndimage._nd_image import euclidean_feature_transform
-from scipy.spatial import ConvexHull, QhullError
+from scipy.spatial import ConvexHull
 
 
 try:
