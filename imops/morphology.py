@@ -6,6 +6,13 @@ from edt import edt
 from scipy.ndimage import distance_transform_edt as scipy_distance_transform_edt, generate_binary_structure
 from scipy.ndimage._nd_image import euclidean_feature_transform
 from scipy.spatial import ConvexHull, QhullError
+
+
+try:
+    from scipy.spatial import QhullError
+except ImportError:
+    from scipy.spatial.qhull import QhullError  # Old scipy has another structure
+
 from skimage.morphology import (
     binary_closing as scipy_binary_closing,
     binary_dilation as scipy_binary_dilation,
