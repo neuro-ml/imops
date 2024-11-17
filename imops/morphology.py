@@ -6,7 +6,6 @@ from edt import edt
 from scipy.ndimage import distance_transform_edt as scipy_distance_transform_edt, generate_binary_structure
 from scipy.ndimage._nd_image import euclidean_feature_transform
 from scipy.spatial import ConvexHull, QhullError
-from skimage._shared.utils import warn as skimage_warn
 from skimage.morphology import (
     binary_closing as scipy_binary_closing,
     binary_dilation as scipy_binary_dilation,
@@ -575,7 +574,7 @@ def convex_hull_image(image, offset_coordinates=True):
     try:
         hull = ConvexHull(coords)
     except QhullError as err:
-        skimage_warn(f'Failed to get convex hull image. ' f'Returning empty image, see error message below:\n' f'{err}')
+        warn(f'Failed to get convex hull image. ' f'Returning empty image, see error message below: \n' f'{err}')
         return np.zeros(image.shape, dtype=bool)
 
     vertices = hull.points[hull.vertices]
