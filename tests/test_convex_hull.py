@@ -44,7 +44,10 @@ def test_offset():
 def test_convex_hull_image():
     image = invert(data.horse())
 
-    chull_ref = convex_hull_image(image, offset_coordinates=True, include_borders=True)
+    try:
+        chull_ref = convex_hull_image(image, offset_coordinates=True, include_borders=True)
+    except TypeError:
+        chull_ref = convex_hull_image(image, offset_coordinates=True)
 
     chull = convex_hull_image_fast(image, offset_coordinates=True)
 
