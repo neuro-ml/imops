@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from skimage import data
 from skimage.morphology import convex_hull_image
 from skimage.morphology.convex_hull import _offsets_diamond
@@ -60,13 +61,26 @@ def test_convex_hull_image(offset_coordinates):
     assert not (chull < chull_ref).any()
 
 
-def test_convex_hull_image_cornercases(offset_coordinates):
+def test_convex_hull_image_non2d(offset_coordinates):
     image = np.zeros((3, 3, 3), dtype=bool)
 
     with pytest.raises(RuntimeError):
         chull = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
 
+
+def test_convex_hull_image_empty(offset_coordinates):
     image = np.zeros((10, 10), dtype=bool)
+
+    with pytest.warns(UserWarning):
+        chull = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
+
+    assert (chull == np.zeros_like(chull)).all()
+
+
+def test_convex_hull_image_qhullsrc_issues():
+    image = np.zeros((10, 10), dtype=bool)
+    image[1, 1] = True
+    image[-2, -2] = True
 
     with pytest.warns(UserWarning):
         chull = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
