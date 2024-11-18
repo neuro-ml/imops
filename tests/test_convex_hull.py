@@ -8,6 +8,11 @@ from imops.morphology import convex_hull_image as convex_hull_image_fast
 from imops.src._convex_hull import _left_right_bounds, _offset_unique
 
 
+@pytest.fixture(params=[False, True])
+def offset_coordinates(request):
+    return request.param
+
+
 def test_bounds():
     image = np.zeros((100, 100), dtype=bool)
     image[20:70, 20:90] = np.random.randn(50, 70) > 0.5
@@ -41,15 +46,29 @@ def test_offset():
     assert len(coords_ref) == len(unique_rows(np.concatenate((coords, coords_ref), 0)))
 
 
-def test_convex_hull_image():
+def test_convex_hull_image(offset_coordinates):
     image = invert(data.horse())
 
     try:
-        chull_ref = convex_hull_image(image, offset_coordinates=True, include_borders=True)
+        chull_ref = convex_hull_image(image, offset_coordinates=offset_coordinates, include_borders=True)
     except TypeError:
-        chull_ref = convex_hull_image(image, offset_coordinates=True)
+        chull_ref = convex_hull_image(image, offset_coordinates=offset_coordinates)
 
-    chull = convex_hull_image_fast(image, offset_coordinates=True)
+    chull = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
 
     assert not (chull < image).any()
     assert not (chull < chull_ref).any()
+
+
+def test_convex_hull_image_cornercases(offset_coordinates):
+    image = np.zeros((3, 3, 3), dtype=bool)
+
+    with pytest.raises(RuntimeError):
+        chull = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
+
+    image = np.zeros((10, 10), dtype=bool)
+
+    with pytest.warns(UserWarning):
+        chull = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
+
+    assert (chull == np.zeros_like(chull)).all()
