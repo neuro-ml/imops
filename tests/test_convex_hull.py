@@ -83,6 +83,6 @@ def test_convex_hull_image_qhullsrc_issues():
     image[-2, -2] = True
 
     with pytest.warns(UserWarning):
-        chull = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
+        chull = convex_hull_image_fast(image, offset_coordinates=False)
 
     assert (chull == np.zeros_like(chull)).all()
