@@ -65,7 +65,7 @@ def test_convex_hull_image_non2d(offset_coordinates):
     image = np.zeros((3, 3, 3), dtype=bool)
 
     with pytest.raises(RuntimeError):
-        chull = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
+        _ = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
 
 
 def test_convex_hull_image_empty(offset_coordinates):
