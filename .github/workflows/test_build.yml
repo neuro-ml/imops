@@ -32,6 +32,9 @@ jobs:
           ls /usr/local/bin/g++*
           gcc --version
           g++ --version
+          export PATH="/usr/local/opt/llvm/bin:$PATH"
+          export CC="/usr/local/opt/llvm/bin/clang"
+          export CXX="/usr/local/opt/llvm/bin/clang++"
       - name: Install g++-11 for ubuntu
         if: matrix.os == 'ubuntu-22.04'
         id: install_cc
