@@ -9,7 +9,7 @@ jobs:
   build_wheels:
     strategy:
       matrix:
-        os: [ubuntu-22.04, windows-2019, macOS-13 ]
+        os: [ubuntu-22.04, windows-2019, macOS-12 ]
 
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -22,7 +22,7 @@ jobs:
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.17.0
       - name: Install gcc for mac
-        if: matrix.os == 'macOS-13'
+        if: matrix.os == 'macOS-12'
         run: |
           brew install llvm libomp
           echo $PATH
