@@ -24,14 +24,7 @@ jobs:
       - name: Install gcc for mac
         if: matrix.os == 'macOS-12'
         run: |
-          brew install llvm libomp
-          echo $PATH
-          ln -sf /usr/local/bin/gcc-11 /usr/local/bin/gcc
-          ln -sf /usr/local/bin/g++-11 /usr/local/bin/g++
-          ls /usr/local/bin/gcc*
-          ls /usr/local/bin/g++*
-          gcc --version
-          g++ --version
+          brew install llvm@19.1.0
       - name: Install g++-11 for ubuntu
         if: matrix.os == 'ubuntu-22.04'
         id: install_cc
@@ -53,7 +46,7 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_ENVIRONMENT_MACOS: >
-            PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="$LDFLAGS -Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp" CPPFLAGS="$CPPFLAGS -Xpreprocessor -fopenmp" CFLAGS="$CFLAGS -I/usr/local/opt/libomp/include" CXXFLAGS="$CXXFLAGS -I/usr/local/opt/libomp/include"
+            CC="/usr/local/Cellar/llvm/19.1.0/bin/clang" CXX="/usr/local/Cellar/llvm/19.1.0/bin/clang++"
           CIBW_BUILD: cp37-* cp39-* cp312-*
           CIBW_SKIP: "*manylinux_x86_64"
           CIBW_BEFORE_BUILD_LINUX: 'if [ $(python -c "import sys; print(sys.version_info[1])") -ge 9 ]; then python -m pip install "numpy<3.0.0" --config-settings=setup-args="-Dallow-noblas=true"; fi'
