@@ -529,7 +529,7 @@ def distance_transform_edt(
     return None
 
 
-def convex_hull_image(image, offset_coordinates=True):
+def convex_hull_image(image: np.ndarray, offset_coordinates: bool = True) -> np.ndarray:
     """
     Fast convex hull of an image. Similar to skimage.morphology.convex_hull_image with include_borders=True
 
@@ -560,7 +560,7 @@ def convex_hull_image(image, offset_coordinates=True):
 
     if np.count_nonzero(image) == 0:
         warn(
-            'Input image is entirely zero, no valid convex hull. ' 'Returning empty image',
+            'Input image is entirely zero, no valid convex hull. Returning empty image',
             UserWarning,
         )
         return np.zeros(image.shape, dtype=bool)
