@@ -169,7 +169,9 @@ def morphology_composition_args(f, g) -> Callable:
     return wrapper
 
 
-def build_slices(start: Sequence[int], stop: Sequence[int] = None, step: Sequence[int] = None) -> Tuple[slice, ...]:
+def build_slices(
+    start: Sequence[int], stop: Optional[Sequence[int]] = None, step: Optional[Sequence[int]] = None
+) -> Tuple[slice, ...]:
     """
     Returns a tuple of slices built from `start` and `stop` with `step`.
 

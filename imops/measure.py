@@ -1,6 +1,6 @@
 from collections import namedtuple
 from platform import python_version
-from typing import List, NamedTuple, Sequence, Tuple, Union
+from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from warnings import warn
 
 import numpy as np
@@ -32,12 +32,12 @@ _SKIMAGE2CC3D = {
 # TODO: Make it work and test on immutable arrays as soon as `cc3d` package is fixed
 def label(
     label_image: np.ndarray,
-    background: int = None,
-    connectivity: int = None,
+    background: Optional[int] = None,
+    connectivity: Optional[int] = None,
     return_num: bool = False,
     return_labels: bool = False,
     return_sizes: bool = False,
-    dtype: type = None,
+    dtype: Optional[type] = None,
 ) -> Union[np.ndarray, NamedTuple]:
     """
     Fast version of `skimage.measure.label` which optionally returns number of connected components, labels and sizes.
@@ -139,8 +139,8 @@ def label(
 
 def center_of_mass(
     array: np.ndarray,
-    labels: np.ndarray = None,
-    index: Union[int, Sequence[int]] = None,
+    labels: Union[np.ndarray, None] = None,
+    index: Union[int, Sequence[int], None] = None,
     num_threads: int = -1,
     backend: BackendLike = None,
 ) -> Union[Tuple[float, ...], List[Tuple[float, ...]]]:

@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 from warnings import warn
 
 import numpy as np
@@ -32,8 +32,8 @@ def morphology_op_wrapper(
 ) -> Callable:
     def wrapped(
         image: np.ndarray,
-        footprint: np.ndarray = None,
-        output: np.ndarray = None,
+        footprint: Optional[np.ndarray] = None,
+        output: Optional[np.ndarray] = None,
         boxed: bool = False,
         num_threads: int = -1,
         backend: BackendLike = None,
@@ -163,8 +163,8 @@ _binary_dilation = morphology_op_wrapper(
 
 def binary_dilation(
     image: np.ndarray,
-    footprint: np.ndarray = None,
-    output: np.ndarray = None,
+    footprint: Optional[np.ndarray] = None,
+    output: Optional[np.ndarray] = None,
     boxed: bool = False,
     num_threads: int = -1,
     backend: BackendLike = None,
@@ -217,8 +217,8 @@ _binary_erosion = morphology_op_wrapper(
 
 def binary_erosion(
     image: np.ndarray,
-    footprint: np.ndarray = None,
-    output: np.ndarray = None,
+    footprint: Optional[np.ndarray] = None,
+    output: Optional[np.ndarray] = None,
     boxed: bool = False,
     num_threads: int = -1,
     backend: BackendLike = None,
@@ -271,8 +271,8 @@ _binary_closing = morphology_op_wrapper(
 
 def binary_closing(
     image: np.ndarray,
-    footprint: np.ndarray = None,
-    output: np.ndarray = None,
+    footprint: Optional[np.ndarray] = None,
+    output: Optional[np.ndarray] = None,
     boxed: bool = False,
     num_threads: int = -1,
     backend: BackendLike = None,
@@ -326,8 +326,8 @@ _binary_opening = morphology_op_wrapper(
 
 def binary_opening(
     image: np.ndarray,
-    footprint: np.ndarray = None,
-    output: np.ndarray = None,
+    footprint: Optional[np.ndarray] = None,
+    output: Optional[np.ndarray] = None,
     boxed: bool = False,
     num_threads: int = -1,
     backend: BackendLike = None,
@@ -371,7 +371,7 @@ def binary_opening(
 
 def distance_transform_edt(
     image: np.ndarray,
-    sampling: Tuple[float] = None,
+    sampling: Optional[Tuple[float]] = None,
     return_distances: bool = True,
     return_indices: bool = False,
     num_threads: int = -1,
