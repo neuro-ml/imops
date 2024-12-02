@@ -57,14 +57,16 @@ def test_convex_hull_image(offset_coordinates):
 
     chull = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
 
-    assert not (chull < image).any()
-    assert not (chull < chull_ref).any()
+    assert (chull >= image).all()
+    assert (chull >= chull_ref).all()
+
+    assert ((chull > chull_ref).sum() / chull_ref.sum()) < 1e-2
 
 
 def test_convex_hull_image_non2d(offset_coordinates):
     image = np.zeros((3, 3, 3), dtype=bool)
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         _ = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
 
 
