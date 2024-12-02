@@ -1,4 +1,5 @@
 from platform import python_version
+from typing import Optional
 
 import numpy as np
 from scipy.spatial import KDTree
@@ -47,9 +48,9 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
     def __init__(
         self,
         points: np.ndarray,
-        values: np.ndarray = None,
+        values: Optional[np.ndarray] = None,
         num_threads: int = 1,
-        triangles: np.ndarray = None,
+        triangles: Optional[np.ndarray] = None,
         **kwargs,
     ):
         if triangles is not None:
@@ -77,7 +78,7 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         # FIXME: add backend dispatch
         self.num_threads = normalize_num_threads(num_threads, Cython(), warn_stacklevel=3)
 
-    def __call__(self, points: np.ndarray, values: np.ndarray = None, fill_value: float = 0.0) -> np.ndarray:
+    def __call__(self, points: np.ndarray, values: Optional[np.ndarray] = None, fill_value: float = 0.0) -> np.ndarray:
         """
         Evaluate the interpolant
 

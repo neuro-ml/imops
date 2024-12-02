@@ -23,13 +23,14 @@ with open(root / 'README.md', encoding='utf-8') as file:
     long_description = file.read()
 version = runpy.run_path(root / name / '__version__.py')['__version__']
 
-scope = {'__file__': __file__}
-exec((root / '_build_utils.py').read_text(), scope)
+build_utils = root / name / '_build_utils.py'
+scope = {'__file__': str(build_utils)}
+exec(build_utils.read_text(), scope)
 ext_modules = scope['get_ext_modules']()
 
 setup(
     name=name,
-    packages=find_packages(include=(name,)),
+    packages=find_packages(include=(name,), exclude=('tests', 'tests.*')),
     include_package_data=True,
     version=version,
     description='Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines',
@@ -51,8 +52,8 @@ setup(
     extras_require={'numba': ['numba'], 'all': ['numba']},
     setup_requires=[
         'setuptools<69.0.0',
-        'Cython>=3.0.0,<4.0.0',
         'numpy<3.0.0',
+        'Cython>=3.0.0,<4.0.0',
         'pybind11',
     ],
     ext_modules=ext_modules,

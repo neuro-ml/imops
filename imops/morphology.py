@@ -1,18 +1,10 @@
-from typing import Callable, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 from warnings import warn
 
 import numpy as np
 from edt import edt
 from scipy.ndimage import distance_transform_edt as scipy_distance_transform_edt, generate_binary_structure
-from scipy.ndimage._nd_image import euclidean_feature_transform
 from scipy.spatial import ConvexHull
-
-
-try:
-    from scipy.spatial import QhullError
-except ImportError:
-    from scipy.spatial.qhull import QhullError  # Old scipy has another structure
-
 from skimage.morphology import (
     binary_closing as scipy_binary_closing,
     binary_dilation as scipy_binary_dilation,
@@ -23,7 +15,7 @@ from skimage.util import unique_rows
 
 from .backend import BackendLike, Cython, Scipy, resolve_backend
 from .box import add_margin, box_to_shape, mask_to_box, shape_to_box
-from .compat import _ni_support
+from .compat import QhullError, euclidean_feature_transform, normalize_sequence
 from .crop import crop_to_box
 from .pad import restore_crop
 from .src._convex_hull import _grid_points_in_poly, _left_right_bounds, _offset_unique
@@ -40,8 +32,8 @@ def morphology_op_wrapper(
 ) -> Callable:
     def wrapped(
         image: np.ndarray,
-        footprint: np.ndarray = None,
-        output: np.ndarray = None,
+        footprint: Optional[np.ndarray] = None,
+        output: Optional[np.ndarray] = None,
         boxed: bool = False,
         num_threads: int = -1,
         backend: BackendLike = None,
@@ -171,8 +163,8 @@ _binary_dilation = morphology_op_wrapper(
 
 def binary_dilation(
     image: np.ndarray,
-    footprint: np.ndarray = None,
-    output: np.ndarray = None,
+    footprint: Optional[np.ndarray] = None,
+    output: Optional[np.ndarray] = None,
     boxed: bool = False,
     num_threads: int = -1,
     backend: BackendLike = None,
@@ -225,8 +217,8 @@ _binary_erosion = morphology_op_wrapper(
 
 def binary_erosion(
     image: np.ndarray,
-    footprint: np.ndarray = None,
-    output: np.ndarray = None,
+    footprint: Optional[np.ndarray] = None,
+    output: Optional[np.ndarray] = None,
     boxed: bool = False,
     num_threads: int = -1,
     backend: BackendLike = None,
@@ -279,8 +271,8 @@ _binary_closing = morphology_op_wrapper(
 
 def binary_closing(
     image: np.ndarray,
-    footprint: np.ndarray = None,
-    output: np.ndarray = None,
+    footprint: Optional[np.ndarray] = None,
+    output: Optional[np.ndarray] = None,
     boxed: bool = False,
     num_threads: int = -1,
     backend: BackendLike = None,
@@ -334,8 +326,8 @@ _binary_opening = morphology_op_wrapper(
 
 def binary_opening(
     image: np.ndarray,
-    footprint: np.ndarray = None,
-    output: np.ndarray = None,
+    footprint: Optional[np.ndarray] = None,
+    output: Optional[np.ndarray] = None,
     boxed: bool = False,
     num_threads: int = -1,
     backend: BackendLike = None,
@@ -379,7 +371,7 @@ def binary_opening(
 
 def distance_transform_edt(
     image: np.ndarray,
-    sampling: Tuple[float] = None,
+    sampling: Optional[Tuple[float]] = None,
     return_distances: bool = True,
     return_indices: bool = False,
     num_threads: int = -1,
@@ -499,7 +491,7 @@ def distance_transform_edt(
     if image.dtype != bool:
         image = np.atleast_1d(np.where(image, 1, 0))
     if sampling is not None:
-        sampling = _ni_support._normalize_sequence(sampling, image.ndim)
+        sampling = normalize_sequence(sampling, image.ndim)
         sampling = np.asarray(sampling, dtype=np.float64)
         if not sampling.flags.contiguous:
             sampling = sampling.copy()
@@ -529,7 +521,7 @@ def distance_transform_edt(
     return None
 
 
-def convex_hull_image(image, offset_coordinates=True):
+def convex_hull_image(image: np.ndarray, offset_coordinates: bool = True) -> np.ndarray:
     """
     Fast convex hull of an image. Similar to skimage.morphology.convex_hull_image with include_borders=True
 
@@ -560,7 +552,7 @@ def convex_hull_image(image, offset_coordinates=True):
 
     if np.count_nonzero(image) == 0:
         warn(
-            'Input image is entirely zero, no valid convex hull. ' 'Returning empty image',
+            'Input image is entirely zero, no valid convex hull. Returning empty image',
             UserWarning,
         )
         return np.zeros(image.shape, dtype=bool)

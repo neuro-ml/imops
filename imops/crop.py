@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 
 from .backend import BackendLike
@@ -6,7 +8,9 @@ from .pad import pad
 from .utils import AxesLike, AxesParams, assert_subdtype, broadcast_axis, fill_by_indices
 
 
-def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: AxesParams = 0.5) -> np.ndarray:
+def crop_to_shape(
+    x: np.ndarray, shape: AxesLike, axis: Optional[AxesLike] = None, ratio: AxesParams = 0.5
+) -> np.ndarray:
     """
     Crop `x` to match `shape` along `axis`.
 
@@ -57,8 +61,8 @@ def crop_to_shape(x: np.ndarray, shape: AxesLike, axis: AxesLike = None, ratio: 
 def crop_to_box(
     x: np.ndarray,
     box: np.ndarray,
-    axis: AxesLike = None,
-    padding_values: AxesParams = None,
+    axis: Optional[AxesLike] = None,
+    padding_values: Optional[AxesParams] = None,
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
 ) -> np.ndarray:

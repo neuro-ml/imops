@@ -1,4 +1,5 @@
 import os
+import platform
 from contextlib import contextmanager
 from itertools import permutations
 from typing import Callable, Optional, Sequence, Tuple, Union
@@ -53,7 +54,7 @@ def normalize_num_threads(num_threads: int, backend: Backend, warn_stacklevel: i
     env_num_threads = os.environ.get(env_num_threads_var_name, '').strip()
     env_num_threads = int(env_num_threads) if env_num_threads else None
     # TODO: maybe let user set the absolute maximum number of threads?
-    num_available_cpus = len(os.sched_getaffinity(0))
+    num_available_cpus = os.cpu_count() if platform.system() == 'Darwin' else len(os.sched_getaffinity(0))
 
     max_num_threads = min(filter(bool, [IMOPS_NUM_THREADS, env_num_threads, num_available_cpus]))
 
@@ -168,7 +169,9 @@ def morphology_composition_args(f, g) -> Callable:
     return wrapper
 
 
-def build_slices(start: Sequence[int], stop: Sequence[int] = None, step: Sequence[int] = None) -> Tuple[slice, ...]:
+def build_slices(
+    start: Sequence[int], stop: Optional[Sequence[int]] = None, step: Optional[Sequence[int]] = None
+) -> Tuple[slice, ...]:
     """
     Returns a tuple of slices built from `start` and `stop` with `step`.
 
