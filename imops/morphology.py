@@ -556,7 +556,7 @@ def convex_hull_image(image, offset_coordinates=True):
 
     ndim = image.ndim
     if ndim != 2:
-        raise RuntimeError(f'convex_hull_image is currently implemented only for 2D arrays, got {ndim}D array')
+        raise ValueError(f'convex_hull_image is currently implemented only for 2D arrays, got {ndim}D array')
 
     if np.count_nonzero(image) == 0:
         warn(
