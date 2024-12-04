@@ -63,10 +63,10 @@ def get_ext_modules():
         '/O3' if on_windows else '-O3',
     ]  # FIXME: account for higher gcc versions
 
-    modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom']
+    modules = ['backprojection', 'measure', 'morphology', 'numeric', 'radon', 'zoom', 'convex_hull']
     modules_to_link_against_numpy_core_math_lib = ['numeric']
 
-    src_dir = Path(__file__).parent / name / 'src'
+    src_dir = Path(__file__).parent / 'src'
     for module in modules:
         # Cython extension and .pyx source file names must be the same to compile
         # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu

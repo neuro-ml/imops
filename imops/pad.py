@@ -1,4 +1,4 @@
-from typing import Callable, Sequence, Union
+from typing import Callable, Optional, Sequence, Union
 
 import numpy as np
 
@@ -10,7 +10,7 @@ from .utils import AxesLike, AxesParams, axis_from_dim, broadcast_axis, broadcas
 def pad(
     x: np.ndarray,
     padding: Union[AxesLike, Sequence[Sequence[int]]],
-    axis: AxesLike = None,
+    axis: Optional[AxesLike] = None,
     padding_values: Union[AxesParams, Callable] = 0,
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
@@ -76,7 +76,7 @@ def pad(
 def pad_to_shape(
     x: np.ndarray,
     shape: AxesLike,
-    axis: AxesLike = None,
+    axis: Optional[AxesLike] = None,
     padding_values: Union[AxesParams, Callable] = 0,
     ratio: AxesParams = 0.5,
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
@@ -135,7 +135,7 @@ def pad_to_shape(
 def pad_to_divisible(
     x: np.ndarray,
     divisor: AxesLike,
-    axis: AxesLike = None,
+    axis: Optional[AxesLike] = None,
     padding_values: Union[AxesParams, Callable] = 0,
     ratio: AxesParams = 0.5,
     remainder: AxesLike = 0,

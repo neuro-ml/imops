@@ -1,4 +1,4 @@
-from typing import Sequence, Tuple, Union
+from typing import Optional, Sequence, Tuple, Union
 
 import numpy as np
 from scipy.fftpack import fft, ifft
@@ -15,7 +15,7 @@ from .utils import normalize_num_threads
 
 def radon(
     image: np.ndarray,
-    axes: Tuple[int, int] = None,
+    axes: Optional[Tuple[int, int]] = None,
     theta: Union[int, Sequence[float]] = 180,
     return_fill: bool = False,
     num_threads: int = -1,
@@ -104,8 +104,8 @@ def radon(
 
 def inverse_radon(
     sinogram: np.ndarray,
-    axes: Tuple[int, int] = None,
-    theta: Union[int, Sequence[float]] = None,
+    axes: Optional[Tuple[int, int]] = None,
+    theta: Union[int, Sequence[float], None] = None,
     fill_value: float = 0,
     a: float = 0,
     b: float = 1,

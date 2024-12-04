@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 from warnings import warn
 
 import numpy as np
@@ -71,7 +71,7 @@ class interp1d:
         kind: Union[int, str] = 'linear',
         axis: int = -1,
         copy: bool = True,
-        bounds_error: bool = None,
+        bounds_error: Optional[bool] = None,
         fill_value: Union[float, str] = np.nan,
         assume_sorted: bool = False,
         num_threads: int = -1,

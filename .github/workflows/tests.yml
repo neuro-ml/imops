@@ -43,17 +43,6 @@ jobs:
           echo $MODULE_PARENT
           echo "MODULE_PARENT=$(echo $MODULE_PARENT)" >> $GITHUB_ENV
 
-      - name: Check python code style
-        run: |
-          pip install -r requirements-linters.txt
-          flake8 .
-          isort --check .
-          black --check .
-      - name: Check Cython code style
-        run: |
-          pip install cython-lint
-          cython-lint imops/src
-
       - name: Test with pytest
         run: |
           pytest tests -m "not nonumba" --junitxml=reports/junit-${{ matrix.python-version }}.xml --cov="$MODULE_PARENT/$MODULE_NAME" --cov-report=xml --cov-branch

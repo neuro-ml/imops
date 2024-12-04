@@ -1,4 +1,4 @@
-from typing import Callable, Sequence, Union
+from typing import Callable, Optional, Sequence, Union
 
 import numpy as np
 
@@ -99,7 +99,7 @@ def _choose_cython_copy(ndim: int, is_fp16: bool, fast: bool) -> Callable:
 def pointwise_add(
     nums: np.ndarray,
     summand: Union[np.array, int, float],
-    output: np.ndarray = None,
+    output: Optional[np.ndarray] = None,
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
 ) -> np.ndarray:
@@ -256,7 +256,7 @@ def fill_(
 def full(
     shape: Union[int, Sequence[int]],
     fill_value: Union[np.number, int, float],
-    dtype: Union[type, str] = None,
+    dtype: Union[type, str, None] = None,
     order: str = 'C',
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,
@@ -302,7 +302,7 @@ def full(
 
 def copy(
     nums: np.ndarray,
-    output: np.ndarray = None,
+    output: Optional[np.ndarray] = None,
     order: str = 'K',
     num_threads: int = _NUMERIC_DEFAULT_NUM_THREADS,
     backend: BackendLike = None,

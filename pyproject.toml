@@ -4,17 +4,17 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'imops'
-dynamic = ['version']
+dynamic = ['dependencies', 'version']
 description = 'Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines'
 readme = 'README.md'
 requires-python = '>=3.7'
 license = { file = 'LICENSE' }
 keywords = ['image processing', 'fast', 'ndarray', 'data pipelines']
 authors = [
-    {name = 'maxme1', email = 'max@aumi.ai'},
-    {name = 'vovaf709', email = 'vovaf709@yandex.ru'},
-    {name = 'talgat', email = 'saparov2130@gmail.com'},
-    {name = 'alexeybelkov', email='fpmbelkov@gmail.com'}
+    { name = 'maxme1', email = 'max@aumi.ai' },
+    { name = 'vovaf709', email = 'vovaf709@yandex.ru' },
+    { name = 'talgat', email = 'saparov2130@gmail.com' },
+    { name = 'alexeybelkov', email = 'fpmbelkov@gmail.com' }
 ]
 classifiers = [
     'Development Status :: 5 - Production/Stable',
@@ -51,23 +51,21 @@ line_length = 120
 lines_after_imports = 2
 profile = 'black'
 combine_as_imports = true
-skip_glob=['.asv/*', '.eggs/*']
+skip_glob = ['.asv/*', '.eggs/*']
 
 [tool.cython-lint]
 max-line-length = 120
 
-[tool.setuptools]
-py-modules = ['_build_utils']
-
 [tool.setuptools.cmdclass]
-build_py = "_build_utils.PyprojectBuild"
+build_py = "imops._build_utils.PyprojectBuild"
 
 [tool.setuptools.packages.find]
 include = ['imops']
+exclude = ['tests']
 
 [tool.setuptools.package-data]
 imops = ['py.typed']
 
 [tool.setuptools.dynamic]
-version = {attr = 'imops.__version__.__version__'}
+version = { attr = 'imops.__version__.__version__' }
 dependencies = { file = ['requirements.txt'] }

@@ -1,5 +1,5 @@
 from platform import python_version
-from typing import Callable, Sequence, Union
+from typing import Callable, Optional, Sequence, Union
 from warnings import warn
 
 import numpy as np
@@ -72,7 +72,7 @@ def _choose_numba_zoom(ndim: int, order: int) -> Callable:
 def zoom(
     x: np.ndarray,
     scale_factor: AxesParams,
-    axis: AxesLike = None,
+    axis: Optional[AxesLike] = None,
     order: int = 1,
     fill_value: Union[float, Callable] = 0,
     num_threads: int = -1,
@@ -129,7 +129,7 @@ def zoom(
 def zoom_to_shape(
     x: np.ndarray,
     shape: AxesLike,
-    axis: AxesLike = None,
+    axis: Optional[AxesLike] = None,
     order: int = 1,
     fill_value: Union[float, Callable] = 0,
     num_threads: int = -1,
@@ -191,7 +191,7 @@ def zoom_to_shape(
 def _zoom(
     image: np.ndarray,
     zoom: Sequence[float],
-    output: np.ndarray = None,
+    output: Optional[np.ndarray] = None,
     order: int = 1,
     mode: str = 'constant',
     cval: float = 0.0,
