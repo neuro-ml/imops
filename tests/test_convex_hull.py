@@ -97,9 +97,7 @@ def test_convex_hull_image_non2d(offset_coordinates):
 
 def test_convex_hull_image_empty(offset_coordinates):
     image = np.zeros((10, 10), dtype=bool)
-
-    with pytest.warns(UserWarning):
-        chull = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
+    chull = convex_hull_image_fast(image, offset_coordinates=offset_coordinates)
 
     assert (chull == np.zeros_like(chull)).all()
 

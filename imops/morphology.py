@@ -551,10 +551,6 @@ def convex_hull_image(image: np.ndarray, offset_coordinates: bool = True) -> np.
         raise ValueError(f'convex_hull_image is currently implemented only for 2D arrays, got {ndim}D array')
 
     if np.count_nonzero(image) == 0:
-        warn(
-            'Input image is entirely zero, no valid convex hull. Returning empty image',
-            UserWarning,
-        )
         return np.zeros(image.shape, dtype=bool)
 
     # In 2D, we do an optimisation by choosing only pixels that are
