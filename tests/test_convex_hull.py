@@ -10,7 +10,7 @@ from imops.src._convex_hull import _left_right_bounds, _offset_unique
 
 
 np.random.seed(1337)
-N_STRESS = 250
+N_STRESS = 1000
 
 
 @pytest.fixture(params=[False, True])
@@ -19,36 +19,38 @@ def offset_coordinates(request):
 
 
 def test_bounds():
-    image = np.zeros((100, 100), dtype=bool)
-    image[20:70, 20:90] = np.random.randn(50, 70) > 0.5
+    for _ in range(N_STRESS):
+        image = np.zeros((100, 100), dtype=bool)
+        image[20:70, 20:90] = np.random.randn(50, 70) > 1.5
 
-    im_any = np.any(image, axis=1)
-    x_indices = np.arange(0, image.shape[0])[im_any]
-    y_indices_left = np.argmax(image[im_any], axis=1)
-    y_indices_right = image.shape[1] - 1 - np.argmax(image[im_any][:, ::-1], axis=1)
-    left = np.stack((x_indices, y_indices_left), axis=-1)
-    right = np.stack((x_indices, y_indices_right), axis=-1)
-    coords_ref = np.vstack((left, right))
+        im_any = np.any(image, axis=1)
+        x_indices = np.arange(0, image.shape[0])[im_any]
+        y_indices_left = np.argmax(image[im_any], axis=1)
+        y_indices_right = image.shape[1] - 1 - np.argmax(image[im_any][:, ::-1], axis=1)
+        left = np.stack((x_indices, y_indices_left), axis=-1)
+        right = np.stack((x_indices, y_indices_right), axis=-1)
+        coords_ref = np.vstack((left, right))
 
-    coords = _left_right_bounds(image)
+        coords = _left_right_bounds(image)
 
-    # _left_right_bounds has another order
-    assert len(coords_ref) == len(unique_rows(np.concatenate((coords, coords_ref), 0)))
+        # _left_right_bounds has another order
+        assert len(unique_rows(coords_ref)) == len(unique_rows(np.concatenate((coords, coords_ref), 0)))
 
 
 def test_offset():
-    image = np.zeros((100, 100), dtype=bool)
-    image[20:70, 20:90] = np.random.randn(50, 70) > 0.5
+    for _ in range(N_STRESS):
+        image = np.zeros((100, 100), dtype=bool)
+        image[20:70, 20:90] = np.random.randn(50, 70) > 1.5
 
-    coords = _left_right_bounds(image)
+        coords = _left_right_bounds(image)
 
-    offsets = _offsets_diamond(2)
-    coords_ref = unique_rows((coords[:, None, :] + offsets).reshape(-1, 2))
+        offsets = _offsets_diamond(2)
+        coords_ref = unique_rows((coords[:, None, :] + offsets).reshape(-1, 2))
 
-    coords = _offset_unique(coords)
+        coords = _offset_unique(coords)
 
-    # _left_right_bounds has another order
-    assert len(coords_ref) == len(unique_rows(np.concatenate((coords, coords_ref), 0)))
+        # _left_right_bounds has another order
+        assert len(coords_ref) == len(unique_rows(np.concatenate((coords, coords_ref), 0)))
 
 
 def test_convex_hull_image(offset_coordinates):
@@ -64,14 +66,14 @@ def test_convex_hull_image(offset_coordinates):
     assert (chull >= image).all()
     assert (chull >= chull_ref).all()
 
-    assert ((chull > chull_ref).sum() / chull_ref.sum()) < 2e-2
+    assert ((chull > chull_ref).sum() / chull_ref.sum()) < 5e-3
 
 
 def test_convex_hull_image_random(offset_coordinates):
     for _ in range(N_STRESS):
         image = np.zeros((200, 200), dtype=bool)
 
-        image[30:-30, 20:-40] = np.random.randn(140, 140) > 2
+        image[15:-15, 5:-25] = np.random.randn(170, 170) > 3
 
         try:
             chull_ref = convex_hull_image(image, offset_coordinates=offset_coordinates, include_borders=True)
@@ -83,7 +85,7 @@ def test_convex_hull_image_random(offset_coordinates):
         assert (chull >= image).all()
         assert (chull >= chull_ref).all()
 
-        assert ((chull > chull_ref).sum() / chull_ref.sum()) < 2e-2
+        assert ((chull > chull_ref).sum() / chull_ref.sum()) < 5e-3
 
 
 def test_convex_hull_image_non2d(offset_coordinates):
