@@ -42,7 +42,14 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: Ba
     axis = normalize_axis_index(axis, ndim)
     num_threads = normalize_num_threads(num_threads, backend)
 
-    assert shape[axis] <= 256
+    if shape[axis] > 256:
+        warn(
+            f"Fast argmax is only supported for array.shape[axis] <= 256 "
+            "Falling back to numpy's implementation.",
+            stacklevel=3,
+        )
+
+        return np.argmax(array, axis=axis)
 
     pre_shape = shape[:axis]
     post_shape = shape[axis + 1 :]
