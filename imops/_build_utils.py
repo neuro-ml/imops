@@ -57,7 +57,7 @@ class PyprojectBuild(build_py):
 def get_ext_modules():
     name = 'imops'
     on_windows = platform.system() == 'Windows'
-    args = ['/openmp' if on_windows else '-fopenmp']
+    args = ['/openmp' if on_windows else '-fopenmp', '-march=native']
     cpp_args = [
         '/std:c++20' if on_windows else '-std=c++17',
         '/O3' if on_windows else '-O3',
