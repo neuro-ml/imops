@@ -4,6 +4,11 @@ except ModuleNotFoundError:
     from numpy.core.numeric import normalize_axis_tuple
 
 try:
+    from numpy.lib.array_utils import normalize_axis_index
+except ModuleNotFoundError:
+    from numpy.core.numeric import normalize_axis_index
+
+try:
     from numpy.exceptions import VisibleDeprecationWarning
 except ModuleNotFoundError:
     from numpy import VisibleDeprecationWarning
