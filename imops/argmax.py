@@ -1,9 +1,11 @@
+from warnings import warn
+
 import numpy as np
+
 from .backend import BackendLike, resolve_backend
 from .compat import normalize_axis_index
-from .utils import normalize_num_threads, AxesLike
-
 from .src._argmax import _inner_argmax, _inner_argmax_out, _outer_argmax, _outer_inner_argmax
+from .utils import AxesLike, normalize_num_threads
 
 
 def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: BackendLike = None):
@@ -47,8 +49,7 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: Ba
 
     if shape[axis] > 256:
         warn(
-            f"Fast argmax is only supported for array.shape[axis] <= 256 "
-            "Falling back to numpy's implementation.",
+            "Fast argmax is only supported for array.shape[axis] <= 256 Falling back to numpy's implementation.",
             stacklevel=3,
         )
 
