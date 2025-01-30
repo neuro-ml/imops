@@ -42,6 +42,9 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: Ba
     axis = normalize_axis_index(axis, ndim)
     num_threads = normalize_num_threads(num_threads, backend)
 
+    # don't spawn more than 32 threads or slowdown can be occured
+    num_threads = min(num_threads, 32)
+
     if shape[axis] > 256:
         warn(
             f"Fast argmax is only supported for array.shape[axis] <= 256 "
@@ -58,6 +61,7 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: Ba
     pre_dim = np.prod(pre_shape) if len(pre_shape) else 1
     post_dim = np.prod(post_shape) if len(post_shape) else 1
 
+    # Use simplier implementations if possible
     if axis == ndim - 1:
         array = array.reshape(pre_dim, argmax_dim)
         out = _outer_argmax(array, argmax_dim, pre_dim, num_threads)
@@ -66,6 +70,7 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: Ba
         array = array.reshape(argmax_dim, post_dim)
         out = _inner_argmax(array, argmax_dim, post_dim, num_threads)
 
+    # Don't use super-parallel implementation if possible
     elif pre_dim < num_threads:
         array = array.reshape(pre_dim, argmax_dim, post_dim)
         out = np.empty((pre_dim, post_dim), dtype=np.uint8)
