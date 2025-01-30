@@ -3,7 +3,7 @@ from .backend import BackendLike, resolve_backend
 from .compat import normalize_axis_index
 from .utils import normalize_num_threads, AxesLike
 
-from .src._argmax import _inner_argmax, _outer_argmax, _outer_inner_argmax
+from .src._argmax import _inner_argmax, _inner_argmax_out, _outer_argmax, _outer_inner_argmax
 
 
 def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: BackendLike = None):
@@ -40,7 +40,7 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: Ba
     ndim = array.ndim
     shape = array.shape
     axis = normalize_axis_index(axis, ndim)
-    num_threads = normalize_num_threads(num_threads)
+    num_threads = normalize_num_threads(num_threads, backend)
 
     assert shape[axis] <= 256
 
@@ -58,6 +58,13 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: Ba
     elif axis == 0:
         array = array.reshape(argmax_dim, post_dim)
         out = _inner_argmax(array, argmax_dim, post_dim, num_threads)
+
+    elif pre_dim < num_threads:
+        array = array.reshape(pre_dim, argmax_dim, post_dim)
+        out = np.empty((pre_dim, post_dim), dtype=np.uint8)
+
+        for array_part, out_part in zip(array, out):
+            _inner_argmax_out(array_part, out_part, argmax_dim, post_dim, num_threads)
 
     else:
         array = array.reshape(pre_dim, argmax_dim, post_dim)
