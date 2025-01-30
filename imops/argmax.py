@@ -7,6 +7,32 @@ from .src._argmax import _inner_argmax, _outer_argmax, _outer_inner_argmax
 
 
 def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: BackendLike = None):
+    """
+    Fast parallel implementation of argmax
+
+    Parameters
+    ----------
+    x: np.ndarray
+        n-dimensional array
+    axis: AxesLike
+        axis along which argmax is applied
+    num_threads: int
+        the number of threads to use for computation. Default = the cpu count. If negative value passed
+        cpu count + num_threads + 1 threads will be used
+    backend: BackendLike
+        which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default
+
+    Returns
+    -------
+    out: np.ndarray
+        result of argmax
+
+    Examples
+    --------
+    ```python
+    result = argmax(x, axis=-1)
+    ```
+    """
     backend = resolve_backend(backend, warn_stacklevel=4)
     if backend.name not in ('Cython'):
         raise ValueError(f'Unsupported backend "{backend.name}".')
