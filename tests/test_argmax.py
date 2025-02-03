@@ -43,3 +43,14 @@ def test_argmax_no_pre_dim(argmax_dim, post_dim):
         arr = np.random.randn(argmax_dim, post_dim).astype(np.float32)
 
         assert (argmax(arr, axis=0) == np.argmax(arr, axis=0)).all()
+
+
+def test_argmax_large_dim():
+    arr = np.random.randn(134, 512, 123).astype(np.float32)
+
+    with pytest.warns(UserWarning):
+        out = argmax(arr, axis=1)
+
+    out_base = np.argmax(arr, axis=1)
+
+    assert (out == out_base).all()
