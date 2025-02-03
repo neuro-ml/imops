@@ -25,7 +25,7 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
     Returns
     -------
     out: np.ndarray
-        result of argmax
+        C-contiguous result of argmax
 
     Examples
     --------
@@ -33,21 +33,22 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
     result = argmax(x, axis=-1)
     ```
     """
-    ndim = array.ndim
-    shape = array.shape
-    axis = normalize_axis_index(axis, ndim)
-    num_threads = normalize_num_threads(num_threads, Cython())
-
-    # don't spawn more than 32 threads or slowdown can be occured
-    num_threads = min(num_threads, 32)
-
-    if shape[axis] > 256:
+    if array.shape[axis] > 256:
         warn(
             "Fast argmax is only supported for array.shape[axis] <= 256. Falling back to numpy's implementation.",
             stacklevel=3,
         )
 
         return np.argmax(array, axis=axis)
+
+    if not array.data.c_contiguous:
+        warn("Input array is not C-contiguous, performance can drop a lot.", stacklevel=3)
+
+    ndim = array.ndim
+    shape = array.shape
+    axis = normalize_axis_index(axis, ndim)
+    num_threads = normalize_num_threads(num_threads, Cython())
+    num_threads = min(num_threads, 32)  # don't spawn more than 32 threads or slowdown can be occured
 
     pre_shape = shape[:axis]
     post_shape = shape[axis + 1 :]
