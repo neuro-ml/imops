@@ -19,7 +19,7 @@ def post_dim(request):
     return request.param
 
 
-@pytest.fixture(params=[2, 3, 5, 7, 11, 18])
+@pytest.fixture(params=[1, 2, 3, 5, 7, 11, 18])
 def argmax_dim(request):
     return request.param
 
