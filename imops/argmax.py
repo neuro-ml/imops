@@ -42,7 +42,7 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
         return np.argmax(array, axis=axis)
 
     if not array.data.c_contiguous:
-        warn("Input array is not C-contiguous, performance can drop a lot.", stacklevel=3)
+        warn('Input array is not C-contiguous, performance can drop a lot.', stacklevel=3)
 
     ndim = array.ndim
     shape = array.shape

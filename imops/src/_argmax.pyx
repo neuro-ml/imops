@@ -1,11 +1,15 @@
-# cython: cdivision=True
-# cython: boundscheck=False
-# cython: nonecheck=False
-# cython: wraparound=False
+# cython: boundscheck = False
+# cython: initializedcheck = False
+# cython: wraparound = False
+# cython: cdivision = True
+# cython: nonecheck = False
+# cython: language_level = 3
+
 import numpy as np
 
-from cython.parallel import prange
 cimport numpy as cnp
+
+from cython.parallel import prange
 
 
 cnp.import_array()
