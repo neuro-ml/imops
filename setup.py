@@ -41,7 +41,7 @@ author_email = (
     'vovaf709@yandex.ru',
     'saparov2130@gmail.com',
     'fpmbelkov@gmail.com',
-    'nikitaushakov.nu35@gmail.com'
+    'nikitaushakov.nu35@gmail.com',
 )
 
 setup(
