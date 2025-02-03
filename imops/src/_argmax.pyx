@@ -37,7 +37,13 @@ def _inner_argmax(const float[:, :] x, Py_ssize_t argmax_dim, Py_ssize_t post_di
     return out
 
 
-def _inner_argmax_out(const float[:, :] x, unsigned char[:] out, Py_ssize_t argmax_dim, Py_ssize_t post_dim, Py_ssize_t num_threads):
+def _inner_argmax_out(
+    const float[:, :] x,
+    unsigned char[:] out,
+    Py_ssize_t argmax_dim,
+    Py_ssize_t post_dim,
+    Py_ssize_t num_threads
+):
     cdef float tmp, tmp_max
     cdef unsigned char cmax
     cdef Py_ssize_t i, c
@@ -78,7 +84,13 @@ def _outer_argmax(const float[:, :] x, Py_ssize_t argmax_dim, Py_ssize_t pre_dim
     return out
 
 
-def _outer_inner_argmax(const float[:, :, :] x, Py_ssize_t pre_dim, Py_ssize_t argmax_dim, Py_ssize_t post_dim, Py_ssize_t num_threads):
+def _outer_inner_argmax(
+    const float[:, :, :] x,
+    Py_ssize_t pre_dim,
+    Py_ssize_t argmax_dim,
+    Py_ssize_t post_dim,
+    Py_ssize_t num_threads
+):
     cdef float tmp, tmp_max
     cdef unsigned char cmax
     cdef Py_ssize_t i, c, j
