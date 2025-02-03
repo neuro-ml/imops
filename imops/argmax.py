@@ -2,13 +2,13 @@ from warnings import warn
 
 import numpy as np
 
-from .backend import BackendLike, resolve_backend
+from .backend import Cython
 from .compat import normalize_axis_index
 from .src._argmax import _inner_argmax, _inner_argmax_out, _outer_argmax, _outer_inner_argmax
 from .utils import AxesLike, normalize_num_threads
 
 
-def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: BackendLike = None):
+def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
     """
     Fast parallel implementation of argmax
 
@@ -21,8 +21,6 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: Ba
     num_threads: int
         the number of threads to use for computation. Default = the cpu count. If negative value passed
         cpu count + num_threads + 1 threads will be used
-    backend: BackendLike
-        which backend to use. `numba`, `cython` and `scipy` are available, `cython` is used by default
 
     Returns
     -------
@@ -35,21 +33,17 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1, backend: Ba
     result = argmax(x, axis=-1)
     ```
     """
-    backend = resolve_backend(backend, warn_stacklevel=4)
-    if backend.name not in ('Cython'):
-        raise ValueError(f'Unsupported backend "{backend.name}".')
-
     ndim = array.ndim
     shape = array.shape
     axis = normalize_axis_index(axis, ndim)
-    num_threads = normalize_num_threads(num_threads, backend)
+    num_threads = normalize_num_threads(num_threads, Cython())
 
     # don't spawn more than 32 threads or slowdown can be occured
     num_threads = min(num_threads, 32)
 
     if shape[axis] > 256:
         warn(
-            "Fast argmax is only supported for array.shape[axis] <= 256 Falling back to numpy's implementation.",
+            "Fast argmax is only supported for array.shape[axis] <= 256. Falling back to numpy's implementation.",
             stacklevel=3,
         )
 

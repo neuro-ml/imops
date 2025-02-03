@@ -4,8 +4,9 @@
 # cython: wraparound=False
 import numpy as np
 
-cimport numpy as cnp
 from cython.parallel import prange
+cimport numpy as cnp
+
 
 cnp.import_array()
 
