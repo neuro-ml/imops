@@ -54,3 +54,15 @@ def test_argmax_large_dim():
     out_base = np.argmax(arr, axis=1)
 
     assert (out == out_base).all()
+
+
+def test_argmax_not_c_contiguous():
+    arr = np.random.randn(134, 127, 123).astype(np.float32)
+    arr = np.transpose(arr, (2, 1, 0))
+
+    with pytest.warns(UserWarning):
+        out = argmax(arr, axis=1)
+
+    out_base = np.argmax(arr, axis=1)
+
+    assert (out == out_base).all()
