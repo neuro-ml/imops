@@ -41,6 +41,7 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
 
         return np.argmax(array, axis=axis)
 
+    # TODO: handle this case via permutations + implement the cython src functions with output arg
     if not array.data.c_contiguous:
         warn('Input array is not C-contiguous, performance can drop a lot.', stacklevel=3)
 
