@@ -44,7 +44,8 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
         np.uint32,
     ):
         warn(
-            'Fast argmax is only supported for array.shape[axis] <= 256, dtype=fp32-fp64-int16-int32-int64-uint8-uint16-uint32. '
+            'Fast argmax is only supported for array.shape[axis] <= 256, '
+            'dtype=fp32-fp64-int16-int32-int64-uint8-uint16-uint32. '
             "Falling back to numpy's implementation.",
             stacklevel=3,
         )
