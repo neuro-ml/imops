@@ -42,7 +42,7 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
         return np.argmax(array, axis=axis)
     elif array.dtype not in (np.float32, np.float64, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32):
         warn(
-            "Fast argmax is only supported for float32, float64, int16, int32, int64, uint8, uint16, uint32"
+            'Fast argmax is only supported for float32, float64, int16, int32, int64, uint8, uint16, uint32'
             "Falling back to numpy's implementation.",
             stacklevel=3,
         )
