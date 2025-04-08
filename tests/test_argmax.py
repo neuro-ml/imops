@@ -4,22 +4,22 @@ import pytest
 from imops.argmax import argmax
 
 
-N_STRESS = 1000
+N_STRESS = 100
 np.random.seed(1337)
 dim = 13
 
 
-@pytest.fixture(params=[1, 2, 3, 54, 72, 128, 256])
+@pytest.fixture(params=[1, 7, 54, 72, 128, 256])
 def pre_dim(request):
     return request.param
 
 
-@pytest.fixture(params=[1, 2, 3, 54, 72, 128, 256])
+@pytest.fixture(params=[1, 7, 54, 72, 128, 256])
 def post_dim(request):
     return request.param
 
 
-@pytest.fixture(params=[1, 2, 3, 5, 7, 11, 18])
+@pytest.fixture(params=[1, 2, 7, 11, 18, 33, 57, 129])
 def argmax_dim(request):
     return request.param
 

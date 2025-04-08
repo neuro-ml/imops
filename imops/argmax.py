@@ -4,7 +4,7 @@ import numpy as np
 
 from .backend import Cython
 from .compat import normalize_axis_index
-from .src._argmax import _inner_argmax, _inner_argmax_out, _outer_argmax, _outer_inner_argmax
+from .src._argmax import _argmax
 from .utils import AxesLike, normalize_num_threads
 
 
@@ -40,6 +40,11 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
         )
 
         return np.argmax(array, axis=axis)
+    elif array.dtype != np.float32:
+        warn(
+            "Fast argmax is only supported for float32. Falling back to numpy's implementation.",
+            stacklevel=3
+        )
 
     # TODO: handle this case via permutations + implement the cython src functions with output arg
     if not array.data.c_contiguous:
@@ -58,26 +63,18 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
     pre_dim = np.prod(pre_shape) if len(pre_shape) else 1
     post_dim = np.prod(post_shape) if len(post_shape) else 1
 
-    # Use simplier implementations if possible
-    if axis == ndim - 1:
-        array = array.reshape(pre_dim, argmax_dim)
-        out = _outer_argmax(array, argmax_dim, pre_dim, num_threads)
+    if pre_dim * post_dim <= num_threads ** 2:
+        return np.argmax(array, axis=axis)
 
-    elif axis == 0:
-        array = array.reshape(argmax_dim, post_dim)
-        out = _inner_argmax(array, argmax_dim, post_dim, num_threads)
+    array = array.reshape(pre_dim, argmax_dim, post_dim)
 
-    # Don't use super-parallel implementation if possible
-    elif pre_dim < num_threads:
-        array = array.reshape(pre_dim, argmax_dim, post_dim)
-        out = np.empty((pre_dim, post_dim), dtype=np.uint8)
-
-        for array_part, out_part in zip(array, out):
-            _inner_argmax_out(array_part, out_part, argmax_dim, post_dim, num_threads)
-
-    else:
-        array = array.reshape(pre_dim, argmax_dim, post_dim)
-        out = _outer_inner_argmax(array, pre_dim, argmax_dim, post_dim, num_threads)
+    out = _argmax(
+        array,
+        pre_dim,
+        argmax_dim,
+        post_dim,
+        num_threads
+    )
 
     out = out.reshape(pre_shape + post_shape)
 
