@@ -66,3 +66,14 @@ def test_argmax_not_c_contiguous():
     out_base = np.argmax(arr, axis=1)
 
     assert (out == out_base).all()
+
+
+def test_argmax_not_fp32():
+    arr = np.random.randn(134, 127, 123)
+
+    with pytest.warns(UserWarning):
+        out = argmax(arr, axis=1)
+
+    out_base = np.argmax(arr, axis=1)
+
+    assert (out == out_base).all()
