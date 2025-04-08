@@ -46,6 +46,8 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
             stacklevel=3
         )
 
+        return np.argmax(array, axis=axis)
+
     # TODO: handle this case via permutations + implement the cython src functions with output arg
     if not array.data.c_contiguous:
         warn('Input array is not C-contiguous, performance can drop a lot.', stacklevel=3)
@@ -62,9 +64,6 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
     argmax_dim = shape[axis]
     pre_dim = np.prod(pre_shape) if len(pre_shape) else 1
     post_dim = np.prod(post_shape) if len(post_shape) else 1
-
-    if pre_dim * post_dim <= num_threads ** 2:
-        return np.argmax(array, axis=axis)
 
     array = array.reshape(pre_dim, argmax_dim, post_dim)
 
