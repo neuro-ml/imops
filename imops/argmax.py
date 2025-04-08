@@ -41,10 +41,7 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
 
         return np.argmax(array, axis=axis)
     elif array.dtype != np.float32:
-        warn(
-            "Fast argmax is only supported for float32. Falling back to numpy's implementation.",
-            stacklevel=3
-        )
+        warn("Fast argmax is only supported for float32. Falling back to numpy's implementation.", stacklevel=3)
 
         return np.argmax(array, axis=axis)
 
@@ -67,13 +64,7 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
 
     array = array.reshape(pre_dim, argmax_dim, post_dim)
 
-    out = _argmax(
-        array,
-        pre_dim,
-        argmax_dim,
-        post_dim,
-        num_threads
-    )
+    out = _argmax(array, pre_dim, argmax_dim, post_dim, num_threads)
 
     out = out.reshape(pre_shape + post_shape)
 
