@@ -9,7 +9,7 @@ np.random.seed(1337)
 dim = 13
 
 
-@pytest.fixture(params=[np.float32, np.float64, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32])
+@pytest.fixture(params=[np.float32])
 def dtype(request):
     return request.param
 

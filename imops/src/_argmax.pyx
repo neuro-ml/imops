@@ -14,25 +14,15 @@ from cython.parallel import prange
 
 cnp.import_array()
 
-ctypedef fused NUM:
-    cnp.uint8_t
-    cnp.uint16_t
-    cnp.uint32_t
-    short
-    int
-    long long
-    float
-    double
-
 
 def _argmax(
-    const NUM[:, :, :] x,
+    const float[:, :, :] x,
     Py_ssize_t pre_dim,
     Py_ssize_t argmax_dim,
     Py_ssize_t post_dim,
     Py_ssize_t num_threads
 ):
-    cdef NUM tmp, tmp_max
+    cdef float tmp, tmp_max
     cdef unsigned char cmax
     cdef Py_ssize_t i, c, j
     cdef cnp.ndarray[dtype=cnp.uint8_t, ndim=2, mode="c"] out = np.empty((pre_dim, post_dim), dtype=np.uint8)
