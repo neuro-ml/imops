@@ -71,6 +71,7 @@ setup(
         'numpy<3.0.0',
         'Cython>=3.0.0,<4.0.0',
         'pybind11',
+        'wheel'
     ],
     ext_modules=ext_modules,
     python_requires='>=3.7',
