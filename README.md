@@ -9,7 +9,7 @@ Efficient parallelizable algorithms for multidimensional arrays to speed up your
 - [Documentation](https://neuro-ml.github.io/imops/)
 - [Benchmarks](https://neuro-ml.github.io/imops/benchmarks/)
 
-# Install
+# Install?
 
 ```shell
 pip install imops  # default install with Cython backend
