@@ -4,6 +4,7 @@ on: [ pull_request ]
 
 env:
   MODULE_NAME: imops
+  CIBW_BEFORE_BUILD: "pip install --upgrade pip setuptools wheel numpy<3.0.0"
 
 jobs:
   build_wheels:
