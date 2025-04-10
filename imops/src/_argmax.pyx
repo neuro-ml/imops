@@ -52,24 +52,9 @@ def _argmax(
 
                 out[i, j] = cmax
 
-    elif post_dim < num_threads:
-        for i in prange(0, pre_dim, nogil=True, num_threads=num_threads):
-            for j in range(post_dim):
-                tmp_max = x[i, 0, j]
-                cmax = 0
-
-                for c in range(1, argmax_dim):
-                    tmp = x[i, c, j]
-
-                    if tmp > tmp_max:
-                        cmax = c
-                        tmp_max = tmp
-
-                out[i, j] = cmax
-
     else:
         for i in prange(0, pre_dim, nogil=True, num_threads=num_threads):
-            for j in prange(0, post_dim):
+            for j in range(post_dim):
                 tmp_max = x[i, 0, j]
                 cmax = 0
 
