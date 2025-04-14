@@ -28,6 +28,22 @@ scope = {'__file__': str(build_utils)}
 exec(build_utils.read_text(), scope)
 ext_modules = scope['get_ext_modules']()
 
+author = (
+    'maxme1',
+    'vovaf709',
+    'talgat',
+    'alexeybelkov',
+    'AnihilatorGun',
+)
+
+author_email = (
+    'max@aumi.ai',
+    'vovaf709@yandex.ru',
+    'saparov2130@gmail.com',
+    'fpmbelkov@gmail.com',
+    'nikitaushakov.nu35@gmail.com',
+)
+
 setup(
     name=name,
     packages=find_packages(include=(name,), exclude=('tests', 'tests.*')),
@@ -36,8 +52,8 @@ setup(
     description='Efficient parallelizable algorithms for multidimensional arrays to speed up your data pipelines',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    author='maxme1, vovaf709, talgat, alexeybelkov',
-    author_email='max@aumi.ai, vovaf709@yandex.ru, saparov2130@gmail.com, fpmbelkov@gmail.com',
+    author=', '.join(author),
+    author_email=', '.join(author_email),
     license='MIT',
     url='https://github.com/neuro-ml/imops',
     download_url='https://github.com/neuro-ml/imops/archive/v%s.tar.gz' % version,
@@ -55,6 +71,7 @@ setup(
         'numpy<3.0.0',
         'Cython>=3.0.0,<4.0.0',
         'pybind11',
+        'wheel',
     ],
     ext_modules=ext_modules,
     python_requires='>=3.7',

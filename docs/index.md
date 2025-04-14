@@ -67,3 +67,5 @@ pip install imops[numba]  # additionally install Numba backend
 ::: imops.radon.inverse_radon
 
 ::: imops.utils.isin
+
+::: imops.argmax.argmax
