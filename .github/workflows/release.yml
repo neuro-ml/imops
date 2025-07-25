@@ -32,52 +32,11 @@ jobs:
           if [ "$VERSION" != "$RELEASE" ]; then echo "$VERSION vs $RELEASE" && exit 1; fi
 
   build_wheels:
+    uses: ./.github/workflows/build-wheels.yml
     needs: [ check_version ]
-    strategy:
-      matrix:
-        os: [ ubuntu-22.04, windows-2019, macOS-13 ]
-
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.17.0
-      - name: Install llvm for mac
-        if: matrix.os == 'macOS-13'
-        run: |
-          brew install llvm
-      - name: Install g++-11 for ubuntu
-        if: matrix.os == 'ubuntu-22.04'
-        id: install_cc
-        uses: rlalik/setup-cpp-compiler@master
-        with:
-          compiler: g++-11
-      - name: Check compilers for ubuntu
-        if: matrix.os == 'ubuntu-22.04'
-        run: |
-          ls /usr/bin/gcc*
-          ls /usr/bin/g++*
-          sudo ln -sf /usr/bin/gcc-11 /usr/bin/gcc
-          sudo ln -sf /usr/bin/g++-11 /usr/bin/g++
-          g++ --version
-          gcc --version
-      - name: Build wheels
-        run: |
-          python -m pip install --upgrade pip
-          python -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_ENVIRONMENT_MACOS: >
-            CC="$(brew --prefix llvm)/bin/clang" CXX="$(brew --prefix llvm)/bin/clang++"
-          CIBW_BUILD: cp37-* cp38-* cp39-* cp310-* cp311-* cp312-*
-          CIBW_BEFORE_BUILD_LINUX: 'if [ $(python -c "import sys; print(sys.version_info[1])") -ge 9 ]; then python -m pip install "numpy<3.0.0" --config-settings=setup-args="-Dallow-noblas=true"; fi'
-      - uses: actions/upload-artifact@v3
-        with:
-          path: ./wheelhouse/*.whl
+    with:
+      cibw_build: cp37-* cp38-* cp39-* cp310-* cp311-* cp312-*
+      upload_artifacts: true
 
   build_sdist:
     needs: [ check_version ]
@@ -88,9 +47,9 @@ jobs:
         uses: actions/setup-python@v5
       - name: Build
         run: |
-          pip install build
+          pip install build wheel
           python -m build --sdist
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: dist/*.tar.gz
 
@@ -99,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: artifact
           path: dist
