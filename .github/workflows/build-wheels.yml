@@ -35,8 +35,9 @@ jobs:
       - name: Mock wheels
         if: ${{ inputs.mock }}
         run: |
-          mkdir -p wheelhouse
-          echo "Create mock wheels" > "wheelhouse/mock_wheels_${{ matrix.os }}.whl"
+          New-Item -ItemType Directory -Force -Path wheelhouse | Out-Null
+          "Create mock wheels" | Out-File -Encoding ascii "wheelhouse/mock_wheels_${{ matrix.os }}.whl"
+        shell: pwsh
 
       - name: Set up Python 3.9
         if: ${{ inputs.mock == false }}
@@ -95,4 +96,5 @@ jobs:
 
       - name: Cleanup all local files
         if: ${{ inputs.mock }}
-        run: rm -rf wheelhouse
+        run: Remove-Item -Recurse -Force wheelhouse
+        shell: pwsh
