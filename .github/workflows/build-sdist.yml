@@ -29,13 +29,13 @@ jobs:
           echo "Create mock sdist" > "dist/mock_sdist.tar.gz"
 
       - name: Set up Python 3.9
-        if: ${{ inputs.mock == 'false' }}
+        if: ${{ inputs.mock == false }}
         uses: actions/setup-python@v5
         with:
           python-version: 3.9
 
       - name: Build
-        if: ${{ inputs.mock == 'false' }}
+        if: ${{ inputs.mock == false }}
         run: |
           pip install build wheel
           python -m build --sdist

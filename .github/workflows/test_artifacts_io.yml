@@ -4,13 +4,13 @@ on: [ pull_request ]
 
 jobs:
   sdist_mock:
-    uses: ./.github/build-sdist.yml
+    uses: ./.github/workflows/build-sdist.yml
     with:
       mock: true
       upload_artifacts: true
 
   wheels_mock:
-    uses: ./.github/build-wheels.yml
+    uses: ./.github/workflows/build-wheels.yml
     with:
       cibw_build: ""
       mock: true
