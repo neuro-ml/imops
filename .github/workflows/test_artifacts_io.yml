@@ -28,10 +28,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist
+
+      - name: Show downloaded artifacts
+        run: find dist/
   
       - name: Assert files restored
         run: |
-          test -f dist/mock_sdist.whl
-          test -f dist/mock_wheels_ubuntu-22.04.tar.gz
-          test -f dist/mock_wheels_windows-2022.tar.gz
-          test -f dist/mock_wheels_macOS-13.tar.gz
+          test -f dist/sdist/mock_sdist.whl
+          test -f dist/wheels-ubuntu-22.04/mock_wheels_ubuntu-22.04.tar.gz
+          test -f dist/wheels-windows-2022/mock_wheels_windows-2022.tar.gz
+          test -f dist/wheels-macOS-13/mock_wheels_macOS-13.tar.gz
