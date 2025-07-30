@@ -4,13 +4,13 @@ on: [ pull_request ]
 
 jobs:
   build_sdist:
-    uses: ./.github/workflows/components/build-sdist.yml
+    uses: ./.github/workflows/build-sdist.yml
     with:
       mock: false
       upload_artifacts: false
 
   build_wheels:
-    uses: ./.github/workflows/components/build-wheels.yml
+    uses: ./.github/workflows/build-wheels.yml
     with:
       cibw_build: cp37-* cp39-* cp312-*
       cibw_skip: "*manylinux_x86_64"
