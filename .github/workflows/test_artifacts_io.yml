@@ -1,0 +1,37 @@
+name: Test artifacts IO
+
+on: [ pull_request ]
+
+jobs:
+  sdist_mock:
+    uses: ./.github/components/build-sdist.yml
+    with:
+      mock: true
+      upload_artifacts: true
+
+  wheels_mock:
+    uses: ./.github/components/build-wheels.yml
+    with:
+      cibw_build: ""
+      mock: true
+      upload_artifacts: true
+
+  test_artifacts:
+    needs: [ sdist_mock, wheels_mock ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create dist directory
+        runs: mkdir -p dist
+    
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+  
+      - name: Assert files restored
+        run: |
+          test -f dist/mock_sdist.whl
+          test -f dist/mock_wheels_ubuntu-22.04.tar.gz
+          test -f dist/mock_wheels_windows-2022.tar.gz
+          test -f dist/mock_wheels_macOS-13.tar.gz
