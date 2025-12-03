@@ -10,6 +10,10 @@ on:
         required: false
         type: string
         default: ""
+      mock:
+        required: false
+        type: boolean
+        default: false
       upload_artifacts:
         required: false
         type: boolean
@@ -27,27 +31,38 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Mock wheels
+        if: ${{ inputs.mock }}
+        run: |
+          New-Item -ItemType Directory -Force -Path wheelhouse | Out-Null
+          "Create mock wheels" | Out-File -Encoding ascii "wheelhouse/mock_wheels_${{ matrix.os }}.whl"
+        shell: pwsh
+
+      - name: Set up Python 3.9
+        if: ${{ inputs.mock == false }}
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
       - name: Install cibuildwheel
+        if: ${{ inputs.mock == false }}
         run: python -m pip install cibuildwheel==2.17.0
 
       - name: Install llvm for mac
-        if: matrix.os == 'macOS-13'
+        if: ${{ matrix.os == 'macOS-13' && inputs.mock == false }}
         run: |
           brew install llvm
 
       - name: Install g++-11 for ubuntu
-        if: matrix.os == 'ubuntu-22.04'
+        if: ${{ matrix.os == 'ubuntu-22.04' && inputs.mock == false }}
         id: install_cc
         uses: rlalik/setup-cpp-compiler@master
         with:
           compiler: g++-11
 
       - name: Check compilers for ubuntu
-        if: matrix.os == 'ubuntu-22.04'
+        if: ${{ matrix.os == 'ubuntu-22.04' && inputs.mock == false }}
         run: |
           ls /usr/bin/gcc*
           ls /usr/bin/g++*
@@ -57,6 +72,7 @@ jobs:
           gcc --version
 
       - name: Build wheels
+        if: ${{ inputs.mock == false }}
         run: |
           python -m pip install --upgrade pip
           python -m pip install build wheel
@@ -75,4 +91,10 @@ jobs:
         if: ${{ inputs.upload_artifacts }}
         uses: actions/upload-artifact@v4
         with:
+          name: wheels-${{ matrix.os }}
           path: ./wheelhouse/*.whl
+
+      - name: Cleanup all local files
+        if: ${{ inputs.mock }}
+        run: Remove-Item -Recurse -Force wheelhouse
+        shell: pwsh
