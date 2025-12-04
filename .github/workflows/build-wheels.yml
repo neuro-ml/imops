@@ -10,14 +10,6 @@ on:
         required: false
         type: string
         default: ""
-      mock:
-        required: false
-        type: boolean
-        default: false
-      upload_artifacts:
-        required: false
-        type: boolean
-        default: false
 
 env:
   MODULE_NAME: imops
@@ -88,7 +80,6 @@ jobs:
             fi
 
       - name: Upload wheels
-        if: ${{ inputs.upload_artifacts }}
         uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}
