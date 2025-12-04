@@ -53,7 +53,15 @@ jobs:
         with:
           path: dist
 
+      - name: Flatten dist directory
+        run: |
+          shopt -s globstar
+          mkdir -p flat
+          cp dist/**/* flat/ || true
+          rm -rf dist
+          mv flat dist
+
       - name: Publish to PyPi
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
