@@ -15,13 +15,10 @@ jobs:
     with:
       cibw_build: cp37-* cp39-* cp312-*
       cibw_skip: "*manylinux_x86_64 *musllinux_x86_64"
-      upload_artifacts: true
 
   build_sdist:
     uses: ./.github/workflows/build-sdist.yml
     needs: [ check_version ]
-    with:
-      upload_artifacts: true
 
   publish_testpypi:
     needs: [ build_wheels, build_sdist ]
