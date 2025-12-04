@@ -6,19 +6,14 @@ env:
   MODULE_NAME: imops
 
 jobs:
-  check_version:
-    uses: ./.github/workflows/check-version.yml
-
   build_wheels:
     uses: ./.github/workflows/build-wheels.yml
-    needs: [ check_version ]
     with:
       cibw_build: cp37-* cp39-* cp312-*
       cibw_skip: "*manylinux_x86_64 *musllinux_x86_64"
 
   build_sdist:
     uses: ./.github/workflows/build-sdist.yml
-    needs: [ check_version ]
 
   publish_testpypi:
     needs: [ build_wheels, build_sdist ]
