@@ -1,6 +1,7 @@
 pytest
 pytest-subtests
 pytest-cov
+pytest-xdist
 scikit-image
 numba
 deli

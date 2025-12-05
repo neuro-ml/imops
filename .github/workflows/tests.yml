@@ -45,7 +45,7 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pytest tests -m "not nonumba" --junitxml=reports/junit-${{ matrix.python-version }}.xml --cov="$MODULE_PARENT/$MODULE_NAME" --cov-report=xml --cov-branch
+          pytest tests -n 4 -m "not nonumba" --junitxml=reports/junit-${{ matrix.python-version }}.xml --cov="$MODULE_PARENT/$MODULE_NAME" --cov-report=xml --cov-branch
           pip uninstall numba -y
           pytest tests/test_backend.py -m nonumba
       - name: Generate coverage report
