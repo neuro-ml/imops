@@ -57,14 +57,6 @@ def test_extrapolate_error(backend):
         interp1d(x, y, fill_value='extrapolate', bounds_error=True, backend=backend)
 
 
-def test_numba_num_threads():
-    x = np.array([1.0, 2.0, 3.0])
-    y = np.array([1.0, 2.0, 3.0])
-
-    with pytest.warns(UserWarning):
-        interp1d(x, y, axis=0, fill_value=0, num_threads=2, backend='Numba')(x)
-
-
 def test_extrapolation_exception(backend):
     x = np.array([1.0, 2.0, 3.0])
     x_new = np.array([0.0, 1.0, 2.0])

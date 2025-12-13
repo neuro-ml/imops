@@ -1,6 +1,6 @@
 from .__version__ import __version__
 from .argmax import argmax
-from .backend import Cython, Numba, Scipy, imops_backend, set_backend
+from .backend import Cython, Scipy, imops_backend, set_backend
 from .crop import crop_to_box, crop_to_shape
 from .interp1d import interp1d
 from .measure import label

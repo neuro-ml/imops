@@ -13,24 +13,23 @@ Efficient parallelizable algorithms for multidimensional arrays to speed up your
 
 ```shell
 pip install imops  # default install with Cython backend
-pip install imops[numba]  # additionally install Numba backend
 ```
 
 # How fast is it?
 
 Time comparisons (ms) for Intel(R) Xeon(R) Silver 4114 CPU @ 2.20GHz using 8 threads. All inputs are C-contiguous NumPy arrays. For morphology functions `bool` dtype is used and `float64` for all others.
-| function / backend   |  Scipy()  |  Cython(fast=False)  |  Cython(fast=True)  |  Numba()  |
-|:----------------------:|:-----------:|:----------------------:|:---------------------:|:-----------:|
-| `zoom(..., order=0)` |   2072    |         1114         |         **867**         |   3590    |
-| `zoom(..., order=1)` |   6527    |         596          |         **575**         |   3757    |
-| `interp1d`           |    780    |         149          |         **146**         |    420    |
-| `radon`              |   59711   |         5982         |        **4837**         |      -     |
-| `inverse_radon`      |   52928   |         8254         |        **6535**         |         -  |
-| `binary_dilation`    |   2207    |         310          |         **298**         |        -   |
-| `binary_erosion`     |   2296    |         326          |         **304**         |        -   |
-| `binary_closing`     |   4158    |         544          |         **469**         |        -   |
-| `binary_opening`     |   4410    |         567          |         **522**         |        -   |
-| `center_of_mass`     |   2237    |          **64**          |         **64**          |        -   |
+| function / backend   |  Scipy()  |  Cython(fast=False)  |  Cython(fast=True)  |
+|:----------------------:|:-----------:|:----------------------:|:---------------------:|
+| `zoom(..., order=0)` |   2072    |         1114         |         **867**         |
+| `zoom(..., order=1)` |   6527    |         596          |         **575**         |
+| `interp1d`           |    780    |         149          |         **146**         |
+| `radon`              |   59711   |         5982         |        **4837**         |
+| `inverse_radon`      |   52928   |         8254         |        **6535**         |
+| `binary_dilation`    |   2207    |         310          |         **298**         |
+| `binary_erosion`     |   2296    |         326          |         **304**         |
+| `binary_closing`     |   4158    |         544          |         **469**         |
+| `binary_opening`     |   4410    |         567          |         **522**         |
+| `center_of_mass`     |   2237    |          **64**          |         **64**          |
 
 We use [`airspeed velocity`](https://asv.readthedocs.io/en/stable/) to benchmark our code. For detailed results visit [benchmark page](https://neuro-ml.github.io/imops/benchmarks/).
 
@@ -121,36 +120,33 @@ labeled, num_components = label(x, background=1, return_num=True)
 # Backends
 For all heavy image routines except `label` you can specify which backend to use. Backend can be specified by a string or by an instance of `Backend` class. The latter allows you to customize some backend options:
 ```python
-from imops import Cython, Numba, Scipy, zoom
+from imops import Cython, Scipy, zoom
 
 y = zoom(x, 2, backend='Cython')
 y = zoom(x, 2, backend=Cython(fast=False))  # same as previous
 y = zoom(x, 2, backend=Cython(fast=True))  # -ffast-math compiled cython backend
 y = zoom(x, 2, backend=Scipy())  # use scipy original implementation
-y = zoom(x, 2, backend='Numba')
-y = zoom(x, 2, backend=Numba(parallel=True, nogil=True, cache=True))  # same as previous
 ```
 Also backend can be specified globally or locally:
 ```python
 from imops import imops_backend, set_backend, zoom
 
-set_backend('Numba')  # sets Numba as default backend
+set_backend('Scipy')  # sets Scipy as default backend
 with imops_backend('Cython'):  # sets Cython backend via context manager
     zoom(x, 2)
 ```
-Note that for `Numba` backend setting `num_threads` argument has no effect for now and you should use `NUMBA_NUM_THREADS` environment variable.
 Available backends:
-|         function / backend            | Scipy   | Cython  | Numba   |
-|:-------------------:|:---------:|:---------:|:---------:|
-| `zoom`            | &check; | &check; | &check; |
-| `interp1d`        | &check; | &check; | &check; |
-| `radon`           | &cross; | &check; | &cross; |
-| `inverse_radon`   | &cross; | &check; | &cross; |
-| `binary_dilation` | &check; | &check; | &cross; |
-| `binary_erosion`  | &check; | &check; | &cross; |
-| `binary_closing`  | &check; | &check; | &cross; |
-| `binary_opening`  | &check; | &check; | &cross; |
-| `center_of_mass`  | &check; | &check; | &cross; |
+|         function / backend            | Scipy   | Cython  |
+|:-------------------:|:---------:|:---------:|
+| `zoom`            | &check; | &check; |
+| `interp1d`        | &check; | &check; |
+| `radon`           | &cross; | &check; |
+| `inverse_radon`   | &cross; | &check; |
+| `binary_dilation` | &check; | &check; |
+| `binary_erosion`  | &check; | &check; |
+| `binary_closing`  | &check; | &check; |
+| `binary_opening`  | &check; | &check; |
+| `center_of_mass`  | &check; | &check; |
 
 # Acknowledgements
 

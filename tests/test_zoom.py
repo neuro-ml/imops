@@ -59,13 +59,6 @@ def test_single_threaded_warning(order):
         zoom(inp, 2, order=order, num_threads=2, backend='Scipy')
 
 
-def test_numba_num_threads(order):
-    inp = np.random.randn(32, 32, 32)
-
-    with pytest.warns(UserWarning):
-        zoom(inp, 2, order=order, num_threads=2, backend='Numba')
-
-
 def test_callable_fill_value(backend, order):
     inp = np.random.randn(64, 64, 64)
     scale = np.random.uniform(0.5, 1.5, size=inp.ndim)

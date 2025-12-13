@@ -6,12 +6,11 @@ import numpy as np
 try:
     from imops._configs import zoom_configs
 except ModuleNotFoundError:
-    from imops.backend import Cython, Numba, Scipy
+    from imops.backend import Cython, Scipy
 
     zoom_configs = [
         Scipy(),
         *[Cython(fast) for fast in [False, True]],
-        *[Numba(*flags) for flags in product([False, True], repeat=3)],
     ]
 
 from imops.zoom import zoom

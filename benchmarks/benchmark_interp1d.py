@@ -7,12 +7,11 @@ import numpy as np
 try:
     from imops._configs import interp1d_configs
 except ModuleNotFoundError:
-    from imops.backend import Cython, Numba, Scipy
+    from imops.backend import Cython, Scipy
 
     interp1d_configs = [
         Scipy(),
         *[Cython(fast) for fast in [False, True]],
-        *[Numba(*flags) for flags in product([False, True], repeat=3)],
     ]
 
 from imops.interp1d import interp1d

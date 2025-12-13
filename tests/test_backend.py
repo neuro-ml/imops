@@ -2,13 +2,13 @@ import sys
 
 import pytest
 
-from imops.backend import Backend, Cython, Numba, Scipy, imops_backend, resolve_backend, set_backend
+from imops.backend import Backend, Cython, Scipy, imops_backend, resolve_backend, set_backend
 
 
 def test_resolve():
     assert resolve_backend(None) == Cython()
 
-    for cls in [Numba, Cython, Scipy]:
+    for cls in [Cython, Scipy]:
         assert resolve_backend(cls) == cls()
         assert resolve_backend(cls.__name__) == cls()
 
@@ -18,8 +18,6 @@ def test_resolve():
 
 def test_backend_change():
     assert resolve_backend(None) == Cython()
-    set_backend('Numba')
-    assert resolve_backend(None) == Numba()
     set_backend(Cython(fast=True))
     assert resolve_backend(None) == Cython(fast=True)
     set_backend('Cython')
@@ -34,11 +32,6 @@ def test_backend_change():
 def test_existing_backend():
     with pytest.raises(ValueError):
 
-        class Numba(Backend):
-            pass
-
-    with pytest.raises(ValueError):
-
         class Cython(Backend):
             pass
 
@@ -46,12 +39,6 @@ def test_existing_backend():
 
         class Scipy(Backend):
             pass
-
-
-@pytest.mark.nonumba
-def test_error_without_numba():
-    with pytest.raises(ModuleNotFoundError):
-        Numba()
 
 
 # TODO: come up with more comprehensive tests to check that imops doesn't affect global FPU state

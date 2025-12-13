@@ -59,15 +59,6 @@ def normalize_num_threads(num_threads: int, backend: Backend, warn_stacklevel: i
     max_num_threads = min(filter(bool, [IMOPS_NUM_THREADS, env_num_threads, num_available_cpus]))
 
     if num_threads >= 0:
-        # FIXME
-        if backend.name == 'Numba':
-            warn(
-                'Setting `num_threads` has no effect with "Numba" backend. '
-                'Use `NUMBA_NUM_THREADS` environment variable.',
-                stacklevel=warn_stacklevel,
-            )
-            return num_threads
-
         if num_threads > max_num_threads:
             if max_num_threads == IMOPS_NUM_THREADS:
                 warn(
