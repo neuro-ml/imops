@@ -162,7 +162,7 @@ class interp1d:
             0.0 if extrapolate else self.fill_value,
             extrapolate,
             self.assume_sorted,
-            num_threads
+            num_threads,
         )
 
         out = out.astype(max(self.y.dtype, self.x.dtype, x_new.dtype, key=lambda x: x.type(0).itemsize), copy=False)

@@ -249,10 +249,7 @@ def _zoom(
         c_contiguous_permutaion = get_c_contiguous_permutaion(image)
         if c_contiguous_permutaion is not None:
             out = src_zoom(
-                np.transpose(image, c_contiguous_permutaion),
-                zoom[c_contiguous_permutaion],
-                cval,
-                num_threads
+                np.transpose(image, c_contiguous_permutaion), zoom[c_contiguous_permutaion], cval, num_threads
             )
         else:
             warn("Input array can't be represented as C-contiguous, performance can drop a lot.", stacklevel=3)
