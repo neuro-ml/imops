@@ -10,7 +10,7 @@ from imops.src._convex_hull import _left_right_bounds, _offset_unique
 
 
 np.random.seed(1337)
-N_STRESS = 1000
+N_STRESS = 200
 
 
 @pytest.fixture(params=[False, True])

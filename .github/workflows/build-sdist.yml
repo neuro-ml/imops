@@ -2,15 +2,6 @@ name: build-sdist
 
 on:
   workflow_call:
-    inputs:
-      mock:
-        required: false
-        type: boolean
-        default: false
-      upload_artifacts:
-        required: false
-        type: boolean
-        default: false
 
 env:
   MODULE_NAME: imops
@@ -22,31 +13,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Mock sdist
-        if: ${{ inputs.mock }}
-        run: |
-          mkdir -p dist
-          echo "Create mock sdist" > "dist/mock_sdist.tar.gz"
-
       - name: Set up Python 3.9
-        if: ${{ inputs.mock == false }}
         uses: actions/setup-python@v5
         with:
           python-version: 3.9
 
       - name: Build
-        if: ${{ inputs.mock == false }}
         run: |
           pip install build wheel
           python -m build --sdist
 
       - name: Upload sdist
-        if: ${{ inputs.upload_artifacts }}
         uses: actions/upload-artifact@v4
         with:
           name: sdist
           path: dist/*.tar.gz
-
-      - name: Cleanup all local files
-        if: ${{ inputs.mock }}
-        run: rm -rf dist

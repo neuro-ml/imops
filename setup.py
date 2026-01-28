@@ -65,7 +65,6 @@ setup(
     ],
     classifiers=classifiers,
     install_requires=requirements,
-    extras_require={'numba': ['numba'], 'all': ['numba']},
     setup_requires=[
         'setuptools<69.0.0',
         'numpy<3.0.0',

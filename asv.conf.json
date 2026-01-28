@@ -15,14 +15,12 @@
             "Cython": ["3.0.10"],
             "scipy": [],
             "scikit-image": [],
-            "numba": [],
             "pip+connected-components-3d": [],
             "pip+fastremap": [],
             "pybind11": []
         },
         "env_nobuild": {
-            "OMP_NUM_THREADS": "8",
-            "NUMBA_NUM_THREADS": "8"
+            "OMP_NUM_THREADS": "8"
         }
     },
     "env_dir": ".asv/env",

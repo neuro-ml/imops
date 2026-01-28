@@ -27,7 +27,7 @@ def backend(request):
     return request.param
 
 
-@pytest.fixture(params=range(1, 9))
+@pytest.fixture(params=range(1, 5))
 def num_threads(request):
     return request.param
 

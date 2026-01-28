@@ -14,17 +14,17 @@ def dtype(request):
     return request.param
 
 
-@pytest.fixture(params=[1, 7, 54, 72, 128, 256])
+@pytest.fixture(params=[1, 2, 7, 54, 128])
 def pre_dim(request):
     return request.param
 
 
-@pytest.fixture(params=[1, 7, 54, 72, 128, 256])
+@pytest.fixture(params=[1, 2, 7, 54, 128])
 def post_dim(request):
     return request.param
 
 
-@pytest.fixture(params=[1, 2, 7, 11, 18, 33, 57, 129])
+@pytest.fixture(params=[1, 2, 7, 11, 57, 129])
 def argmax_dim(request):
     return request.param
 

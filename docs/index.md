@@ -6,7 +6,6 @@ Efficient parallelizable algorithms for multidimensional arrays to speed up your
 
 ```shell
 pip install imops  # default install with Cython backend
-pip install imops[numba]  # additionally install Numba backend
 ```
 
 ## Functions

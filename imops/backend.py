@@ -18,7 +18,6 @@ class Backend:
         return type(self).__name__
 
     Cython: 'Cython'
-    Numba: 'Numba'
     Scipy: 'Scipy'
 
 
@@ -64,21 +63,6 @@ def imops_backend(backend: BackendLike):
         set_backend(previous)
 
 
-# implementations
-# TODO: Investigate whether it is safe to use -ffast-math in numba
-@dataclass(frozen=True)
-class Numba(Backend):
-    parallel: bool = True
-    nogil: bool = True
-    cache: bool = True
-
-    def __post_init__(self):
-        try:
-            import numba  # noqa: F401
-        except ModuleNotFoundError:  # pragma: no cover
-            raise ModuleNotFoundError('Install `numba` package (pip install numba) to use "numba" backend.')
-
-
 @dataclass(frozen=True)
 class Cython(Backend):
     fast: bool = False
@@ -91,5 +75,5 @@ class Scipy(Backend):
 
 DEFAULT_BACKEND = Cython()
 
-BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME = {Cython.__name__: 'OMP_NUM_THREADS', Numba.__name__: 'NUMBA_NUM_THREADS'}
+BACKEND_NAME2ENV_NUM_THREADS_VAR_NAME = {Cython.__name__: 'OMP_NUM_THREADS'}
 SINGLE_THREADED_BACKENDS = (Scipy.__name__,)

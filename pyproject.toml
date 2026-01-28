@@ -31,9 +31,6 @@ classifiers = [
 [options]
 include_package_data = true
 
-[project.optional-dependencies]
-numba = ['numba']
-
 [project.urls]
 'Homepage' = 'https://github.com/neuro-ml/imops'
 'Issues' = 'https://github.com/neuro-ml/imops/issues'
@@ -43,9 +40,6 @@ numba = ['numba']
 [tool.black]
 line-length = 120
 skip-string-normalization = true
-
-[tool.pytest.ini_options]
-markers = ['nonumba']
 
 [tool.isort]
 line_length = 120

@@ -45,12 +45,10 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pytest tests -m "not nonumba" --junitxml=reports/junit-${{ matrix.python-version }}.xml --cov="$MODULE_PARENT/$MODULE_NAME" --cov-report=xml --cov-branch
-          pip uninstall numba -y
-          pytest tests/test_backend.py -m nonumba
+          pytest tests -n 2 --junitxml=reports/junit-${{ matrix.python-version }}.xml --cov="$MODULE_PARENT/$MODULE_NAME" --cov-report=xml --cov-branch
       - name: Generate coverage report
         run: |
-          coverage xml -o reports/coverage-${{ matrix.python-version }}.xml --omit=imops/src/_numba_zoom.py
+          coverage xml -o reports/coverage-${{ matrix.python-version }}.xml
           sed -i -e "s|$MODULE_PARENT/||g" reports/coverage-${{ matrix.python-version }}.xml
           sed -i -e "s|$(echo $MODULE_PARENT/ | tr "/" .)||g" reports/coverage-${{ matrix.python-version }}.xml
 
