@@ -144,6 +144,14 @@ def test_ndim(backend, order, reshape):
         )
 
 
+def test_contiguous_output(backend, order, reshape):
+    for shape, axes in [((16, 20), (0, 1)), ((9, 16, 20), (0, 1)), ((9, 16, 20), (0, 2)), ((9, 16, 20), (1, 2))]:
+        inp = np.random.randn(*shape).astype('float32')
+        out = rotate(inp, 33, axes=axes, reshape=reshape, order=order, backend=backend)
+
+        assert out.flags.c_contiguous, f'{shape, axes}'
+
+
 def test_cval(backend, order, reshape):
     inp = cube_with_ball((9, 24, 20)).astype('float32')
 

@@ -7,10 +7,17 @@ from scipy.special import cosdg, sindg
 
 from .backend import BackendLike, resolve_backend
 from .src._fast_rotate import (
-    _rotate3d_linear as cython_fast_rotate3d_linear,
-    _rotate3d_nearest as cython_fast_rotate3d_nearest,
+    _rotate_pixels_linear as cython_fast_rotate_pixels_linear,
+    _rotate_pixels_nearest as cython_fast_rotate_pixels_nearest,
+    _rotate_runs_linear as cython_fast_rotate_runs_linear,
+    _rotate_runs_nearest as cython_fast_rotate_runs_nearest,
 )
-from .src._rotate import _rotate3d_linear as cython_rotate3d_linear, _rotate3d_nearest as cython_rotate3d_nearest
+from .src._rotate import (
+    _rotate_pixels_linear as cython_rotate_pixels_linear,
+    _rotate_pixels_nearest as cython_rotate_pixels_nearest,
+    _rotate_runs_linear as cython_rotate_runs_linear,
+    _rotate_runs_nearest as cython_rotate_runs_nearest,
+)
 from .utils import normalize_num_threads
 
 
@@ -56,11 +63,31 @@ def _fill_value(cval: float, dtype: np.dtype) -> np.generic:
     return dtype.type(min(max(rounded, limits.min), limits.max))
 
 
-def _choose_cython_rotate(order: int, fast: bool) -> Callable:
-    if order == 0:
-        return cython_fast_rotate3d_nearest if fast else cython_rotate3d_nearest
+def _blocks(shape: Tuple[int, ...], axes: Tuple[int, int]) -> Tuple[int, int, int, int, int]:
+    """`shape` collapsed to (pre, rows, mid, cols, post) around the two rotation axes."""
+    first, second = axes
 
-    return cython_fast_rotate3d_linear if fast else cython_rotate3d_linear
+    return (
+        int(np.prod(shape[:first])),
+        shape[first],
+        int(np.prod(shape[first + 1 : second])),
+        shape[second],
+        int(np.prod(shape[second + 1 :])),
+    )
+
+
+def _choose_cython_rotate(order: int, fast: bool, post: int) -> Callable:
+    """`post` is 1 when the rotation plane holds the contiguous axis, so a source pixel is a lone value."""
+    if post == 1:
+        if order == 0:
+            return cython_fast_rotate_pixels_nearest if fast else cython_rotate_pixels_nearest
+
+        return cython_fast_rotate_pixels_linear if fast else cython_rotate_pixels_linear
+
+    if order == 0:
+        return cython_fast_rotate_runs_nearest if fast else cython_rotate_runs_nearest
+
+    return cython_fast_rotate_runs_linear if fast else cython_rotate_runs_linear
 
 
 def rotate(
@@ -138,15 +165,18 @@ def rotate(
 
         return scipy_rotate(x, angle, axes=axes, reshape=reshape, order=order, cval=cval)
 
-    matrix, shift, out_plane_shape = _plane_transform(tuple(x.shape[axis] for axis in axes), angle, reshape)
-    planes = np.ascontiguousarray(np.moveaxis(x, axes, (-2, -1)))
-    rotated = _choose_cython_rotate(order, backend.fast)(
-        planes.reshape(-1, *planes.shape[-2:]),
+    pre, rows, mid, cols, post = _blocks(x.shape, axes)
+    matrix, shift, out_plane_shape = _plane_transform((rows, cols), angle, reshape)
+    block = (pre, rows, mid, cols) if post == 1 else (pre, rows, mid, cols, post)
+    rotated = _choose_cython_rotate(order, backend.fast, post)(
+        np.ascontiguousarray(x).reshape(block),
         matrix,
         shift,
         *out_plane_shape,
         _fill_value(cval, x.dtype),
         num_threads,
     )
+    out_shape = list(x.shape)
+    out_shape[axes[0]], out_shape[axes[1]] = out_plane_shape
 
-    return np.moveaxis(rotated.reshape(*planes.shape[:-2], *out_plane_shape), (-2, -1), axes)
+    return rotated.reshape(out_shape)
