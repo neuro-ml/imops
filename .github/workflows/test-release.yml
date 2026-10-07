@@ -10,7 +10,6 @@ jobs:
     uses: ./.github/workflows/build-wheels.yml
     with:
       cibw_build: cp37-* cp39-* cp312-*
-      cibw_skip: "*manylinux_x86_64 *musllinux_x86_64"
 
   build_sdist:
     uses: ./.github/workflows/build-sdist.yml

@@ -124,7 +124,7 @@ z = crop_to_shape(x, (4, 120, 67), ratio=0.25)
 ```python
 from imops import label
 
-# same as `skimage.measure.label`
+# same components as `skimage.measure.label`, possibly numbered in another order
 labeled, num_components = label(x, background=1, return_num=True)
 ```
 

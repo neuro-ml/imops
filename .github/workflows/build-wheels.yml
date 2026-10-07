@@ -6,10 +6,6 @@ on:
       cibw_build:
         required: true
         type: string
-      cibw_skip:
-        required: false
-        type: string
-        default: ""
 
 env:
   MODULE_NAME: imops
@@ -63,7 +59,7 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: >
             CC="$(brew --prefix llvm)/bin/clang" CXX="$(brew --prefix llvm)/bin/clang++"
           CIBW_BUILD: ${{ inputs.cibw_build }}
-          CIBW_SKIP: ${{ inputs.cibw_skip }}
+          CIBW_ARCHS_LINUX: x86_64
           CIBW_BEFORE_BUILD_LINUX: >
             if [ $(python -c "import sys; print(sys.version_info[1])") -ge 9 ]; then
               python -m pip install "numpy<3.0.0" --config-settings=setup-args="-Dallow-noblas=true";

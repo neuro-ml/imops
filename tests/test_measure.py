@@ -187,6 +187,18 @@ def test_no_background2():
     assert (sorted(sizes) == np.array([1, 8])).all()
 
 
+def numbered_by_first_appearance(labeled: np.ndarray) -> np.ndarray:
+    """Renumbers in raster order: `cc3d` and `skimage` agree on the partition, not on the numbers."""
+    flat = labeled.ravel()
+    _, first_appearance = np.unique(flat, return_index=True)
+    in_raster_order = flat[np.sort(first_appearance)]
+
+    renumber = np.zeros(in_raster_order.max() + 1, dtype=int)
+    renumber[in_raster_order] = np.arange(len(in_raster_order))
+
+    return renumber[labeled]
+
+
 def test_stress(connectivity, ndim):
     connectivity = min(connectivity, ndim)
 
@@ -201,8 +213,8 @@ def test_stress(connectivity, ndim):
         labeled, num_components = label(inp, connectivity=connectivity, return_num=True)
 
         assert_eq(
-            sk_labeled,
-            labeled,
+            numbered_by_first_appearance(sk_labeled),
+            numbered_by_first_appearance(labeled),
             err_msg=f'{connectivity, ndim, inp.shape}',
         )
         assert sk_num_components == num_components, f'{connectivity, ndim, inp.shape}'
