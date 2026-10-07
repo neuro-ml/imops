@@ -10,7 +10,7 @@ from scipy.ndimage import rotate as scipy_rotate
 
 from imops._configs import rotate_configs
 from imops.backend import Backend
-from imops.rotate import DTYPES, rotate
+from imops.rotate import DTYPES, _plane_transform, _rotation_plane, rotate
 
 
 np.random.seed(1337)
@@ -21,17 +21,43 @@ ANGLES = [0, 1.5, 30, 45, 90, 180, 270, 359.5, -30, 400]
 PLANES = [(0, 1), (0, 2), (1, 2), (-1, -2)]
 
 
-def agrees(ours, desired, order):
-    """Order 1 sums four weighted taps, and summing them in another order can move a rounded value by one."""
-    if ours.dtype.kind == 'f':
-        return np.allclose(ours, desired, rtol=1e-6, atol=1e-6)
+def unambiguous(source_shape, axes, angle, reshape, out_shape):
+    """Where nearest is not a coin flip: on a half integer coordinate scipy's build and ours round apart."""
+    axes = _rotation_plane(axes, len(source_shape))
+    matrix, shift, out_plane_shape = _plane_transform((source_shape[axes[0]], source_shape[axes[1]]), angle, reshape)
+    i, j = np.indices(out_plane_shape)
+    plane = np.ones(out_plane_shape, bool)
 
-    if order == 0 or ours.dtype == bool:
-        return np.array_equal(ours, desired)
+    for (per_row, per_col), at_origin in zip(matrix, shift):
+        half = at_origin + per_row * i + per_col * j + 0.5
+        plane &= np.abs(half - np.round(half)) > 16 * np.spacing(np.abs(half) + 1)
 
-    difference = np.abs(ours.astype('int64') - desired.astype('int64'))
+    return np.moveaxis(np.moveaxis(np.ones(out_shape, bool), axes, (-2, -1)) & plane, (-2, -1), axes)
 
-    return difference.max() <= 1 and (difference != 0).mean() <= 0.05
+
+def assert_agrees(inp, angle, axes, order, reshape, backend, cval=0.0, desired=None):
+    """
+    Order 1 sums four weighted taps, so another summation order can move a rounded integer by one. Order 0 has
+    nothing to sum but picks a side at a tie, so it is compared away from ties.
+    """
+    out = rotate(inp, angle, axes=axes, reshape=reshape, order=order, cval=cval, backend=backend)
+    if desired is None:
+        desired = scipy_rotate(inp, angle, axes=axes, reshape=reshape, order=order, cval=cval)
+
+    where = f'{inp.dtype, inp.shape, angle, axes, reshape, cval}'
+    assert out.shape == desired.shape, where
+    assert out.dtype == desired.dtype, f'{out.dtype} vs {desired.dtype}, {where}'
+
+    if order == 0:
+        settled = unambiguous(inp.shape, axes, angle, reshape, desired.shape)
+        assert np.array_equal(out[settled], desired[settled]), where
+    elif out.dtype.kind == 'f' or out.dtype == bool:
+        allclose(out, desired, err_msg=where)
+    else:
+        difference = np.abs(out.astype('int64') - desired.astype('int64'))
+        assert difference.max() <= 1 and (difference != 0).mean() <= 0.05, where
+
+    return out
 
 
 @dataclass
@@ -107,11 +133,7 @@ def test_against_scipy(backend, order, reshape):
     random_angles = np.random.uniform(-400, 400, N_STRESS)
 
     for angle, axes in product([*ANGLES, *random_angles], PLANES):
-        allclose(
-            rotate(inp, angle, axes=axes, reshape=reshape, order=order, backend=backend),
-            scipy_rotate(inp, angle, axes=axes, reshape=reshape, order=order),
-            err_msg=f'{angle, axes}',
-        )
+        assert_agrees(inp, angle, axes, order, reshape, backend)
 
 
 def test_dtype(backend, order, reshape):
@@ -119,11 +141,9 @@ def test_dtype(backend, order, reshape):
         inp = cube_with_ball((9, 24, 20)).astype(dtype)
         inp_copy = inp.copy()
 
-        out = rotate(inp, 37, axes=(1, 2), reshape=reshape, order=order, backend=backend)
-        desired = scipy_rotate(inp, 37, axes=(1, 2), reshape=reshape, order=order)
+        out = assert_agrees(inp, 37, (1, 2), order, reshape, backend)
 
-        assert agrees(out, desired, order), f'{dtype}'
-        assert out.dtype == desired.dtype == dtype, f'{dtype, out.dtype, desired.dtype}'
+        assert out.dtype == dtype, f'{dtype, out.dtype}'
         allclose(inp, inp_copy, err_msg=f'{dtype}')
 
 
@@ -136,10 +156,7 @@ def test_integer_rounding(backend, order, reshape):
             angle, cval = np.random.uniform(-400, 400), np.random.choice([-3.7, 0.0, 5.5])
             axes = PLANES[np.random.randint(3)]
 
-            out = rotate(inp, angle, axes=axes, reshape=reshape, order=order, cval=cval, backend=backend)
-            desired = scipy_rotate(inp, angle, axes=axes, reshape=reshape, order=order, cval=cval)
-
-            assert agrees(out, desired, order), f'{dtype, angle, axes, cval}'
+            assert_agrees(inp, angle, axes, order, reshape, backend, cval=cval)
 
 
 def test_bool(backend, order, reshape):
@@ -149,13 +166,12 @@ def test_bool(backend, order, reshape):
             inp = np.random.rand(*shape) < np.random.uniform(0.05, 0.95)
             angle, cval = np.random.uniform(-400, 400), np.random.choice([0.0, 0.2, 0.7, 1.0])
 
-            out = rotate(inp, angle, axes=axes, reshape=reshape, order=order, cval=cval, backend=backend)
             desired = (
                 scipy_rotate(inp.astype(np.float32), angle, axes=axes, reshape=reshape, order=order, cval=cval) >= 0.5
             )
+            out = assert_agrees(inp, angle, axes, order, reshape, backend, cval=cval, desired=desired)
 
             assert out.dtype == bool, f'{shape, axes, angle, cval}'
-            assert agrees(out, desired, order), f'{shape, axes, angle, cval}'
 
 
 def test_bool_builds_no_float_array(order):
@@ -174,22 +190,15 @@ def test_bool_builds_no_float_array(order):
 def test_float16(backend, order, reshape):
     inp = cube_with_ball((9, 24, 20)).astype(np.float16)
 
-    out = rotate(inp, 37, axes=(1, 2), reshape=reshape, order=order, backend=backend)
-    desired = scipy_rotate(inp.astype(np.float32), 37, axes=(1, 2), reshape=reshape, order=order)
+    desired = scipy_rotate(inp.astype(np.float32), 37, axes=(1, 2), reshape=reshape, order=order).astype(np.float16)
+    out = assert_agrees(inp, 37, (1, 2), order, reshape, backend, desired=desired)
 
     assert out.dtype == np.float16
-    allclose(out, desired.astype(np.float16))
 
 
 def test_ndim(backend, order, reshape):
     for shape, axes in [((16, 20), (0, 1)), ((5, 16, 20), (1, 2)), ((2, 5, 16, 20), (2, 3)), ((2, 3, 4, 5, 6), (1, 3))]:
-        inp = np.random.randn(*shape).astype('float32')
-
-        allclose(
-            rotate(inp, 33, axes=axes, reshape=reshape, order=order, backend=backend),
-            scipy_rotate(inp, 33, axes=axes, reshape=reshape, order=order),
-            err_msg=f'{shape, axes}',
-        )
+        assert_agrees(np.random.randn(*shape).astype('float32'), 33, axes, order, reshape, backend)
 
 
 def test_contiguous_output(backend, order, reshape):
@@ -204,20 +213,13 @@ def test_cval(backend, order, reshape):
     inp = cube_with_ball((9, 24, 20)).astype('float32')
 
     for cval in [-5.0, 0.0, 7.5]:
-        allclose(
-            rotate(inp, 41, axes=(1, 2), reshape=reshape, order=order, cval=cval, backend=backend),
-            scipy_rotate(inp, 41, axes=(1, 2), reshape=reshape, order=order, cval=cval),
-            err_msg=f'{cval}',
-        )
+        assert_agrees(inp, 41, (1, 2), order, reshape, backend, cval=cval)
 
 
 def test_noncontiguous(backend, order, reshape):
     inp = cube_with_ball((18, 24, 20)).astype('float32')[::2].T
 
-    allclose(
-        rotate(inp, 29, axes=(0, 1), reshape=reshape, order=order, backend=backend),
-        scipy_rotate(inp, 29, axes=(0, 1), reshape=reshape, order=order),
-    )
+    assert_agrees(inp, 29, (0, 1), order, reshape, backend)
 
 
 def test_num_threads(backend, order):
