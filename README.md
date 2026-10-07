@@ -53,6 +53,15 @@ y = zoom(x, 2, axis=[0, 1])
 z = zoom_to_shape(x, (4, 120, 67))
 ```
 Works faster only for `ndim<=4, dtype=float32 or float64 (and bool-int16-32-64-uint8-16-32 if order == 0), output=None, order=0 or 1, mode='constant', grid_mode=False`
+### Fast 0/1-order rotate
+
+```python
+from imops import rotate
+
+# rotate every plane parallel to axes 1 and 2 by 30 degrees
+y = rotate(x, 30, axes=(1, 2))
+```
+Works faster only for `order=0 or 1, dtype=float16-float32-uint8-uint16-int16-int32, mode='constant'`. Unlike `scipy.ndimage.rotate` it also accepts `float16`.
 ### Fast 1d linear interpolation
 
 ```python
