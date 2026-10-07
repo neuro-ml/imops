@@ -340,6 +340,8 @@ def test_not_unique_index(backend):
 
 
 def test_labeled_center_of_mass(backend, dtype, label_dtype):
+    np.random.seed(1337)
+
     for _ in range(n_samples):
         shape = np.random.randint(32, 64, size=np.random.randint(1, 4))
         inp = (
