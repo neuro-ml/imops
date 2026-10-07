@@ -15,6 +15,10 @@ morphology_configs = [
     Scipy(),
     *[Cython(fast) for fast in [False, True]],
 ]
+rotate_configs = [
+    Scipy(),
+    *[Cython(fast) for fast in [False, True]],
+]
 zoom_configs = [
     Scipy(),
     *[Cython(fast) for fast in [False, True]],

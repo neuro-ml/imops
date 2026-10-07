@@ -501,10 +501,13 @@ def distance_transform_edt(
         euclidean_feature_transform(image, sampling, ft)
 
     if return_distances:
-        if sampling is not None:
-            dt = edt(image, anisotropy=sampling.astype(np.float32), parallel=num_threads)
+        # `edt` takes a scalar anisotropy for a 1D image and a sequence for the rest
+        if sampling is None:
+            anisotropy = None
         else:
-            dt = edt(image, parallel=num_threads)
+            anisotropy = sampling[0] if image.ndim == 1 else sampling.astype(np.float32)
+
+        dt = edt(image, anisotropy=anisotropy, parallel=num_threads)
 
     result = []
     if return_distances:

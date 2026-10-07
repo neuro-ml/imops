@@ -41,6 +41,7 @@ def label(
 ) -> Union[np.ndarray, NamedTuple]:
     """
     Fast version of `skimage.measure.label` which optionally returns number of connected components, labels and sizes.
+    Splits into the same connected components, but may number them in another order.
     If 2 or more outputs are requested `NamedTuple` is returned.
 
     Parameters
