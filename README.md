@@ -60,8 +60,10 @@ from imops import rotate
 
 # rotate every plane parallel to axes 1 and 2 by 30 degrees
 y = rotate(x, 30, axes=(1, 2))
+# a bool mask answers what `rotate(mask.astype('float32')) >= 0.5` answers, without building that array
+m = rotate(mask, 30, axes=(1, 2))
 ```
-Works faster only for `order=0 or 1, dtype=float16-float32-uint8-uint16-int16-int32, mode='constant'`. Unlike `scipy.ndimage.rotate` it also accepts `float16`.
+Works faster only for `order=0 or 1, dtype=bool-float16-float32-uint8-uint16-int16-int32, mode='constant'`. Unlike `scipy.ndimage.rotate` it also accepts `float16`, never copies the input to reach its layout, and always returns a C-contiguous array.
 ### Fast 1d linear interpolation
 
 ```python

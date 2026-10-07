@@ -1,3 +1,4 @@
+import tracemalloc
 from dataclasses import dataclass
 from functools import partial
 from itertools import product
@@ -99,7 +100,7 @@ def test_against_scipy(backend, order, reshape):
 
 
 def test_dtype(backend, order, reshape):
-    for dtype in DTYPES:
+    for dtype in (dtype for dtype in DTYPES if dtype is not bool):
         inp = cube_with_ball((9, 24, 20)).astype(dtype)
         inp_copy = inp.copy()
 
@@ -121,6 +122,36 @@ def test_integer_rounding(backend, order, reshape):
             desired = scipy_rotate(inp, 23, axes=(1, 2), reshape=reshape, order=order, cval=cval)
 
             assert np.array_equal(out, desired), f'{dtype, cval}'
+
+
+def test_bool(backend, order, reshape):
+    """A bool input must answer exactly what `rotate(x.astype(float32)) >= 0.5` answers."""
+    for shape, axes in [((16, 20), (0, 1)), ((9, 24, 20), (0, 1)), ((9, 24, 20), (0, 2)), ((9, 24, 20), (1, 2))]:
+        for density in (0.05, 0.5, 0.95):
+            inp = np.random.rand(*shape) < density
+
+            for angle, cval in product([0, 1.5, 30, 45, 90, -33, 212.5], [0.0, 0.2, 0.7, 1.0]):
+                out = rotate(inp, angle, axes=axes, reshape=reshape, order=order, cval=cval, backend=backend)
+                desired = (
+                    scipy_rotate(inp.astype(np.float32), angle, axes=axes, reshape=reshape, order=order, cval=cval)
+                    >= 0.5
+                )
+
+                assert out.dtype == bool, f'{shape, axes, angle, cval}'
+                assert np.array_equal(out, desired), f'{shape, axes, angle, cval, density}'
+
+
+def test_bool_builds_no_float_array(order):
+    inp = np.random.rand(64, 96, 96) < 0.4
+
+    tracemalloc.start()
+    try:
+        out = rotate(inp, 30, axes=(1, 2), order=order)
+        peak = tracemalloc.get_traced_memory()[1]
+    finally:
+        tracemalloc.stop()
+
+    assert peak < 2 * out.nbytes, f'{peak} vs {out.nbytes}'
 
 
 def test_float16(backend, order, reshape):

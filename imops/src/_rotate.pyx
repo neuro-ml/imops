@@ -44,15 +44,17 @@ cdef inline double blend(const NUM* tap, Py_ssize_t row_step, Py_ssize_t col_ste
     )
 
 
-cdef inline void store(NUM* out, double value) noexcept nogil:
+cdef inline void store(NUM* out, double value, bint mask) noexcept nogil:
     if NUM is np.float32_t:
         out[0] = <NUM>value
+    elif mask:
+        out[0] = <NUM>((<float>value) >= 0.5)
     else:
         out[0] = <NUM>(value + 0.5 if value > 0 else value - 0.5)
 
 
 def _rotate_pixels_linear(const NUM[:, :, :, ::1] input, double[:, ::1] matrix, double[::1] shift,
-                          Py_ssize_t out_rows, Py_ssize_t out_cols, NUM cval, Py_ssize_t num_threads):
+                          Py_ssize_t out_rows, Py_ssize_t out_cols, NUM cval, bint mask, Py_ssize_t num_threads):
     cdef Py_ssize_t pre = input.shape[0], rows = input.shape[1], mid = input.shape[2], cols = input.shape[3]
     cdef NUM[:, :, :, ::1] rotated = np.empty_like(input, shape=(pre, out_rows, mid, out_cols))
 
@@ -83,7 +85,7 @@ def _rotate_pixels_linear(const NUM[:, :, :, ::1] input, double[:, ::1] matrix, 
             c0 = <Py_ssize_t>floor(c)
             row_step = row_stride if r0 + 1 < rows else 0
             col_step = 1 if c0 + 1 < cols else 0
-            store(out_row + j, blend(plane + r0 * row_stride + c0, row_step, col_step, r - r0, c - c0))
+            store(out_row + j, blend(plane + r0 * row_stride + c0, row_step, col_step, r - r0, c - c0), mask)
 
     return np.asarray(rotated)
 
@@ -121,7 +123,7 @@ def _rotate_pixels_nearest(const NUM[:, :, :, ::1] input, double[:, ::1] matrix,
 
 
 def _rotate_runs_linear(const NUM[:, :, :, :, ::1] input, double[:, ::1] matrix, double[::1] shift,
-                        Py_ssize_t out_rows, Py_ssize_t out_cols, NUM cval, Py_ssize_t num_threads):
+                        Py_ssize_t out_rows, Py_ssize_t out_cols, NUM cval, bint mask, Py_ssize_t num_threads):
     cdef Py_ssize_t pre = input.shape[0], rows = input.shape[1], mid = input.shape[2]
     cdef Py_ssize_t cols = input.shape[3], post = input.shape[4]
     cdef NUM[:, :, :, :, ::1] rotated = np.empty_like(input, shape=(pre, out_rows, mid, out_cols, post))
@@ -162,7 +164,7 @@ def _rotate_runs_linear(const NUM[:, :, :, :, ::1] input, double[:, ::1] matrix,
             tap = plane + r0 * row_stride + c0 * post
 
             for t in range(post):
-                store(out_run + t, blend(tap + t, row_step, col_step, dr, dc))
+                store(out_run + t, blend(tap + t, row_step, col_step, dr, dc), mask)
 
     return np.asarray(rotated)
 

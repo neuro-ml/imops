@@ -21,7 +21,7 @@ from .src._rotate import (
 from .utils import normalize_num_threads
 
 
-DTYPES = (np.float32, np.uint8, np.uint16, np.int16, np.int32)
+DTYPES = (bool, np.float32, np.uint8, np.uint16, np.int16, np.int32)
 
 
 def _rotation_plane(axes: Sequence[int], ndim: int) -> Tuple[int, int]:
@@ -54,6 +54,9 @@ def _plane_transform(in_plane_shape: Tuple[int, int], angle: float, reshape: boo
 
 def _fill_value(cval: float, dtype: np.dtype) -> np.generic:
     """`cval` cast to `dtype` the way scipy casts an interpolated value."""
+    if dtype == bool:
+        return np.float32(cval) >= 0.5
+
     if dtype.kind == 'f':
         return dtype.type(cval)
 
@@ -74,6 +77,14 @@ def _blocks(shape: Tuple[int, ...], axes: Tuple[int, int]) -> Tuple[int, int, in
         shape[second],
         int(np.prod(shape[second + 1 :])),
     )
+
+
+def _scipy_rotate(x: np.ndarray, angle: float, axes, reshape: bool, order: int, cval: float) -> np.ndarray:
+    """`scipy.ndimage.rotate`, except a bool input keeps our threshold rule instead of scipy's truncating cast."""
+    if x.dtype == bool:
+        return scipy_rotate(x.astype(np.float32), angle, axes=axes, reshape=reshape, order=order, cval=cval) >= 0.5
+
+    return scipy_rotate(x, angle, axes=axes, reshape=reshape, order=order, cval=cval)
 
 
 def _choose_cython_rotate(order: int, fast: bool, post: int) -> Callable:
@@ -104,7 +115,9 @@ def rotate(
     Rotate `x` by `angle` degrees in the plane spanned by `axes`.
 
     Faster parallelizable version of `scipy.ndimage.rotate` with `mode='constant'`, for order 0 or 1 and
-    fp16-fp32-uint8-uint16-int16-int32 inputs. Anything else falls back to scipy.
+    bool-fp16-fp32-uint8-uint16-int16-int32 inputs. Anything else falls back to scipy.
+
+    A `bool` input rotates as `rotate(x.astype(np.float32)) >= 0.5`, without ever building the float array.
 
     Parameters
     ----------
@@ -158,24 +171,26 @@ def rotate(
     if backend.name == 'Scipy' or order not in (0, 1) or x.dtype not in DTYPES:
         if backend.name != 'Scipy':
             warn(
-                'Fast rotate is only supported for order=0 or 1 and dtype=fp16-fp32-uint8-uint16-int16-int32. '
+                'Fast rotate is only supported for order=0 or 1 and '
+                'dtype=bool-fp16-fp32-uint8-uint16-int16-int32. '
                 "Falling back to scipy's implementation.",
                 stacklevel=2,
             )
 
-        return scipy_rotate(x, angle, axes=axes, reshape=reshape, order=order, cval=cval)
+        return _scipy_rotate(x, angle, axes, reshape, order, cval)
 
     pre, rows, mid, cols, post = _blocks(x.shape, axes)
     matrix, shift, out_plane_shape = _plane_transform((rows, cols), angle, reshape)
     block = (pre, rows, mid, cols) if post == 1 else (pre, rows, mid, cols, post)
-    rotated = _choose_cython_rotate(order, backend.fast, post)(
-        np.ascontiguousarray(x).reshape(block),
-        matrix,
-        shift,
-        *out_plane_shape,
-        _fill_value(cval, x.dtype),
-        num_threads,
-    )
+    source = np.ascontiguousarray(x).reshape(block)
+    fill = _fill_value(cval, x.dtype)
+    kernel = _choose_cython_rotate(order, backend.fast, post)
+
+    if order == 0:
+        rotated = kernel(source, matrix, shift, *out_plane_shape, fill, num_threads)
+    else:
+        rotated = kernel(source, matrix, shift, *out_plane_shape, fill, x.dtype == bool, num_threads)
+
     out_shape = list(x.shape)
     out_shape[axes[0]], out_shape[axes[1]] = out_plane_shape
 
