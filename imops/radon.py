@@ -1,13 +1,13 @@
 from typing import Optional, Sequence, Tuple, Union
 
 import numpy as np
-from scipy.fftpack import fft, ifft
+from scipy.fft import irfft, rfft
 
 from .backend import BackendLike, resolve_backend
 from .compat import normalize_axis_tuple
 from .numeric import copy
-from .src._backprojection import backprojection3d
-from .src._fast_backprojection import backprojection3d as fast_backprojection3d
+from .src._backprojection import backprojection3d, by_angle
+from .src._fast_backprojection import backprojection3d as fast_backprojection3d, by_angle as fast_by_angle
 from .src._fast_radon import radon3d as fast_radon3d
 from .src._radon import radon3d
 from .utils import normalize_num_threads
@@ -166,36 +166,30 @@ def inverse_radon(
             f'projections in `sinogram` ({sinogram.shape[-1]}).'
         )
     output_size = sinogram.shape[1]
-    sinogram = _sinogram_circle_to_square(sinogram)
+    dtype = sinogram.dtype
+    img_shape, offset = _square_detector(output_size)
+    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
+    by_angle_ = fast_by_angle if backend.fast else by_angle
+    backprojection3d_ = fast_backprojection3d if backend.fast else backprojection3d
 
-    img_shape = sinogram.shape[1]
-    # Resize image to next power of two (but no less than 64) for
-    # Fourier analysis; speeds up Fourier and lessens artifacts
-    # TODO: why *2?
-    projection_size_padded = max(64, int(2 ** np.ceil(np.log2(2 * img_shape))))
-    pad_width = ((0, 0), (0, projection_size_padded - img_shape), (0, 0))
-    padded_sinogram = np.pad(sinogram, pad_width, mode='constant', constant_values=0)
-    fourier_filter = _smooth_sharpen_filter(projection_size_padded, a, b)
+    # The backprojection reads every slice of one detector sample at once, so slices go last and stay there.
+    rows = by_angle_(np.ascontiguousarray(sinogram), img_shape, offset, num_threads)
 
-    # Apply filter in Fourier domain
-    fourier_img = fft(padded_sinogram, axis=1) * fourier_filter
-    filtered_sinogram = np.real(ifft(fourier_img, axis=1)[:, :img_shape, :])
+    # Shorter than twice the detector and the ramp filter wraps around. A power of two transforms fastest.
+    padded_size = max(64, int(2 ** np.ceil(np.log2(2 * img_shape))))
+    fourier_filter = _smooth_sharpen_filter(padded_size, a, b).astype(dtype)
+    spectrum = rfft(rows, n=padded_size, axis=1, workers=num_threads)
+    spectrum *= fourier_filter
+    filtered = irfft(spectrum, padded_size, axis=1, workers=num_threads, overwrite_x=True)
 
     radius = output_size // 2
     xs = np.arange(-radius, output_size - radius)
     squared = xs**2
     inside_circle = (squared[:, None] + squared[None, :]) <= radius**2
-
-    dtype = sinogram.dtype
-    filtered_sinogram = filtered_sinogram.astype(dtype, copy=False)
     theta, xs = np.deg2rad(theta, dtype=dtype), xs.astype(dtype, copy=False)
 
-    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
-
-    backprojection3d_ = fast_backprojection3d if backend.fast else backprojection3d
-
     reconstructed = np.asarray(
-        backprojection3d_(filtered_sinogram, theta, xs, inside_circle, fill_value, img_shape, output_size, num_threads)
+        backprojection3d_(filtered, theta, xs, inside_circle, fill_value, img_shape, num_threads)
     )
 
     return restore_axes(reconstructed, axes, extra)
@@ -223,13 +217,13 @@ def restore_axes(x: np.ndarray, axes: tuple, extra: tuple) -> np.ndarray:
 
 
 def _ramp_filter(size: int) -> np.ndarray:
+    """The ramp filter over the non-negative frequencies, which is all a real signal needs."""
     n = np.concatenate((np.arange(1, size / 2 + 1, 2, dtype=int), np.arange(size / 2 - 1, 0, -2, dtype=int)))
     f = np.zeros(size)
     f[0] = 0.25
     f[1::2] = -1 / (np.pi * n) ** 2
-    fourier_filter = 2 * np.real(fft(f))
 
-    return fourier_filter.reshape(-1, 1)
+    return 2 * np.real(rfft(f)).reshape(-1, 1)
 
 
 def _smooth_sharpen_filter(size: int, a: float, b: float) -> np.ndarray:
@@ -237,12 +231,8 @@ def _smooth_sharpen_filter(size: int, a: float, b: float) -> np.ndarray:
     return ramp * (1 + a * (ramp**b))
 
 
-def _sinogram_circle_to_square(sinogram: np.ndarray) -> np.ndarray:
-    diagonal = int(np.ceil(np.sqrt(2) * sinogram.shape[1]))
-    pad = diagonal - sinogram.shape[1]
-    old_center = sinogram.shape[1] // 2
-    new_center = diagonal // 2
-    pad_before = new_center - old_center
-    pad_width = ((0, 0), (pad_before, pad - pad_before), (0, 0))
+def _square_detector(size: int) -> Tuple[int, int]:
+    """The detector that holds the rotated circle, and where the old one starts inside it."""
+    diagonal = int(np.ceil(np.sqrt(2) * size))
 
-    return np.pad(sinogram, pad_width, mode='constant', constant_values=0)
+    return diagonal, diagonal // 2 - size // 2

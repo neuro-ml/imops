@@ -90,3 +90,24 @@ def test_radon(backend):
 
             almost_eq(ref_0, radon(image[[0]], axes=(1, 2), backend=backend), 3)
             almost_eq(sinogram, np.stack(list(map(partial(radon, backend=backend), image))), 3)
+
+
+def test_inverse_radon_fill_value(backend):
+    sinogram = sk_radon(sample_ct(4, 64))
+    radius = sinogram.shape[1] // 2
+    squared = np.arange(-radius, sinogram.shape[1] - radius) ** 2
+    outside = squared[:, None] + squared[None, :] > radius**2
+
+    reconstructed = inverse_radon(sinogram, axes=(1, 2), fill_value=-1000, backend=backend)
+
+    assert (reconstructed[:, outside] == -1000).all()
+
+
+def test_inverse_radon_num_threads(backend):
+    """Every output pixel is summed by one thread in one order, so the thread count cannot move it."""
+    sinogram = sk_radon(sample_ct(4, 64))
+
+    np.testing.assert_array_equal(
+        inverse_radon(sinogram, axes=(1, 2), num_threads=1, backend=backend),
+        inverse_radon(sinogram, axes=(1, 2), num_threads=4, backend=backend),
+    )
