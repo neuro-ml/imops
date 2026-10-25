@@ -1,4 +1,4 @@
-from typing import Callable, Sequence, Tuple
+from typing import Sequence, Tuple
 from warnings import warn
 
 import numpy as np
@@ -6,18 +6,8 @@ from scipy.ndimage import rotate as scipy_rotate
 from scipy.special import cosdg, sindg
 
 from .backend import BackendLike, resolve_backend
-from .src._fast_rotate import (
-    _rotate_pixels_linear as cython_fast_rotate_pixels_linear,
-    _rotate_pixels_nearest as cython_fast_rotate_pixels_nearest,
-    _rotate_runs_linear as cython_fast_rotate_runs_linear,
-    _rotate_runs_nearest as cython_fast_rotate_runs_nearest,
-)
-from .src._rotate import (
-    _rotate_pixels_linear as cython_rotate_pixels_linear,
-    _rotate_pixels_nearest as cython_rotate_pixels_nearest,
-    _rotate_runs_linear as cython_rotate_runs_linear,
-    _rotate_runs_nearest as cython_rotate_runs_nearest,
-)
+from .src._fast_rotate import _rotate_linear as cython_fast_rotate_linear, _rotate_nearest as cython_fast_rotate_nearest
+from .src._rotate import _rotate_linear as cython_rotate_linear, _rotate_nearest as cython_rotate_nearest
 from .utils import normalize_num_threads
 
 
@@ -85,20 +75,6 @@ def _scipy_rotate(x: np.ndarray, angle: float, axes, reshape: bool, order: int, 
         return scipy_rotate(x.astype(np.float32), angle, axes=axes, reshape=reshape, order=order, cval=cval) >= 0.5
 
     return scipy_rotate(x, angle, axes=axes, reshape=reshape, order=order, cval=cval)
-
-
-def _choose_cython_rotate(order: int, fast: bool, post: int) -> Callable:
-    """`post` is 1 when the rotation plane holds the contiguous axis, so a source pixel is a lone value."""
-    if post == 1:
-        if order == 0:
-            return cython_fast_rotate_pixels_nearest if fast else cython_rotate_pixels_nearest
-
-        return cython_fast_rotate_pixels_linear if fast else cython_rotate_pixels_linear
-
-    if order == 0:
-        return cython_fast_rotate_runs_nearest if fast else cython_rotate_runs_nearest
-
-    return cython_fast_rotate_runs_linear if fast else cython_rotate_runs_linear
 
 
 def rotate(
@@ -181,14 +157,14 @@ def rotate(
 
     pre, rows, mid, cols, post = _blocks(x.shape, axes)
     matrix, shift, out_plane_shape = _plane_transform((rows, cols), angle, reshape)
-    block = (pre, rows, mid, cols) if post == 1 else (pre, rows, mid, cols, post)
-    source = np.ascontiguousarray(x).reshape(block)
+    source = np.ascontiguousarray(x).reshape(pre, rows, mid, cols, post)
     fill = _fill_value(cval, x.dtype)
-    kernel = _choose_cython_rotate(order, backend.fast, post)
 
     if order == 0:
+        kernel = cython_fast_rotate_nearest if backend.fast else cython_rotate_nearest
         rotated = kernel(source, matrix, shift, *out_plane_shape, fill, num_threads)
     else:
+        kernel = cython_fast_rotate_linear if backend.fast else cython_rotate_linear
         rotated = kernel(source, matrix, shift, *out_plane_shape, fill, x.dtype == bool, num_threads)
 
     out_shape = list(x.shape)
