@@ -6,6 +6,7 @@ from scipy.ndimage import rotate as scipy_rotate
 from scipy.special import cosdg, sindg
 
 from .backend import BackendLike, resolve_backend
+from .env import ROTATE_MAX_NUM_THREADS
 from .src._fast_rotate import _rotate_linear as cython_fast_rotate_linear, _rotate_nearest as cython_fast_rotate_nearest
 from .src._rotate import _rotate_linear as cython_rotate_linear, _rotate_nearest as cython_rotate_nearest
 from .utils import normalize_num_threads
@@ -137,7 +138,7 @@ def rotate(
         raise ValueError(f'Input array must have at least 2 dimensions, got {x.ndim}.')
 
     axes = _rotation_plane(axes, x.ndim)
-    num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
+    num_threads = min(normalize_num_threads(num_threads, backend, warn_stacklevel=3), ROTATE_MAX_NUM_THREADS)
 
     if x.dtype == np.float16:
         as_float32 = rotate(x.astype(np.float32), angle, axes, reshape, order, cval, num_threads, backend)
