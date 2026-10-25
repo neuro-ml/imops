@@ -94,6 +94,7 @@ cdef inline void store(NUM* out, double value, bint mask) noexcept nogil:
         out[0] = <NUM>(value + 0.5 if value > 0 else value - 0.5)
 
 
+# inline, so a caller that passes a literal post of 1 gets a copy without the run loop and the `* post` strides
 cdef inline void linear_line(const NUM* plane, NUM* out_line, Span span, double row_at_j0, double row_j,
                              double col_at_j0, double col_j, Py_ssize_t rows, Py_ssize_t cols,
                              Py_ssize_t row_stride, Py_ssize_t post, bint mask) noexcept nogil:
@@ -146,7 +147,6 @@ def _rotate_linear(const NUM[:, :, :, :, ::1] input, double[:, ::1] matrix, doub
         for t in range(span.lo * post):
             out_line[t] = cval
 
-        # a literal 1 lets the compiler drop the loop over the run
         if post == 1:
             linear_line(plane, out_line, span, row_at_j0, row_j, col_at_j0, col_j, rows, cols, row_stride, 1, mask)
         else:
@@ -158,6 +158,7 @@ def _rotate_linear(const NUM[:, :, :, :, ::1] input, double[:, ::1] matrix, doub
     return np.asarray(rotated)
 
 
+# inline, so a caller that passes a literal post of 1 gets a copy without the run loop and the `* post` strides
 cdef inline void nearest_line(const NUM* plane, NUM* out_line, Span span, double row_at_j0, double row_j,
                               double col_at_j0, double col_j, Py_ssize_t row_stride, Py_ssize_t post) noexcept nogil:
     cdef Py_ssize_t j, t
