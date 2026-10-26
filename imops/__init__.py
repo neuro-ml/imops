@@ -8,4 +8,5 @@ from .morphology import binary_closing, binary_dilation, binary_erosion, binary_
 from .numeric import copy, fill_, full, pointwise_add
 from .pad import pad, pad_to_divisible, pad_to_shape, restore_crop
 from .radon import inverse_radon, radon
+from .rotate import rotate
 from .zoom import _zoom, zoom, zoom_to_shape
