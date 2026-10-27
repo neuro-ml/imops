@@ -58,6 +58,7 @@ jobs:
         env:
           CIBW_ENVIRONMENT_MACOS: >
             CC="$(brew --prefix llvm)/bin/clang" CXX="$(brew --prefix llvm)/bin/clang++"
+            LDFLAGS="-L$(brew --prefix llvm)/lib/c++ -L$(brew --prefix llvm)/lib/unwind -lunwind"
           CIBW_BUILD: ${{ inputs.cibw_build }}
           CIBW_ARCHS_LINUX: x86_64
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
