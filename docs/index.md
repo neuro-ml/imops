@@ -27,6 +27,8 @@ pip install imops  # default install with Cython backend
 
 ::: imops.zoom.zoom_to_shape
 
+::: imops.rotate.rotate
+
 ::: imops.interp1d.interp1d
     options:
       members:

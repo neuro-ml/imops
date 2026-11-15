@@ -4,6 +4,7 @@ import numpy as np
 
 from .backend import Cython
 from .compat import normalize_axis_index
+from .env import ARGMAX_MAX_NUM_THREADS
 from .src._argmax import _argmax
 from .utils import AxesLike, normalize_num_threads
 
@@ -60,7 +61,7 @@ def argmax(array: np.ndarray, axis: AxesLike, num_threads: int = -1):
     shape = array.shape
     axis = normalize_axis_index(axis, ndim)
     num_threads = normalize_num_threads(num_threads, Cython())
-    num_threads = min(num_threads, 32)  # don't spawn more than 32 threads or slowdown can be occured
+    num_threads = min(num_threads, ARGMAX_MAX_NUM_THREADS)  # more threads slow argmax down
 
     pre_shape = shape[:axis]
     post_shape = shape[axis + 1 :]

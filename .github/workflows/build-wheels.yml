@@ -6,10 +6,6 @@ on:
       cibw_build:
         required: true
         type: string
-      cibw_skip:
-        required: false
-        type: string
-        default: ""
 
 env:
   MODULE_NAME: imops
@@ -63,11 +59,9 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: >
             CC="$(brew --prefix llvm)/bin/clang" CXX="$(brew --prefix llvm)/bin/clang++"
           CIBW_BUILD: ${{ inputs.cibw_build }}
-          CIBW_SKIP: ${{ inputs.cibw_skip }}
-          CIBW_BEFORE_BUILD_LINUX: >
-            if [ $(python -c "import sys; print(sys.version_info[1])") -ge 9 ]; then
-              python -m pip install "numpy<3.0.0" --config-settings=setup-args="-Dallow-noblas=true";
-            fi
+          CIBW_ARCHS_LINUX: x86_64
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_MUSLLINUX_X86_64_IMAGE: musllinux_1_2
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4

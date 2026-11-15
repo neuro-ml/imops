@@ -77,7 +77,7 @@ cdef int init_filter_offsets(
     int **offsets, int *border_flag_value,
     np.uint8_t is_dilation
 ) noexcept nogil:
-    cdef int i, j, k
+    cdef int i, _j, k
     cdef int filter_size = 1, offsets_size = 1
     cdef int max_size = 0, max_stride = 0
     cdef int coordinates[3]
@@ -110,7 +110,7 @@ cdef int init_filter_offsets(
     border_flag_value[0] = max_size * max_stride + 1
     po = offsets[0]
 
-    for j in range(offsets_size):
+    for _j in range(offsets_size):
         for k in range(filter_size):
             offset = 0
 
@@ -214,7 +214,7 @@ cdef inline int worker(
     cdef np.uint8_t out
     cdef int _oo, _pp
 
-    for j in range(start, end):
+    for _j in range(start, end):
         out = _true
 
         for i in range(footprint_size):
