@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from platform import python_version
 
 import numpy as np
 import pytest
@@ -32,7 +31,7 @@ def connectivity(request):
 
 @pytest.fixture(params=[1, 2, 3, 4])
 def ndim(request):
-    return min(3, request.param) if python_version()[:3] == '3.6' else request.param
+    return request.param
 
 
 @pytest.fixture(
@@ -187,6 +186,12 @@ def test_no_background2():
     assert (sorted(sizes) == np.array([1, 8])).all()
 
 
+def test_bool_2d_background():
+    inp = np.array([[1, 1, 0, 0, 0], [0, 0, 1, 0, 1], [0, 0, 1, 1, 1]], dtype=bool)
+
+    assert_eq(label(inp), inp)
+
+
 def numbered_by_first_appearance(labeled: np.ndarray) -> np.ndarray:
     """Renumbers in raster order: `cc3d` and `skimage` agree on the partition, not on the numbers."""
     flat = labeled.ravel()
@@ -200,6 +205,7 @@ def numbered_by_first_appearance(labeled: np.ndarray) -> np.ndarray:
 
 
 def test_stress(connectivity, ndim):
+    np.random.seed(1337)
     connectivity = min(connectivity, ndim)
 
     for _ in range(2 * n_samples):
