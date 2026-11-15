@@ -1,4 +1,3 @@
-from platform import python_version
 from typing import Optional
 
 import numpy as np
@@ -114,8 +113,6 @@ class Linear2DInterpolator(Linear2DInterpolatorCpp):
         if points.ndim != 2 or points.shape[1] != 2:
             raise ValueError('Passed `points` argument has an incorrect shape')
 
-        _, neighbors = self.kdtree.query(
-            points, 1, **{'workers': self.num_threads} if python_version()[:3] != '3.6' else {}
-        )
+        _, neighbors = self.kdtree.query(points, 1, workers=self.num_threads)
 
         return super().__call__(points, values, neighbors, fill_value)
