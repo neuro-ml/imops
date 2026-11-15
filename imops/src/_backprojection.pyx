@@ -24,17 +24,32 @@ cdef enum:
     BLOCK = 16
 
 
-def slices_last(const FLOAT[:, :, ::1] sinogram, Py_ssize_t detector_size, Py_ssize_t offset, Py_ssize_t num_threads):
-    """The sinogram as (angle, detector, slice), its detector centred in one `detector_size` long."""
+def slices_last(const FLOAT[:, :, ::1] sinogram, Py_ssize_t length, Py_ssize_t num_threads):
+    """The sinogram as (angle, detector, slice), its detector padded with zeros to `length`."""
     cdef Py_ssize_t n_slices = sinogram.shape[0], n_samples = sinogram.shape[1], n_angles = sinogram.shape[2]
-    cdef FLOAT[:, :, ::1] projections = np.zeros_like(sinogram, shape=(n_angles, detector_size, n_slices), order='C')
-    cdef Py_ssize_t sample, block, s, angle
+    cdef FLOAT[:, :, ::1] projections = np.zeros_like(sinogram, shape=(n_angles, length, n_slices), order='C')
+    # A block goes through a buffer, so each cache line is read and written whole. Written in place, sixteen
+    # lines a power of two apart evict each other, and the copy runs up to ten times slower.
+    cdef FLOAT[:, ::1] blocks = np.empty_like(sinogram, shape=(num_threads, BLOCK * BLOCK), order='C')
+    cdef Py_ssize_t sample, angle_block, slice_block, first_angle, last_angle, first_slice, last_slice, angle, s
+    cdef FLOAT* block
 
     for sample in prange(n_samples, nogil=True, num_threads=num_threads):
-        for block in range((n_angles + BLOCK - 1) // BLOCK):
-            for s in range(n_slices):
-                for angle in range(block * BLOCK, min(block * BLOCK + BLOCK, n_angles)):
-                    projections[angle, offset + sample, s] = sinogram[s, sample, angle]
+        block = &blocks[threadid(), 0]
+        for angle_block in range((n_angles + BLOCK - 1) // BLOCK):
+            first_angle = angle_block * BLOCK
+            last_angle = min(first_angle + BLOCK, n_angles)
+            for slice_block in range((n_slices + BLOCK - 1) // BLOCK):
+                first_slice = slice_block * BLOCK
+                last_slice = min(first_slice + BLOCK, n_slices)
+
+                for s in range(first_slice, last_slice):
+                    for angle in range(first_angle, last_angle):
+                        block[(angle - first_angle) * BLOCK + s - first_slice] = sinogram[s, sample, angle]
+
+                for angle in range(first_angle, last_angle):
+                    for s in range(first_slice, last_slice):
+                        projections[angle, sample, s] = block[(angle - first_angle) * BLOCK + s - first_slice]
 
     return np.asarray(projections)
 
@@ -56,16 +71,18 @@ cdef inline void add_two_angles(FLOAT* sums, const FLOAT* first, FLOAT first_pos
 
 
 def backprojection3d(const FLOAT[:, :, ::1] projections, const FLOAT[:] theta, const FLOAT[:] xs,
-                     const uint8[:, :] inside_circle, FLOAT fill_value, Py_ssize_t detector_size,
-                     Py_ssize_t num_threads):
-    """`projections` is the filtered sinogram as (angle, detector, slice), longer than `detector_size`."""
+                     const uint8[:, :] inside_circle, FLOAT fill_value, FLOAT centre, Py_ssize_t num_threads):
+    """`projections` is the filtered sinogram as (angle, detector, slice).
+
+    The ray through the pixel at (x, y) meets it at `x * cos - y * sin + centre`, and the sample after is read too.
+    """
     cdef Py_ssize_t n_angles = theta.shape[0], n_slices = projections.shape[2], size = inside_circle.shape[0]
     cdef FLOAT[:, :, ::1] image = np.empty_like(projections, shape=(n_slices, size, size), order='C')
     cdef FLOAT[:, ::1] sums = np.empty_like(projections, shape=(num_threads, TILE * TILE * n_slices), order='C')
     # Angles go in pairs, so `sums` is read and written once per two. An odd one out pairs with zeros.
-    cdef FLOAT[:, ::1] zeros = np.zeros_like(projections, shape=(detector_size + 1, n_slices), order='C')
+    cdef FLOAT[:, ::1] zeros = np.zeros_like(projections, shape=(projections.shape[1], n_slices), order='C')
     cdef FLOAT[:] sines = np.pad(np.sin(theta), (0, 1)), cosines = np.pad(np.cos(theta), (0, 1))
-    cdef FLOAT centre = detector_size // 2, angle_weight = np.pi / (2 * n_angles)
+    cdef FLOAT angle_weight = np.pi / (2 * n_angles)
     cdef Py_ssize_t tiles_per_side = (size + TILE - 1) // TILE
     cdef Py_ssize_t tile, top, left, bottom, right, first, second, row, col, s
     cdef FLOAT first_cos, first_sin, second_cos, second_sin, first_across, second_across

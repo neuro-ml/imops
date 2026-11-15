@@ -1,7 +1,7 @@
 from typing import Optional, Sequence, Tuple, Union
 
 import numpy as np
-from scipy.fft import irfft, rfft
+from scipy.fft import irfft, next_fast_len, rfft
 
 from .backend import BackendLike, resolve_backend
 from .compat import normalize_axis_tuple
@@ -165,30 +165,31 @@ def inverse_radon(
             f'The given `theta` (size {angles_count}) does not match the number of '
             f'projections in `sinogram` ({sinogram.shape[-1]}).'
         )
-    output_size = sinogram.shape[1]
+    size = sinogram.shape[1]
     dtype = sinogram.dtype
-    img_shape, offset = _square_detector(output_size)
     num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
     slices_last_ = fast_slices_last if backend.fast else slices_last
     backprojection3d_ = fast_backprojection3d if backend.fast else backprojection3d
 
+    # A ray meets the detector within `radius` of its centre, and the sample after it is read too.
+    radius = size // 2
+    window = 2 * radius + 2
+    length = next_fast_len(size + window - 1, real=True)
+
     # The backprojection reads every slice of one detector sample at once, so slices go last and stay there.
-    projections = slices_last_(np.ascontiguousarray(sinogram), img_shape, offset, num_threads)
+    projections = slices_last_(np.ascontiguousarray(sinogram), length, num_threads)
+    spectrum = rfft(projections, axis=1, workers=num_threads)
+    spectrum *= _filter_spectrum(size, window, length, a, b).astype(spectrum.dtype)
+    filtered = irfft(spectrum, length, axis=1, workers=num_threads, overwrite_x=True)
 
-    # Shorter than twice the detector and the ramp filter wraps around. A power of two transforms fastest.
-    padded_size = max(64, int(2 ** np.ceil(np.log2(2 * img_shape))))
-    fourier_filter = _smooth_sharpen_filter(padded_size, a, b).astype(dtype)
-    spectrum = rfft(projections, n=padded_size, axis=1, workers=num_threads)
-    spectrum *= fourier_filter
-    filtered = irfft(spectrum, padded_size, axis=1, workers=num_threads, overwrite_x=True)
-
-    radius = output_size // 2
-    xs = np.arange(-radius, output_size - radius)
+    xs = np.arange(-radius, size - radius)
     squared = xs**2
     inside_circle = (squared[:, None] + squared[None, :]) <= radius**2
     theta, xs = np.deg2rad(theta, dtype=dtype), xs.astype(dtype, copy=False)
 
-    reconstructed = backprojection3d_(filtered, theta, xs, inside_circle, fill_value, img_shape, num_threads)
+    # The filter puts detector sample p at p + size - 1, and the detector centre is sample `radius`.
+    centre = radius + size - 1
+    reconstructed = backprojection3d_(filtered, theta, xs, inside_circle, fill_value, centre, num_threads)
 
     return restore_axes(reconstructed, axes, extra)
 
@@ -229,8 +230,12 @@ def _smooth_sharpen_filter(size: int, a: float, b: float) -> np.ndarray:
     return ramp * (1 + a * (ramp**b))
 
 
-def _square_detector(size: int) -> Tuple[int, int]:
-    """The detector that holds the rotated circle, and where the old one starts inside it."""
-    diagonal = int(np.ceil(np.sqrt(2) * size))
+def _filter_spectrum(size: int, window: int, length: int, a: float, b: float) -> np.ndarray:
+    """A `length` long spectrum that filters `size` detector samples and puts sample p < `window` at p + size - 1."""
+    # The filter is the one skimage samples over twice the square that holds the rotated detector.
+    square = int(np.ceil(np.sqrt(2) * size))
+    padded = max(64, int(2 ** np.ceil(np.log2(2 * square))))
+    kernel = irfft(_smooth_sharpen_filter(padded, a, b)[:, 0], padded)
+    lags = np.arange(1 - size, window)
 
-    return diagonal, diagonal // 2 - size // 2
+    return rfft(kernel[lags % padded], length).reshape(-1, 1)
