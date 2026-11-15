@@ -11,6 +11,7 @@ from cython.parallel import prange
 cimport cython
 cimport numpy as np
 from cython.parallel cimport threadid
+from libc.string cimport memset
 
 
 ctypedef cython.floating FLOAT
@@ -23,138 +24,89 @@ cdef enum:
     BLOCK = 16
 
 
-cdef struct Span:
-    Py_ssize_t lo
-    Py_ssize_t hi
+def slices_last(const FLOAT[:, :, ::1] sinogram, Py_ssize_t detector_size, Py_ssize_t offset, Py_ssize_t num_threads):
+    """The sinogram as (angle, detector, slice), its detector centred in one `detector_size` long."""
+    cdef Py_ssize_t n_slices = sinogram.shape[0], n_samples = sinogram.shape[1], n_angles = sinogram.shape[2]
+    cdef FLOAT[:, :, ::1] projections = np.zeros_like(sinogram, shape=(n_angles, detector_size, n_slices), order='C')
+    cdef Py_ssize_t sample, block, s, angle
+
+    for sample in prange(n_samples, nogil=True, num_threads=num_threads):
+        for block in range((n_angles + BLOCK - 1) // BLOCK):
+            for s in range(n_slices):
+                for angle in range(block * BLOCK, min(block * BLOCK + BLOCK, n_angles)):
+                    projections[angle, offset + sample, s] = sinogram[s, sample, angle]
+
+    return np.asarray(projections)
 
 
-cdef inline Py_ssize_t clamped(Py_ssize_t value, Py_ssize_t low, Py_ssize_t high) noexcept nogil:
-    if value < low:
-        return low
-    if value > high:
-        return high
-
-    return value
+cdef inline FLOAT* pixel_sums(FLOAT* tile_sums, Py_ssize_t row, Py_ssize_t col, Py_ssize_t n_slices) noexcept nogil:
+    return tile_sums + (row * TILE + col) * n_slices
 
 
-cdef inline Span inside_span(const uint8[:] row) noexcept nogil:
-    """The circle meets a row of the output in one interval, so its two ends are all the kernel needs."""
-    cdef Span span
-
-    span.lo = 0
-    span.hi = row.shape[0]
-    while span.lo < span.hi and not row[span.lo]:
-        span.lo = span.lo + 1
-    while span.hi > span.lo and not row[span.hi - 1]:
-        span.hi = span.hi - 1
-
-    return span
-
-
-cdef inline Span overlap(Py_ssize_t lo, Py_ssize_t hi, Py_ssize_t left, Py_ssize_t right) noexcept nogil:
-    """Where a row's circle interval meets the columns of a tile. A miss collapses, it never inverts."""
-    cdef Span span
-
-    span.lo = clamped(lo, left, right)
-    span.hi = clamped(hi, span.lo, right)
-
-    return span
-
-
-cdef inline void add_sample(FLOAT* run, const FLOAT* tap, Py_ssize_t ahead, FLOAT weight,
-                            Py_ssize_t n_slices) noexcept nogil:
-    """One detector sample interpolated into every slice at once. `ahead` is 0 at the last sample, which weighs 0."""
-    cdef Py_ssize_t s
+cdef inline void add_two_angles(FLOAT* sums, const FLOAT* first, FLOAT first_position, const FLOAT* second,
+                                FLOAT second_position, Py_ssize_t n_slices) noexcept nogil:
+    """Adds to every slice two detector values, each at its position between the two nearest samples."""
+    cdef Py_ssize_t first_sample = <Py_ssize_t>first_position, second_sample = <Py_ssize_t>second_position, s
+    cdef const FLOAT* a = first + first_sample * n_slices
+    cdef const FLOAT* b = second + second_sample * n_slices
+    cdef FLOAT a_weight = first_position - first_sample, b_weight = second_position - second_sample
 
     for s in range(n_slices):
-        run[s] = run[s] + tap[s] + (tap[ahead + s] - tap[s]) * weight
+        sums[s] = sums[s] + a[s] + (a[n_slices + s] - a[s]) * a_weight + b[s] + (b[n_slices + s] - b[s]) * b_weight
 
 
-cdef inline void fill(FLOAT* run, FLOAT value, Py_ssize_t length) noexcept nogil:
-    cdef Py_ssize_t s
+def backprojection3d(const FLOAT[:, :, ::1] projections, const FLOAT[:] theta, const FLOAT[:] xs,
+                     const uint8[:, :] inside_circle, FLOAT fill_value, Py_ssize_t detector_size,
+                     Py_ssize_t num_threads):
+    """`projections` is the filtered sinogram as (angle, detector, slice), longer than `detector_size`."""
+    cdef Py_ssize_t n_angles = theta.shape[0], n_slices = projections.shape[2], size = inside_circle.shape[0]
+    cdef FLOAT[:, :, ::1] image = np.empty_like(projections, shape=(n_slices, size, size), order='C')
+    cdef FLOAT[:, ::1] sums = np.empty_like(projections, shape=(num_threads, TILE * TILE * n_slices), order='C')
+    # Angles go in pairs, so `sums` is read and written once per two. An odd one out pairs with zeros.
+    cdef FLOAT[:, ::1] zeros = np.zeros_like(projections, shape=(detector_size + 1, n_slices), order='C')
+    cdef FLOAT[:] sines = np.pad(np.sin(theta), (0, 1)), cosines = np.pad(np.cos(theta), (0, 1))
+    cdef FLOAT centre = detector_size // 2, angle_weight = np.pi / (2 * n_angles)
+    cdef Py_ssize_t tiles_per_side = (size + TILE - 1) // TILE
+    cdef Py_ssize_t tile, top, left, bottom, right, first, second, row, col, s
+    cdef FLOAT first_cos, first_sin, second_cos, second_sin, first_across, second_across
+    cdef const FLOAT* first_projection
+    cdef const FLOAT* second_projection
+    cdef FLOAT* tile_sums
 
-    for s in range(length):
-        run[s] = value
+    for tile in prange(tiles_per_side * tiles_per_side, nogil=True, num_threads=num_threads):
+        top = tile // tiles_per_side * TILE
+        left = tile % tiles_per_side * TILE
+        bottom = min(top + TILE, size)
+        right = min(left + TILE, size)
+        tile_sums = &sums[threadid(), 0]
+        memset(tile_sums, 0, TILE * TILE * n_slices * sizeof(FLOAT))
 
+        for first in range(0, n_angles, 2):
+            second = first + 1
+            first_projection = &projections[first, 0, 0]
+            second_projection = &projections[second, 0, 0] if second < n_angles else &zeros[0, 0]
+            first_cos, first_sin = cosines[first], sines[first]
+            second_cos, second_sin = cosines[second], sines[second]
 
-def by_angle(const FLOAT[:, :, ::1] sinogram, Py_ssize_t image_size, Py_ssize_t offset, Py_ssize_t num_threads):
-    """The sinogram as (angle, detector, slice), its detector centred in one `image_size` long."""
-    cdef Py_ssize_t n_slices = sinogram.shape[0], detector = sinogram.shape[1], n_angles = sinogram.shape[2]
-    cdef FLOAT[:, :, ::1] rows = np.zeros_like(sinogram, shape=(n_angles, image_size, n_slices), order='C')
-    cdef Py_ssize_t angle_blocks = (n_angles + BLOCK - 1) // BLOCK
-    cdef Py_ssize_t d, angle_block, k0, k_end, s, k
+            for row in range(top, bottom):
+                first_across = -xs[row] * first_sin
+                second_across = -xs[row] * second_sin
 
-    for d in prange(detector, nogil=True, num_threads=num_threads):
-        for angle_block in range(angle_blocks):
-            k0 = angle_block * BLOCK
-            k_end = clamped(k0 + BLOCK, k0, n_angles)
-
-            for s in range(n_slices):
-                for k in range(k0, k_end):
-                    rows[k, offset + d, s] = sinogram[s, d, k]
-
-    return np.asarray(rows)
-
-
-cpdef FLOAT[:, :, :] backprojection3d(const FLOAT[:, :, ::1] rows, const FLOAT[:] theta, const FLOAT[:] xs,
-                                      const uint8[:, :] inside_circle, FLOAT fill_value, int image_size,
-                                      Py_ssize_t num_threads):
-    """`rows` is the filtered sinogram as (angle, detector, slice); only its first `image_size` samples are read."""
-    cdef Py_ssize_t n_angles = theta.shape[0], n_slices = rows.shape[2]
-    cdef Py_ssize_t output_size = inside_circle.shape[0]
-    cdef FLOAT[:, :, ::1] result = np.empty_like(rows, shape=(n_slices, output_size, output_size), order='C')
-    cdef FLOAT[:, ::1] patches = np.empty_like(rows, shape=(num_threads, TILE * TILE * n_slices), order='C')
-    cdef Py_ssize_t[:, ::1] spans = np.empty((output_size, 2), dtype=np.intp)
-    cdef FLOAT[:] sinuses = np.sin(theta)
-    cdef FLOAT[:] cosinuses = np.cos(theta)
-    cdef FLOAT shift = image_size // 2, right_limit = image_size - 1
-    cdef FLOAT multiplier = np.pi / (2 * n_angles)
-    cdef Py_ssize_t across = (output_size + TILE - 1) // TILE
-    cdef Py_ssize_t tile, top, bottom, left, right, i, j, k, s, idx
-    cdef FLOAT value, start
-    cdef FLOAT* patch
-    cdef Span span
-
-    for i in range(output_size):
-        span = inside_span(inside_circle[i])
-        spans[i, 0] = span.lo
-        spans[i, 1] = span.hi
-
-    for tile in prange(across * across, nogil=True, num_threads=num_threads):
-        top = tile / across * TILE
-        left = tile % across * TILE
-        bottom = clamped(top + TILE, top, output_size)
-        right = clamped(left + TILE, left, output_size)
-        patch = &patches[threadid(), 0]
-        fill(patch, 0, (bottom - top) * TILE * n_slices)
-
-        for k in range(n_angles):
-            for i in range(top, bottom):
-                span = overlap(spans[i, 0], spans[i, 1], left, right)
-                start = -xs[i] * sinuses[k]
-
-                for j in range(span.lo, span.hi):
-                    value = xs[j] * cosinuses[k] + start + shift
-                    if value < 0 or value > right_limit:
-                        continue
-
-                    idx = <Py_ssize_t>value
-                    add_sample(
-                        patch + ((i - top) * TILE + j - left) * n_slices, &rows[k, idx, 0],
-                        n_slices if idx < right_limit else 0, value - idx, n_slices
-                    )
+                for col in range(left, right):
+                    if inside_circle[row, col]:
+                        add_two_angles(
+                            pixel_sums(tile_sums, row - top, col - left, n_slices),
+                            first_projection, xs[col] * first_cos + first_across + centre,
+                            second_projection, xs[col] * second_cos + second_across + centre,
+                            n_slices,
+                        )
 
         for s in range(n_slices):
-            for i in range(top, bottom):
-                span = overlap(spans[i, 0], spans[i, 1], left, right)
+            for row in range(top, bottom):
+                for col in range(left, right):
+                    if inside_circle[row, col]:
+                        image[s, row, col] = pixel_sums(tile_sums, row - top, col - left, n_slices)[s] * angle_weight
+                    else:
+                        image[s, row, col] = fill_value
 
-                for j in range(left, span.lo):
-                    result[s, i, j] = fill_value
-
-                for j in range(span.lo, span.hi):
-                    result[s, i, j] = patch[((i - top) * TILE + j - left) * n_slices + s] * multiplier
-
-                for j in range(span.hi, right):
-                    result[s, i, j] = fill_value
-
-    return np.asarray(result)
+    return np.asarray(image)

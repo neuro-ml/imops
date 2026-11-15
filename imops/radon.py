@@ -6,8 +6,8 @@ from scipy.fft import irfft, rfft
 from .backend import BackendLike, resolve_backend
 from .compat import normalize_axis_tuple
 from .numeric import copy
-from .src._backprojection import backprojection3d, by_angle
-from .src._fast_backprojection import backprojection3d as fast_backprojection3d, by_angle as fast_by_angle
+from .src._backprojection import backprojection3d, slices_last
+from .src._fast_backprojection import backprojection3d as fast_backprojection3d, slices_last as fast_slices_last
 from .src._fast_radon import radon3d as fast_radon3d
 from .src._radon import radon3d
 from .utils import normalize_num_threads
@@ -169,16 +169,16 @@ def inverse_radon(
     dtype = sinogram.dtype
     img_shape, offset = _square_detector(output_size)
     num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
-    by_angle_ = fast_by_angle if backend.fast else by_angle
+    slices_last_ = fast_slices_last if backend.fast else slices_last
     backprojection3d_ = fast_backprojection3d if backend.fast else backprojection3d
 
     # The backprojection reads every slice of one detector sample at once, so slices go last and stay there.
-    rows = by_angle_(np.ascontiguousarray(sinogram), img_shape, offset, num_threads)
+    projections = slices_last_(np.ascontiguousarray(sinogram), img_shape, offset, num_threads)
 
     # Shorter than twice the detector and the ramp filter wraps around. A power of two transforms fastest.
     padded_size = max(64, int(2 ** np.ceil(np.log2(2 * img_shape))))
     fourier_filter = _smooth_sharpen_filter(padded_size, a, b).astype(dtype)
-    spectrum = rfft(rows, n=padded_size, axis=1, workers=num_threads)
+    spectrum = rfft(projections, n=padded_size, axis=1, workers=num_threads)
     spectrum *= fourier_filter
     filtered = irfft(spectrum, padded_size, axis=1, workers=num_threads, overwrite_x=True)
 
@@ -188,9 +188,7 @@ def inverse_radon(
     inside_circle = (squared[:, None] + squared[None, :]) <= radius**2
     theta, xs = np.deg2rad(theta, dtype=dtype), xs.astype(dtype, copy=False)
 
-    reconstructed = np.asarray(
-        backprojection3d_(filtered, theta, xs, inside_circle, fill_value, img_shape, num_threads)
-    )
+    reconstructed = backprojection3d_(filtered, theta, xs, inside_circle, fill_value, img_shape, num_threads)
 
     return restore_axes(reconstructed, axes, extra)
 
