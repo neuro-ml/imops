@@ -1,9 +1,8 @@
-from platform import python_version
 from typing import Callable, Optional, Sequence, Union
 from warnings import warn
 
 import numpy as np
-from scipy.ndimage import zoom as _scipy_zoom
+from scipy.ndimage import zoom as scipy_zoom
 
 from .backend import BackendLike, resolve_backend
 from .src._fast_zoom import (
@@ -27,13 +26,6 @@ from .utils import (
     inverse_permutation,
     normalize_num_threads,
 )
-
-
-def scipy_zoom(*args, grid_mode, **kwargs):
-    return _scipy_zoom(*args, **kwargs)
-
-
-scipy_zoom = scipy_zoom if python_version()[:3] == '3.6' else _scipy_zoom
 
 
 def _choose_cython_zoom(ndim: int, order: int, fast: bool) -> Callable:

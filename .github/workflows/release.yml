@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python 3.9
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: '3.12'
 
       - id: get_version
         name: Get the release version
@@ -35,7 +35,7 @@ jobs:
     uses: ./.github/workflows/build-wheels.yml
     needs: [ check_version ]
     with:
-      cibw_build: cp38-* cp39-* cp310-* cp311-* cp312-*
+      cibw_build: cp310-* cp311-* cp312-* cp313-* cp314-*
 
   build_sdist:
     uses: ./.github/workflows/build-sdist.yml

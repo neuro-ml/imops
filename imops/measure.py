@@ -1,5 +1,4 @@
 from collections import namedtuple
-from platform import python_version
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from warnings import warn
 
@@ -112,11 +111,15 @@ def label(
                 in_place=False,
             )
 
+        # `cc3d` since 3.27 gives a spurious label to the background of 2D bool images under 8-connectivity
+        if label_image.dtype == bool:
+            label_image = label_image.view(np.uint8)
+
         labeled_image, num_components = connected_components(
             label_image,
             connectivity=_SKIMAGE2CC3D[(ndim, connectivity)],
             return_N=True,
-            **{'out_dtype': dtype} if python_version()[:3] != '3.6' else {},
+            out_dtype=dtype,
         )
 
         if ndim == 1:
