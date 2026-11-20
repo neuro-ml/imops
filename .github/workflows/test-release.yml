@@ -2,6 +2,10 @@ name: Test release
 
 on: [ pull_request ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   MODULE_NAME: imops
 
@@ -9,7 +13,7 @@ jobs:
   build_wheels:
     uses: ./.github/workflows/build-wheels.yml
     with:
-      cibw_build: cp310-* cp314-*
+      pythons: '["cp310", "cp314"]'
 
   build_sdist:
     uses: ./.github/workflows/build-sdist.yml

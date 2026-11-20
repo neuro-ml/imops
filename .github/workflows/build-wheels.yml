@@ -3,7 +3,7 @@ name: build-wheels
 on:
   workflow_call:
     inputs:
-      cibw_build:
+      pythons:
         required: true
         type: string
 
@@ -15,7 +15,8 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-22.04, windows-2022, macOS-15 ]
-    name: Build wheels on ${{ matrix.os }}
+        python: ${{ fromJSON(inputs.pythons) }}
+    name: Build ${{ matrix.python }} wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -58,13 +59,13 @@ jobs:
         env:
           CIBW_ENVIRONMENT_MACOS: >
             CC="$(brew --prefix llvm)/bin/clang" CXX="$(brew --prefix llvm)/bin/clang++" MACOSX_DEPLOYMENT_TARGET=15.0
-          CIBW_BUILD: ${{ inputs.cibw_build }}
+          CIBW_BUILD: ${{ matrix.python }}-*
           CIBW_ARCHS_LINUX: x86_64
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
-          CIBW_MUSLLINUX_X86_64_IMAGE: musllinux_1_2
+          CIBW_SKIP: '*-musllinux_*'
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}
+          name: wheels-${{ matrix.os }}-${{ matrix.python }}
           path: ./wheelhouse/*.whl

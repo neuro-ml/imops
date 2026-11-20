@@ -1,3 +1,4 @@
+import os
 import runpy
 from pathlib import Path
 
@@ -72,5 +73,6 @@ setup(
         'wheel',
     ],
     ext_modules=ext_modules,
+    options={'build_ext': {'parallel': os.cpu_count()}},
     python_requires='>=3.10',
 )
