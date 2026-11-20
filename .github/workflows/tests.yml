@@ -76,3 +76,20 @@ jobs:
           fail_ci_if_error: true
           files: reports/coverage-${{ matrix.python-version }}.xml
           verbose: true
+
+  native:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Build for the runner CPU
+        run: IMOPS_NATIVE=1 pip install . -r tests/requirements.txt
+
+      - name: Test
+        run: |
+          (cd tests && python -c "from importlib.util import find_spec; assert find_spec('imops.src._zoom_v3') is None")
+          pytest tests/test_cpu.py tests/test_fp_state.py tests/test_zoom.py -n 2
