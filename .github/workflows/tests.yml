@@ -2,6 +2,10 @@ name: Tests
 
 on: [ pull_request ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   MODULE_NAME: imops
 
@@ -11,6 +15,9 @@ jobs:
     strategy:
       matrix:
         python-version: [ '3.10', '3.11', '3.12', '3.13', '3.14' ]
+        include:
+          - python-version: '3.14'
+            cov-args: --cov="$MODULE_PARENT/$MODULE_NAME" --cov-report=xml --cov-branch
 
     steps:
       - uses: actions/checkout@v4
@@ -45,8 +52,9 @@ jobs:
 
       - name: Test with pytest
         run: |
-          pytest tests -n 2 --junitxml=reports/junit-${{ matrix.python-version }}.xml --cov="$MODULE_PARENT/$MODULE_NAME" --cov-report=xml --cov-branch
+          pytest tests -n 2 --junitxml=reports/junit-${{ matrix.python-version }}.xml ${{ matrix.cov-args }}
       - name: Generate coverage report
+        if: matrix.cov-args
         run: |
           coverage xml -o reports/coverage-${{ matrix.python-version }}.xml
           sed -i -e "s|$MODULE_PARENT/||g" reports/coverage-${{ matrix.python-version }}.xml
@@ -60,6 +68,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload coverage results
+        if: matrix.cov-args
         uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
