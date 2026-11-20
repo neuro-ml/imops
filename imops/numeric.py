@@ -3,22 +3,6 @@ from typing import Callable, Optional, Sequence, Union
 import numpy as np
 
 from .backend import BackendLike, resolve_backend
-from .src._fast_numeric import (
-    _copy_3d as cython_fast_copy_3d,
-    _copy_3d_fp16 as cython_fast_copy_3d_fp16,
-    _copy_4d as cython_fast_copy_4d,
-    _copy_4d_fp16 as cython_fast_copy_4d_fp16,
-    _fill_3d as cython_fast_fill_3d,
-    _fill_4d as cython_fast_fill_4d,
-    _pointwise_add_array_3d as cython_fast_pointwise_add_array_3d,
-    _pointwise_add_array_3d_fp16 as cython_fast_pointwise_add_array_3d_fp16,
-    _pointwise_add_array_4d as cython_fast_pointwise_add_array_4d,
-    _pointwise_add_array_4d_fp16 as cython_fast_pointwise_add_array_4d_fp16,
-    _pointwise_add_value_3d as cython_fast_pointwise_add_value_3d,
-    _pointwise_add_value_3d_fp16 as cython_fast_pointwise_add_value_3d_fp16,
-    _pointwise_add_value_4d as cython_fast_pointwise_add_value_4d,
-    _pointwise_add_value_4d_fp16 as cython_fast_pointwise_add_value_4d_fp16,
-)
 from .src._numeric import (
     _copy_3d as cython_copy_3d,
     _copy_3d_fp16 as cython_copy_3d_fp16,
@@ -45,55 +29,55 @@ _NUMERIC_DEFAULT_NUM_THREADS = 4
 
 
 # TODO: Maybe dict is better?
-def _choose_cython_pointwise_add(ndim: int, summand_is_array: bool, is_fp16: bool, fast: bool) -> Callable:
+def _choose_cython_pointwise_add(ndim: int, summand_is_array: bool, is_fp16: bool) -> Callable:
     assert ndim <= 4, ndim
 
     if ndim <= 3:
         if summand_is_array:
             if is_fp16:
-                return cython_fast_pointwise_add_array_3d_fp16 if fast else cython_pointwise_add_array_3d_fp16
+                return cython_pointwise_add_array_3d_fp16
 
-            return cython_fast_pointwise_add_array_3d if fast else cython_pointwise_add_array_3d
+            return cython_pointwise_add_array_3d
 
         if is_fp16:
-            return cython_fast_pointwise_add_value_3d_fp16 if fast else cython_pointwise_add_value_3d_fp16
+            return cython_pointwise_add_value_3d_fp16
 
-        return cython_fast_pointwise_add_value_3d if fast else cython_pointwise_add_value_3d
+        return cython_pointwise_add_value_3d
 
     if summand_is_array:
         if is_fp16:
-            return cython_fast_pointwise_add_array_4d_fp16 if fast else cython_pointwise_add_array_4d_fp16
+            return cython_pointwise_add_array_4d_fp16
 
-        return cython_fast_pointwise_add_array_4d if fast else cython_pointwise_add_array_4d
+        return cython_pointwise_add_array_4d
 
     if is_fp16:
-        return cython_fast_pointwise_add_value_4d_fp16 if fast else cython_pointwise_add_value_4d_fp16
+        return cython_pointwise_add_value_4d_fp16
 
-    return cython_fast_pointwise_add_value_4d if fast else cython_pointwise_add_value_4d
+    return cython_pointwise_add_value_4d
 
 
-def _choose_cython_fill_(ndim: int, fast: bool) -> Callable:
+def _choose_cython_fill_(ndim: int) -> Callable:
     assert ndim <= 4, ndim
 
     if ndim <= 3:
-        return cython_fast_fill_3d if fast else cython_fill_3d
+        return cython_fill_3d
 
-    return cython_fast_fill_4d if fast else cython_fill_4d
+    return cython_fill_4d
 
 
-def _choose_cython_copy(ndim: int, is_fp16: bool, fast: bool) -> Callable:
+def _choose_cython_copy(ndim: int, is_fp16: bool) -> Callable:
     assert ndim <= 4, ndim
 
     if ndim <= 3:
         if is_fp16:
-            return cython_fast_copy_3d_fp16 if fast else cython_copy_3d_fp16
+            return cython_copy_3d_fp16
 
-        return cython_fast_copy_3d if fast else cython_copy_3d
+        return cython_copy_3d
 
     if is_fp16:
-        return cython_fast_copy_4d_fp16 if fast else cython_copy_4d_fp16
+        return cython_copy_4d_fp16
 
-    return cython_fast_copy_4d if fast else cython_copy_4d
+    return cython_copy_4d
 
 
 def pointwise_add(
@@ -169,7 +153,7 @@ def pointwise_add(
         return output
 
     is_fp16 = dtype == np.float16
-    src_pointwise_add = _choose_cython_pointwise_add(ndim, summand_is_array, is_fp16, backend.fast)
+    src_pointwise_add = _choose_cython_pointwise_add(ndim, summand_is_array, is_fp16)
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
 
@@ -236,7 +220,7 @@ def fill_(
 
     is_fp16 = dtype == np.float16
     num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
-    src_fill_ = _choose_cython_fill_(ndim, backend.fast)
+    src_fill_ = _choose_cython_fill_(ndim)
     value = dtype.type(value)
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
@@ -361,7 +345,7 @@ def copy(
         return output
 
     is_fp16 = dtype == np.float16
-    src_copy = _choose_cython_copy(ndim, is_fp16, backend.fast)
+    src_copy = _choose_cython_copy(ndim, is_fp16)
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
 

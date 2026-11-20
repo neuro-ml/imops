@@ -4,7 +4,7 @@ try:
 except ModuleNotFoundError:
     from imops.backend import Cython
 
-    radon_configs = [Cython(fast) for fast in [False, True]]
+    radon_configs = [Cython()]
 
 import numpy as np
 

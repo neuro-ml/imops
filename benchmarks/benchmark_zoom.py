@@ -8,7 +8,7 @@ except ModuleNotFoundError:
 
     zoom_configs = [
         Scipy(),
-        *[Cython(fast) for fast in [False, True]],
+        Cython(),
     ]
 
 from imops.zoom import zoom

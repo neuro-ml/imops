@@ -7,8 +7,6 @@ from .backend import BackendLike, resolve_backend
 from .compat import normalize_axis_tuple
 from .numeric import copy
 from .src._backprojection import backprojection3d
-from .src._fast_backprojection import backprojection3d as fast_backprojection3d
-from .src._fast_radon import radon3d as fast_radon3d
 from .src._radon import radon3d
 from .utils import normalize_num_threads
 
@@ -91,9 +89,7 @@ def radon(
 
     num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
 
-    radon3d_ = fast_radon3d if backend.fast else radon3d
-
-    sinogram = radon3d_(image, np.deg2rad(theta, dtype=image.dtype), limits, num_threads)
+    sinogram = radon3d(image, np.deg2rad(theta, dtype=image.dtype), limits, num_threads)
 
     result = restore_axes(sinogram, axes, extra)
     if return_fill:
@@ -192,10 +188,8 @@ def inverse_radon(
 
     num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
 
-    backprojection3d_ = fast_backprojection3d if backend.fast else backprojection3d
-
     reconstructed = np.asarray(
-        backprojection3d_(filtered_sinogram, theta, xs, inside_circle, fill_value, img_shape, output_size, num_threads)
+        backprojection3d(filtered_sinogram, theta, xs, inside_circle, fill_value, img_shape, output_size, num_threads)
     )
 
     return restore_axes(reconstructed, axes, extra)

@@ -2,28 +2,28 @@ from .backend import Cython, Scipy
 
 
 scipy_configs = [Scipy()]
-radon_configs = [Cython(fast) for fast in [False, True]]
+radon_configs = [Cython()]
 numeric_configs = [
     Scipy(),
-    *[Cython(fast) for fast in [False, True]],
+    Cython(),
 ]
 measure_configs = [
     Scipy(),
-    *[Cython(fast) for fast in [False, True]],
+    Cython(),
 ]
 morphology_configs = [
     Scipy(),
-    *[Cython(fast) for fast in [False, True]],
+    Cython(),
 ]
 rotate_configs = [
     Scipy(),
-    *[Cython(fast) for fast in [False, True]],
+    Cython(),
 ]
 zoom_configs = [
     Scipy(),
-    *[Cython(fast) for fast in [False, True]],
+    Cython(),
 ]
 interp1d_configs = [
     Scipy(),
-    *[Cython(fast) for fast in [False, True]],
+    Cython(),
 ]

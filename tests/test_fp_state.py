@@ -23,25 +23,18 @@ def _fp_state():
 
 
 def _fp_states_around_imops():
-    import importlib
-    import pkgutil
-
     import numpy as np
 
     before = _fp_state()
 
-    import imops.src
     from imops import rotate, zoom
-    from imops.backend import Cython
-
-    for module in pkgutil.iter_modules(imops.src.__path__):
-        importlib.import_module(f'imops.src.{module.name}')
-    importlib.import_module('imops.cpp.cpp_modules')
+    from imops.interp2d import Linear2DInterpolator
 
     image = np.random.rand(16, 16, 16)
-    for backend in [Cython(), Cython(fast=True)]:
-        zoom(image, 2, num_threads=2, backend=backend)
-        rotate(image, 30, num_threads=2, backend=backend)
+    zoom(image, 2, num_threads=2)
+    rotate(image, 30, num_threads=2)
+    points = np.unique(np.random.randint(0, 64, (200, 2)), axis=0)
+    Linear2DInterpolator(points[::2], np.random.rand(len(points[::2])))(points[1::2])
 
     in_new_thread = []
     thread = threading.Thread(target=lambda: in_new_thread.append(_fp_state()))

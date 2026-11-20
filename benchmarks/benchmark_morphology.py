@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 
     morphology_configs = [
         Scipy(),
-        *[Cython(fast) for fast in [False, True]],
+        Cython(),
     ]
 
 from imops.morphology import binary_closing, binary_dilation, binary_erosion, binary_opening, distance_transform_edt

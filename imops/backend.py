@@ -42,7 +42,8 @@ def resolve_backend(value: BackendLike, warn_stacklevel: int = 1) -> Backend:
         raise ValueError(f'Expected a `Backend` instance, got {value}.')
 
     if isinstance(value, Cython) and value.fast:
-        warn('`fast=True` has no effect for `Cython` backend for now.', stacklevel=warn_stacklevel)
+        warn('`fast=True` is deprecated and does nothing.', DeprecationWarning, stacklevel=warn_stacklevel)
+        return Cython()
 
     return value
 
