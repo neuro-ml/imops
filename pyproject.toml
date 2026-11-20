@@ -63,3 +63,6 @@ imops = ['py.typed']
 [tool.setuptools.dynamic]
 version = { attr = 'imops.__version__.__version__' }
 dependencies = { file = ['requirements.txt'] }
+
+[tool.coverage.run]
+omit = ['*/imops/_build_utils.py']
