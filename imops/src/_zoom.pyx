@@ -12,7 +12,7 @@ cimport numpy as np
 
 from cython.parallel import prange
 
-from libc.math cimport floor, sqrt
+from libc.math cimport floor
 
 
 ctypedef cython.floating FLOAT
@@ -149,14 +149,13 @@ cdef inline double adjusted_coef(Py_ssize_t old_n, Py_ssize_t new_n) noexcept no
     return  (<double>old_n - 1) / (<double>new_n - 1)
 
 
-cdef inline double distance3d(double x1, double y1, double z1,
-                              double x2, double y2, double z2) noexcept nogil:
-    return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
-
-
-cdef inline double distance4d(double x1, double y1, double z1, double d1,
-                              double x2, double y2, double z2, double d2) noexcept nogil:
-    return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2 + (d1 - d2) ** 2)
+cdef inline Py_ssize_t nearest_index(double coordinate, Py_ssize_t size) noexcept nogil:
+    """The nearest index, the upper one on a tie; it is out of range only if `coordinate` is."""
+    # `coordinate - lower` is exact, so rounding can not move a voxel that lies halfway
+    cdef double lower = floor(coordinate)
+    if coordinate - lower >= 0.5 and lower + 1 < size:
+        return <Py_ssize_t>lower + 1
+    return <Py_ssize_t>lower
 
 
 cdef inline FLOAT interpolate3d_linear(const FLOAT* input,
@@ -204,46 +203,10 @@ cdef inline NUM interpolate3d_nearest(const NUM* input,
                                       Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
                                       double r, double c, double d,
                                       NUM cval) noexcept nogil:
-    cdef double minr, minc, mind, maxr, maxc, maxd, curr, curc, curd, distance, min_distance = 3.0
-    cdef short i, j, k, i_nearest = -1, j_nearest = -1, k_nearest = -1
-
-    minr = floor(r)
-    minc = floor(c)
-    mind = floor(d)
-    maxr = minr + 1
-    maxc = minc + 1
-    maxd = mind + 1
-
-    for i in range(2):
-        curr = maxr if i else minr
-        if curr >= rows:
-            continue
-        for j in range(2):
-            curc = maxc if j else minc
-            if curc >= cols:
-                continue
-            for k in range(2):
-                curd = maxd if k else mind
-                if curd >= dims:
-                    continue
-
-                distance = distance3d(r, c, d, curr, curc, curd)
-
-                if distance <= min_distance:
-                    i_nearest = i
-                    j_nearest = j
-                    k_nearest = k
-                    min_distance = distance
-
-    if i_nearest == -1 or j_nearest == -1 or k_nearest == -1:
-        return cval
-
     return get_pixel3d(
         input,
         rows, cols, dims,
-        <Py_ssize_t>(maxr if i_nearest else minr),
-        <Py_ssize_t>(maxc if j_nearest else minc),
-        <Py_ssize_t>(maxd if k_nearest else mind),
+        nearest_index(r, rows), nearest_index(c, cols), nearest_index(d, dims),
         cval,
     )
 
@@ -315,56 +278,11 @@ cdef inline NUM interpolate4d_nearest(const NUM* input,
                                       Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
                                       double c1, double c2, double c3, double c4,
                                       NUM cval) noexcept nogil:
-    cdef double minc1, minc2, minc3, minc4, maxc1, maxc2, maxc3, maxc4, curc1, curc2, curc3, curc4
-    cdef double distance, min_distance = 3.0
-    cdef short i1, i2, i3, i4, i1_nearest = -1, i2_nearest = -1, i3_nearest = -1, i4_nearest = -1
-
-    minc1 = floor(c1)
-    minc2 = floor(c2)
-    minc3 = floor(c3)
-    minc4 = floor(c4)
-    maxc1 = minc1 + 1
-    maxc2 = minc2 + 1
-    maxc3 = minc3 + 1
-    maxc4 = minc4 + 1
-
-    for i1 in range(2):
-        curc1 = maxc1 if i1 else minc1
-        if curc1 >= dim1:
-            continue
-        for i2 in range(2):
-            curc2 = maxc2 if i2 else minc2
-            if curc2 >= dim2:
-                continue
-            for i3 in range(2):
-                curc3 = maxc3 if i3 else minc3
-                if curc3 >= dim3:
-                    continue
-                for i4 in range(2):
-                    curc4 = maxc4 if i4 else minc4
-                    if curc4 >= dim4:
-                        continue
-
-                    distance = distance4d(c1, c2, c3, c4, curc1, curc2, curc3, curc4)
-
-                    if distance <= min_distance:
-                        i1_nearest = i1
-                        i2_nearest = i2
-                        i3_nearest = i3
-                        i4_nearest = i4
-                        min_distance = distance
-
-    if i1_nearest == -1 or i2_nearest == -1 or i3_nearest == -1 or i4_nearest == -1:
-        return cval
-
     return get_pixel4d(
         input,
         stride1, stride2, stride3, stride4,
         dim1, dim2, dim3, dim4,
-        <Py_ssize_t>(maxc1 if i1_nearest else minc1),
-        <Py_ssize_t>(maxc2 if i2_nearest else minc2),
-        <Py_ssize_t>(maxc3 if i3_nearest else minc3),
-        <Py_ssize_t>(maxc4 if i4_nearest else minc4),
+        nearest_index(c1, dim1), nearest_index(c2, dim2), nearest_index(c3, dim3), nearest_index(c4, dim4),
         cval,
     )
 
