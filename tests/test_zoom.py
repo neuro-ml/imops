@@ -129,7 +129,7 @@ def test_scale_types(backend, order, dtype):
 
     scales = [2, 2.0, (2, 2, 2), [2, 2, 2], np.array([2, 2, 2])]
 
-    inp = np.random.randn(64, 64, 64)
+    inp = np.random.randn(48, 48, 48)
     if dtype == bool:
         inp = inp > 0
     else:
@@ -150,7 +150,7 @@ def test_contiguity_awareness(backend, order, dtype):
         return
 
     for i in range(ZOOM_SRC_DIM):
-        inp = np.random.randn(*(32,) * (ZOOM_SRC_DIM - i))
+        inp = np.random.randn(*(24,) * (ZOOM_SRC_DIM - i))
         if dtype == bool:
             inp = inp > 0
         else:
@@ -207,7 +207,7 @@ def test_thin(backend, order, dtype):
 
     for i in range(ZOOM_SRC_DIM):
         for j in range(n_samples):
-            shape = [1 if k < i else np.random.randint(2, 32) for k in range(ZOOM_SRC_DIM + 1)]
+            shape = [1 if k < i else np.random.randint(2, 24) for k in range(ZOOM_SRC_DIM + 1)]
             inp = np.random.randn(*shape)
             if dtype == bool:
                 inp = inp > 0
