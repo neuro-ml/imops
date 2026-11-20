@@ -9,7 +9,7 @@ env:
 
 jobs:
   check_version:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
 
   release:
     needs: [ build_wheels, build_sdist ]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/download-artifact@v4
