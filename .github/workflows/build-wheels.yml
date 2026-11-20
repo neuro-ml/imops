@@ -64,6 +64,29 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_SKIP: '*-musllinux_*'
 
+      - name: Run the wheel on CPUs without AVX and with AVX2
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q qemu-user-static
+          docker run --rm -e CHECK -e PYTHON=/opt/python/${{ matrix.python }}-${{ matrix.python }}/bin/python \
+            -v "$PWD/wheelhouse:/wheelhouse:ro" -v /usr/bin/qemu-x86_64-static:/usr/bin/qemu-x86_64-static:ro \
+            quay.io/pypa/manylinux_2_28_x86_64 bash -euc '
+              $PYTHON -m pip install -q /wheelhouse/*.whl
+              qemu-x86_64-static -cpu Nehalem $PYTHON -c "$CHECK" x86-64-v2
+              qemu-x86_64-static -cpu Haswell $PYTHON -c "$CHECK" x86-64-v3
+            '
+        env:
+          CHECK: |
+            import sys
+            import numpy as np
+            from imops import rotate, zoom
+            image = np.random.rand(16, 16, 16).astype(np.float32)
+            zoom(image, 1.5)
+            rotate(image, 30)
+            kernels = sys.modules['imops.src._zoom'].__name__
+            assert kernels.endswith('_v3') == (sys.argv[1] == 'x86-64-v3'), kernels
+
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
