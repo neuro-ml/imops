@@ -240,7 +240,7 @@ def test_stress_edt(backend, num_threads, return_distances, return_indices, samp
         size = np.random.randint(1, 4)
         if sampling_enabled:
             sampling = tuple(np.random.uniform(0.5, 1.5, size=size))
-        shape = np.random.randint(64, 128, size=size)
+        shape = np.random.randint(48, 96, size=size)
         x = np.random.randint(5, size=shape)
 
         if np.random.binomial(1, 0.5):

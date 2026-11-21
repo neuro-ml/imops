@@ -1,5 +1,4 @@
 from collections import namedtuple
-from platform import python_version
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from warnings import warn
 
@@ -10,10 +9,6 @@ from scipy.ndimage import center_of_mass as scipy_center_of_mass
 from skimage.measure import label as skimage_label
 
 from .backend import BackendLike, resolve_backend
-from .src._fast_measure import (
-    _center_of_mass as _fast_center_of_mass,
-    _labeled_center_of_mass as _fast_labeled_center_of_mass,
-)
 from .src._measure import _center_of_mass, _labeled_center_of_mass
 from .utils import normalize_num_threads
 
@@ -112,11 +107,15 @@ def label(
                 in_place=False,
             )
 
+        # `cc3d` since 3.27 gives a spurious label to the background of 2D bool images under 8-connectivity
+        if label_image.dtype == bool:
+            label_image = label_image.view(np.uint8)
+
         labeled_image, num_components = connected_components(
             label_image,
             connectivity=_SKIMAGE2CC3D[(ndim, connectivity)],
             return_N=True,
-            **{'out_dtype': dtype} if python_version()[:3] != '3.6' else {},
+            out_dtype=dtype,
         )
 
         if ndim == 1:
@@ -195,9 +194,7 @@ def center_of_mass(
         warn("Fast center-of-mass is only supported for ndim<=3. Falling back to scipy's implementation.", stacklevel=2)
         return scipy_center_of_mass(array, labels, index)
 
-    if labels is None:
-        src_center_of_mass = _fast_center_of_mass if backend.fast else _center_of_mass
-    else:
+    if labels is not None:
         is_sequence = isinstance(index, (Sequence, np.ndarray))
         index = np.array([index] if not is_sequence else index)
 
@@ -213,8 +210,6 @@ def center_of_mass(
         if num_threads > 1:
             warn('Using single-threaded implementation as `labels` and `index` are specified.', stacklevel=2)
 
-        src_center_of_mass = _fast_labeled_center_of_mass if backend.fast else _labeled_center_of_mass
-
     if array.dtype not in ('float32', 'float64'):
         array = array.astype(np.float32)
 
@@ -223,8 +218,8 @@ def center_of_mass(
         array = array[(None,) * n_dummy]
 
     if labels is None:
-        return tuple(src_center_of_mass(array, num_threads))[n_dummy:]
+        return tuple(_center_of_mass(array, num_threads))[n_dummy:]
 
-    output = [tuple(x)[n_dummy:] for x in src_center_of_mass(array, labels[(None,) * n_dummy], index)]
+    output = [tuple(x)[n_dummy:] for x in _labeled_center_of_mass(array, labels[(None,) * n_dummy], index)]
 
     return output if is_sequence else output[0]

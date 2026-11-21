@@ -1,17 +1,10 @@
-from platform import python_version
 from typing import Callable, Optional, Sequence, Union
 from warnings import warn
 
 import numpy as np
-from scipy.ndimage import zoom as _scipy_zoom
+from scipy.ndimage import zoom as scipy_zoom
 
 from .backend import BackendLike, resolve_backend
-from .src._fast_zoom import (
-    _zoom3d_linear as cython_fast_zoom3d_linear,
-    _zoom3d_nearest as cython_fast_zoom3d_nearest,
-    _zoom4d_linear as cython_fast_zoom4d_linear,
-    _zoom4d_nearest as cython_fast_zoom4d_nearest,
-)
 from .src._zoom import (
     _zoom3d_linear as cython_zoom3d_linear,
     _zoom3d_nearest as cython_zoom3d_nearest,
@@ -29,27 +22,20 @@ from .utils import (
 )
 
 
-def scipy_zoom(*args, grid_mode, **kwargs):
-    return _scipy_zoom(*args, **kwargs)
-
-
-scipy_zoom = scipy_zoom if python_version()[:3] == '3.6' else _scipy_zoom
-
-
-def _choose_cython_zoom(ndim: int, order: int, fast: bool) -> Callable:
+def _choose_cython_zoom(ndim: int, order: int) -> Callable:
     assert ndim <= 4, ndim
     assert order in (0, 1), order
 
     if ndim <= 3:
         if order == 0:
-            return cython_fast_zoom3d_nearest if fast else cython_zoom3d_nearest
+            return cython_zoom3d_nearest
 
-        return cython_fast_zoom3d_linear if fast else cython_zoom3d_linear
+        return cython_zoom3d_linear
 
     if order == 0:
-        return cython_fast_zoom4d_nearest if fast else cython_zoom4d_nearest
+        return cython_zoom4d_nearest
 
-    return cython_fast_zoom4d_linear if fast else cython_zoom4d_linear
+    return cython_zoom4d_linear
 
 
 def zoom(
@@ -233,7 +219,7 @@ def _zoom(
         )
 
     if backend.name == 'Cython':
-        src_zoom = _choose_cython_zoom(ndim, order, backend.fast)
+        src_zoom = _choose_cython_zoom(ndim, order)
 
     n_dummy = 3 - ndim if ndim <= 3 else 0
 

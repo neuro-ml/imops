@@ -7,8 +7,6 @@ from .backend import BackendLike, resolve_backend
 from .compat import normalize_axis_tuple
 from .numeric import copy
 from .src._backprojection import backprojection3d, slices_last
-from .src._fast_backprojection import backprojection3d as fast_backprojection3d, slices_last as fast_slices_last
-from .src._fast_radon import radon3d as fast_radon3d
 from .src._radon import radon3d
 from .utils import normalize_num_threads
 
@@ -91,9 +89,7 @@ def radon(
 
     num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
 
-    radon3d_ = fast_radon3d if backend.fast else radon3d
-
-    sinogram = radon3d_(image, np.deg2rad(theta, dtype=image.dtype), limits, num_threads)
+    sinogram = radon3d(image, np.deg2rad(theta, dtype=image.dtype), limits, num_threads)
 
     result = restore_axes(sinogram, axes, extra)
     if return_fill:
@@ -168,16 +164,13 @@ def inverse_radon(
     size = sinogram.shape[1]
     dtype = sinogram.dtype
     num_threads = normalize_num_threads(num_threads, backend, warn_stacklevel=3)
-    slices_last_ = fast_slices_last if backend.fast else slices_last
-    backprojection3d_ = fast_backprojection3d if backend.fast else backprojection3d
-
     # A ray meets the detector within `radius` of its centre, and the sample after it is read too.
     radius = size // 2
     window = 2 * radius + 2
     length = next_fast_len(size + window - 1, real=True)
 
     # The backprojection reads every slice of one detector sample at once, so slices go last and stay there.
-    projections = slices_last_(np.ascontiguousarray(sinogram), length, num_threads)
+    projections = slices_last(np.ascontiguousarray(sinogram), length, num_threads)
     spectrum = rfft(projections, axis=1, workers=num_threads)
     spectrum *= _filter_spectrum(size, window, length, a, b).astype(spectrum.dtype)
     filtered = irfft(spectrum, length, axis=1, workers=num_threads, overwrite_x=True)
@@ -189,7 +182,7 @@ def inverse_radon(
 
     # The filter puts detector sample p at p + size - 1, and the detector centre is sample `radius`.
     centre = radius + size - 1
-    reconstructed = backprojection3d_(filtered, theta, xs, inside_circle, fill_value, centre, num_threads)
+    reconstructed = backprojection3d(filtered, theta, xs, inside_circle, fill_value, centre, num_threads)
 
     return restore_axes(reconstructed, axes, extra)
 

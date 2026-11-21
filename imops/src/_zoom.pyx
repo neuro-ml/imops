@@ -12,7 +12,7 @@ cimport numpy as np
 
 from cython.parallel import prange
 
-from libc.math cimport floor, sqrt
+from libc.math cimport floor
 
 
 ctypedef cython.floating FLOAT
@@ -149,14 +149,9 @@ cdef inline double adjusted_coef(Py_ssize_t old_n, Py_ssize_t new_n) noexcept no
     return  (<double>old_n - 1) / (<double>new_n - 1)
 
 
-cdef inline double distance3d(double x1, double y1, double z1,
-                              double x2, double y2, double z2) noexcept nogil:
-    return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
-
-
-cdef inline double distance4d(double x1, double y1, double z1, double d1,
-                              double x2, double y2, double z2, double d2) noexcept nogil:
-    return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2 + (d1 - d2) ** 2)
+cdef nearest_indices(Py_ssize_t old_n, Py_ssize_t new_n):
+    """The input index nearest to each output index, rounded like `scipy.ndimage.zoom`."""
+    return np.floor(np.arange(new_n) * adjusted_coef(old_n, new_n) + 0.5).astype(np.intp)
 
 
 cdef inline FLOAT interpolate3d_linear(const FLOAT* input,
@@ -197,55 +192,6 @@ cdef inline FLOAT interpolate3d_linear(const FLOAT* input,
     c1 = c01 * (1 - dc) + c11 * dc
 
     return c0 * (1 - dd) + c1 * dd
-
-
-# FIXME: figure out how to avoid duplication between `linear` and `learest` without slowing down
-cdef inline NUM interpolate3d_nearest(const NUM* input,
-                                      Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
-                                      double r, double c, double d,
-                                      NUM cval) noexcept nogil:
-    cdef double minr, minc, mind, maxr, maxc, maxd, curr, curc, curd, distance, min_distance = 3.0
-    cdef short i, j, k, i_nearest = -1, j_nearest = -1, k_nearest = -1
-
-    minr = floor(r)
-    minc = floor(c)
-    mind = floor(d)
-    maxr = minr + 1
-    maxc = minc + 1
-    maxd = mind + 1
-
-    for i in range(2):
-        curr = maxr if i else minr
-        if curr >= rows:
-            continue
-        for j in range(2):
-            curc = maxc if j else minc
-            if curc >= cols:
-                continue
-            for k in range(2):
-                curd = maxd if k else mind
-                if curd >= dims:
-                    continue
-
-                distance = distance3d(r, c, d, curr, curc, curd)
-
-                if distance <= min_distance:
-                    i_nearest = i
-                    j_nearest = j
-                    k_nearest = k
-                    min_distance = distance
-
-    if i_nearest == -1 or j_nearest == -1 or k_nearest == -1:
-        return cval
-
-    return get_pixel3d(
-        input,
-        rows, cols, dims,
-        <Py_ssize_t>(maxr if i_nearest else minr),
-        <Py_ssize_t>(maxc if j_nearest else minc),
-        <Py_ssize_t>(maxd if k_nearest else mind),
-        cval,
-    )
 
 
 cdef inline FLOAT interpolate4d_linear(const FLOAT* input,
@@ -310,65 +256,6 @@ cdef inline FLOAT interpolate4d_linear(const FLOAT* input,
     return c0_ * (1 - dc4) + c1_ * dc4
 
 
-cdef inline NUM interpolate4d_nearest(const NUM* input,
-                                      Py_ssize_t stride1, Py_ssize_t stride2, Py_ssize_t stride3, Py_ssize_t stride4,
-                                      Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
-                                      double c1, double c2, double c3, double c4,
-                                      NUM cval) noexcept nogil:
-    cdef double minc1, minc2, minc3, minc4, maxc1, maxc2, maxc3, maxc4, curc1, curc2, curc3, curc4
-    cdef double distance, min_distance = 3.0
-    cdef short i1, i2, i3, i4, i1_nearest = -1, i2_nearest = -1, i3_nearest = -1, i4_nearest = -1
-
-    minc1 = floor(c1)
-    minc2 = floor(c2)
-    minc3 = floor(c3)
-    minc4 = floor(c4)
-    maxc1 = minc1 + 1
-    maxc2 = minc2 + 1
-    maxc3 = minc3 + 1
-    maxc4 = minc4 + 1
-
-    for i1 in range(2):
-        curc1 = maxc1 if i1 else minc1
-        if curc1 >= dim1:
-            continue
-        for i2 in range(2):
-            curc2 = maxc2 if i2 else minc2
-            if curc2 >= dim2:
-                continue
-            for i3 in range(2):
-                curc3 = maxc3 if i3 else minc3
-                if curc3 >= dim3:
-                    continue
-                for i4 in range(2):
-                    curc4 = maxc4 if i4 else minc4
-                    if curc4 >= dim4:
-                        continue
-
-                    distance = distance4d(c1, c2, c3, c4, curc1, curc2, curc3, curc4)
-
-                    if distance <= min_distance:
-                        i1_nearest = i1
-                        i2_nearest = i2
-                        i3_nearest = i3
-                        i4_nearest = i4
-                        min_distance = distance
-
-    if i1_nearest == -1 or i2_nearest == -1 or i3_nearest == -1 or i4_nearest == -1:
-        return cval
-
-    return get_pixel4d(
-        input,
-        stride1, stride2, stride3, stride4,
-        dim1, dim2, dim3, dim4,
-        <Py_ssize_t>(maxc1 if i1_nearest else minc1),
-        <Py_ssize_t>(maxc2 if i2_nearest else minc2),
-        <Py_ssize_t>(maxc3 if i3_nearest else minc3),
-        <Py_ssize_t>(maxc4 if i4_nearest else minc4),
-        cval,
-    )
-
-
 def _zoom3d_linear(const FLOAT[:, :, :] input, double[:] zoom, FLOAT cval, Py_ssize_t num_threads):
     cdef const FLOAT[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
 
@@ -411,20 +298,14 @@ def _zoom3d_nearest(const NUM[:, :, :] input, double[:] zoom, NUM cval, Py_ssize
     cdef NUM[:, :, ::1] zoomed = np.empty_like(contiguous_input, shape=new_shape)
 
     cdef Py_ssize_t i, j, k
-    cdef double adjusted_row_coef, adjusted_col_coef, adjusted_dim_coef
-
-    adjusted_row_coef = adjusted_coef(old_rows, new_rows)
-    adjusted_col_coef = adjusted_coef(old_cols, new_cols)
-    adjusted_dim_coef = adjusted_coef(old_dims, new_dims)
+    cdef Py_ssize_t[::1] rows = nearest_indices(old_rows, new_rows)
+    cdef Py_ssize_t[::1] cols = nearest_indices(old_cols, new_cols)
+    cdef Py_ssize_t[::1] dims = nearest_indices(old_dims, new_dims)
 
     for i in prange(new_rows, nogil=True, num_threads=num_threads):
         for j in prange(new_cols):
             for k in prange(new_dims):
-                zoomed[i, j, k] = interpolate3d_nearest(
-                    &contiguous_input[0, 0, 0],
-                    old_rows, old_cols, old_dims,
-                    i * adjusted_row_coef, j * adjusted_col_coef, k * adjusted_dim_coef, cval,
-                )
+                zoomed[i, j, k] = contiguous_input[rows[i], cols[j], dims[k]]
 
     return np.asarray(zoomed)
 
@@ -496,32 +377,16 @@ def _zoom4d_nearest(const NUM[:, :, :, :] input, double[:] zoom, NUM cval, Py_ss
 
     cdef NUM[:, :, :, ::1] zoomed = np.empty_like(contiguous_input, shape=new_shape)
 
-    cdef Py_ssize_t i1, i2, i3, i4, stride1, stride2, stride3, stride4
-    cdef double adjusted_dim1_coef, adjusted_dim2_coef, adjusted_dim3_coef, adjusted_dim4_coef
-
-    adjusted_dim1_coef = adjusted_coef(old_dim1, new_dim1)
-    adjusted_dim2_coef = adjusted_coef(old_dim2, new_dim2)
-    adjusted_dim3_coef = adjusted_coef(old_dim3, new_dim3)
-    adjusted_dim4_coef = adjusted_coef(old_dim4, new_dim4)
-
-    stride1 = old_dim2 * old_dim3 * old_dim4
-    stride2 = old_dim3 * old_dim4
-    stride3 = old_dim4
-    stride4 = 1
+    cdef Py_ssize_t i1, i2, i3, i4
+    cdef Py_ssize_t[::1] indices1 = nearest_indices(old_dim1, new_dim1)
+    cdef Py_ssize_t[::1] indices2 = nearest_indices(old_dim2, new_dim2)
+    cdef Py_ssize_t[::1] indices3 = nearest_indices(old_dim3, new_dim3)
+    cdef Py_ssize_t[::1] indices4 = nearest_indices(old_dim4, new_dim4)
 
     for i1 in prange(new_dim1, nogil=True, num_threads=num_threads):
         for i2 in prange(new_dim2):
             for i3 in prange(new_dim3):
                 for i4 in prange(new_dim4):
-                    zoomed[i1, i2, i3, i4] = interpolate4d_nearest(
-                        &contiguous_input[0, 0, 0, 0],
-                        stride1, stride2, stride3, stride4,
-                        old_dim1, old_dim2, old_dim3, old_dim4,
-                        i1 * adjusted_dim1_coef,
-                        i2 * adjusted_dim2_coef,
-                        i3 * adjusted_dim3_coef,
-                        i4 * adjusted_dim4_coef,
-                        cval,
-                    )
+                    zoomed[i1, i2, i3, i4] = contiguous_input[indices1[i1], indices2[i2], indices3[i3], indices4[i4]]
 
     return np.asarray(zoomed)

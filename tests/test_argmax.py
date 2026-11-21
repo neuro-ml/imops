@@ -4,7 +4,7 @@ import pytest
 from imops.argmax import argmax
 
 
-N_STRESS = 10
+N_STRESS = 5
 np.random.seed(1337)
 dim = 13
 

@@ -2,12 +2,13 @@ name: Lint
 
 on: [ pull_request ]
 
-env:
-  MODULE_NAME: imops
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python

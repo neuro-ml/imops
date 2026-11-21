@@ -19,10 +19,6 @@ from .compat import QhullError, euclidean_feature_transform, normalize_sequence
 from .crop import crop_to_box
 from .pad import restore_crop
 from .src._convex_hull import _grid_points_in_poly, _left_right_bounds, _offset_unique
-from .src._fast_morphology import (
-    _binary_dilation as cython_fast_binary_dilation,
-    _binary_erosion as cython_fast_binary_erosion,
-)
 from .src._morphology import _binary_dilation as cython_binary_dilation, _binary_erosion as cython_binary_erosion
 from .utils import morphology_composition_args, normalize_num_threads
 
@@ -155,8 +151,7 @@ _binary_dilation = morphology_op_wrapper(
     'binary_dilation',
     {
         Scipy(): scipy_binary_dilation,
-        Cython(fast=False): cython_binary_dilation,
-        Cython(fast=True): cython_fast_binary_dilation,
+        Cython(): cython_binary_dilation,
     },
 )
 
@@ -209,8 +204,7 @@ _binary_erosion = morphology_op_wrapper(
     'binary_erosion',
     {
         Scipy(): scipy_binary_erosion,
-        Cython(fast=False): cython_binary_erosion,
-        Cython(fast=True): cython_fast_binary_erosion,
+        Cython(): cython_binary_erosion,
     },
 )
 
@@ -263,8 +257,7 @@ _binary_closing = morphology_op_wrapper(
     'binary_closing',
     {
         Scipy(): scipy_binary_closing,
-        Cython(fast=False): morphology_composition_args(cython_binary_erosion, cython_binary_dilation),
-        Cython(fast=True): morphology_composition_args(cython_fast_binary_erosion, cython_fast_binary_dilation),
+        Cython(): morphology_composition_args(cython_binary_erosion, cython_binary_dilation),
     },
 )
 
@@ -318,8 +311,7 @@ _binary_opening = morphology_op_wrapper(
     'binary_opening',
     {
         Scipy(): scipy_binary_opening,
-        Cython(fast=False): morphology_composition_args(cython_binary_dilation, cython_binary_erosion),
-        Cython(fast=True): morphology_composition_args(cython_fast_binary_dilation, cython_fast_binary_erosion),
+        Cython(): morphology_composition_args(cython_binary_dilation, cython_binary_erosion),
     },
 )
 

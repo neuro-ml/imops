@@ -3,68 +3,73 @@ name: build-wheels
 on:
   workflow_call:
     inputs:
-      cibw_build:
+      pythons:
         required: true
         type: string
-
-env:
-  MODULE_NAME: imops
 
 jobs:
   build_wheels:
     strategy:
       matrix:
-        os: [ ubuntu-22.04, windows-2022, macOS-15 ]
-    name: Build wheels on ${{ matrix.os }}
+        os: [ ubuntu-24.04, windows-2022, macOS-15 ]
+        python: ${{ fromJSON(inputs.pythons) }}
+    name: Build ${{ matrix.python }} wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.12'
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.17.0
+        run: python -m pip install cibuildwheel==4.3.5
 
       - name: Install llvm for mac
         if: ${{ matrix.os == 'macOS-15' }}
         run: |
           brew install llvm
 
-      - name: Install g++-11 for ubuntu
-        if: ${{ matrix.os == 'ubuntu-22.04' }}
-        id: install_cc
-        uses: rlalik/setup-cpp-compiler@master
-        with:
-          compiler: g++-11
-
-      - name: Check compilers for ubuntu
-        if: ${{ matrix.os == 'ubuntu-22.04' }}
-        run: |
-          ls /usr/bin/gcc*
-          ls /usr/bin/g++*
-          sudo ln -sf /usr/bin/gcc-11 /usr/bin/gcc
-          sudo ln -sf /usr/bin/g++-11 /usr/bin/g++
-          g++ --version
-          gcc --version
-
       - name: Build wheels
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install build wheel
-          python -m cibuildwheel --output-dir wheelhouse
+        run: python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_ENVIRONMENT_MACOS: >
-            CC="$(brew --prefix llvm)/bin/clang" CXX="$(brew --prefix llvm)/bin/clang++"
-          CIBW_BUILD: ${{ inputs.cibw_build }}
+            CC="$(brew --prefix llvm)/bin/clang" CXX="$(brew --prefix llvm)/bin/clang++" MACOSX_DEPLOYMENT_TARGET=15.0
+          CIBW_BUILD: ${{ matrix.python }}-*
           CIBW_ARCHS_LINUX: x86_64
+          CIBW_ARCHS_WINDOWS: AMD64
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
-          CIBW_MUSLLINUX_X86_64_IMAGE: musllinux_1_2
+          CIBW_SKIP: '*-musllinux_*'
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: pytest {project}/tests/test_cpu.py {project}/tests/test_fp_state.py
+
+      # Needs ubuntu-24.04: its qemu-user-static is 8.2, which emulates AVX2. 22.04 has 6.2 without AVX2, 26.04 has no such package
+      - name: Run the wheel on CPUs without AVX and with AVX2
+        if: ${{ matrix.os == 'ubuntu-24.04' }}
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q qemu-user-static
+          docker run --rm -e CHECK -e PYTHON=/opt/python/${{ matrix.python }}-${{ matrix.python }}/bin/python \
+            -v "$PWD/wheelhouse:/wheelhouse:ro" -v /usr/bin/qemu-x86_64-static:/usr/bin/qemu-x86_64-static:ro \
+            quay.io/pypa/manylinux_2_28_x86_64 bash -euc '
+              $PYTHON -m pip install -q /wheelhouse/*.whl
+              qemu-x86_64-static -cpu Nehalem $PYTHON -c "$CHECK" x86-64-v2
+              qemu-x86_64-static -cpu Haswell $PYTHON -c "$CHECK" x86-64-v3
+            '
+        env:
+          CHECK: |
+            import sys
+            import numpy as np
+            from imops import rotate, zoom
+            image = np.random.rand(16, 16, 16).astype(np.float32)
+            zoom(image, 1.5)
+            rotate(image, 30)
+            kernels = sys.modules['imops.src._zoom'].__name__
+            assert kernels.endswith('_v3') == (sys.argv[1] == 'x86-64-v3'), kernels
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}
+          name: wheels-${{ matrix.os }}-${{ matrix.python }}
           path: ./wheelhouse/*.whl
