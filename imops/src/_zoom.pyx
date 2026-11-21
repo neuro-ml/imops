@@ -149,13 +149,9 @@ cdef inline double adjusted_coef(Py_ssize_t old_n, Py_ssize_t new_n) noexcept no
     return  (<double>old_n - 1) / (<double>new_n - 1)
 
 
-cdef inline Py_ssize_t nearest_index(double coordinate, Py_ssize_t size) noexcept nogil:
-    """The nearest index, the upper one on a tie; it is out of range only if `coordinate` is."""
-    # `coordinate - lower` is exact, so rounding can not move a voxel that lies halfway
-    cdef double lower = floor(coordinate)
-    if coordinate - lower >= 0.5 and lower + 1 < size:
-        return <Py_ssize_t>lower + 1
-    return <Py_ssize_t>lower
+cdef nearest_indices(Py_ssize_t old_n, Py_ssize_t new_n):
+    """The input index nearest to each output index, rounded like `scipy.ndimage.zoom`."""
+    return np.floor(np.arange(new_n) * adjusted_coef(old_n, new_n) + 0.5).astype(np.intp)
 
 
 cdef inline FLOAT interpolate3d_linear(const FLOAT* input,
@@ -196,19 +192,6 @@ cdef inline FLOAT interpolate3d_linear(const FLOAT* input,
     c1 = c01 * (1 - dc) + c11 * dc
 
     return c0 * (1 - dd) + c1 * dd
-
-
-# FIXME: figure out how to avoid duplication between `linear` and `learest` without slowing down
-cdef inline NUM interpolate3d_nearest(const NUM* input,
-                                      Py_ssize_t rows, Py_ssize_t cols, Py_ssize_t dims,
-                                      double r, double c, double d,
-                                      NUM cval) noexcept nogil:
-    return get_pixel3d(
-        input,
-        rows, cols, dims,
-        nearest_index(r, rows), nearest_index(c, cols), nearest_index(d, dims),
-        cval,
-    )
 
 
 cdef inline FLOAT interpolate4d_linear(const FLOAT* input,
@@ -273,20 +256,6 @@ cdef inline FLOAT interpolate4d_linear(const FLOAT* input,
     return c0_ * (1 - dc4) + c1_ * dc4
 
 
-cdef inline NUM interpolate4d_nearest(const NUM* input,
-                                      Py_ssize_t stride1, Py_ssize_t stride2, Py_ssize_t stride3, Py_ssize_t stride4,
-                                      Py_ssize_t dim1, Py_ssize_t dim2, Py_ssize_t dim3, Py_ssize_t dim4,
-                                      double c1, double c2, double c3, double c4,
-                                      NUM cval) noexcept nogil:
-    return get_pixel4d(
-        input,
-        stride1, stride2, stride3, stride4,
-        dim1, dim2, dim3, dim4,
-        nearest_index(c1, dim1), nearest_index(c2, dim2), nearest_index(c3, dim3), nearest_index(c4, dim4),
-        cval,
-    )
-
-
 def _zoom3d_linear(const FLOAT[:, :, :] input, double[:] zoom, FLOAT cval, Py_ssize_t num_threads):
     cdef const FLOAT[:, :, ::1] contiguous_input = np.ascontiguousarray(input)
 
@@ -329,20 +298,14 @@ def _zoom3d_nearest(const NUM[:, :, :] input, double[:] zoom, NUM cval, Py_ssize
     cdef NUM[:, :, ::1] zoomed = np.empty_like(contiguous_input, shape=new_shape)
 
     cdef Py_ssize_t i, j, k
-    cdef double adjusted_row_coef, adjusted_col_coef, adjusted_dim_coef
-
-    adjusted_row_coef = adjusted_coef(old_rows, new_rows)
-    adjusted_col_coef = adjusted_coef(old_cols, new_cols)
-    adjusted_dim_coef = adjusted_coef(old_dims, new_dims)
+    cdef Py_ssize_t[::1] rows = nearest_indices(old_rows, new_rows)
+    cdef Py_ssize_t[::1] cols = nearest_indices(old_cols, new_cols)
+    cdef Py_ssize_t[::1] dims = nearest_indices(old_dims, new_dims)
 
     for i in prange(new_rows, nogil=True, num_threads=num_threads):
         for j in prange(new_cols):
             for k in prange(new_dims):
-                zoomed[i, j, k] = interpolate3d_nearest(
-                    &contiguous_input[0, 0, 0],
-                    old_rows, old_cols, old_dims,
-                    i * adjusted_row_coef, j * adjusted_col_coef, k * adjusted_dim_coef, cval,
-                )
+                zoomed[i, j, k] = contiguous_input[rows[i], cols[j], dims[k]]
 
     return np.asarray(zoomed)
 
@@ -414,32 +377,16 @@ def _zoom4d_nearest(const NUM[:, :, :, :] input, double[:] zoom, NUM cval, Py_ss
 
     cdef NUM[:, :, :, ::1] zoomed = np.empty_like(contiguous_input, shape=new_shape)
 
-    cdef Py_ssize_t i1, i2, i3, i4, stride1, stride2, stride3, stride4
-    cdef double adjusted_dim1_coef, adjusted_dim2_coef, adjusted_dim3_coef, adjusted_dim4_coef
-
-    adjusted_dim1_coef = adjusted_coef(old_dim1, new_dim1)
-    adjusted_dim2_coef = adjusted_coef(old_dim2, new_dim2)
-    adjusted_dim3_coef = adjusted_coef(old_dim3, new_dim3)
-    adjusted_dim4_coef = adjusted_coef(old_dim4, new_dim4)
-
-    stride1 = old_dim2 * old_dim3 * old_dim4
-    stride2 = old_dim3 * old_dim4
-    stride3 = old_dim4
-    stride4 = 1
+    cdef Py_ssize_t i1, i2, i3, i4
+    cdef Py_ssize_t[::1] indices1 = nearest_indices(old_dim1, new_dim1)
+    cdef Py_ssize_t[::1] indices2 = nearest_indices(old_dim2, new_dim2)
+    cdef Py_ssize_t[::1] indices3 = nearest_indices(old_dim3, new_dim3)
+    cdef Py_ssize_t[::1] indices4 = nearest_indices(old_dim4, new_dim4)
 
     for i1 in prange(new_dim1, nogil=True, num_threads=num_threads):
         for i2 in prange(new_dim2):
             for i3 in prange(new_dim3):
                 for i4 in prange(new_dim4):
-                    zoomed[i1, i2, i3, i4] = interpolate4d_nearest(
-                        &contiguous_input[0, 0, 0, 0],
-                        stride1, stride2, stride3, stride4,
-                        old_dim1, old_dim2, old_dim3, old_dim4,
-                        i1 * adjusted_dim1_coef,
-                        i2 * adjusted_dim2_coef,
-                        i3 * adjusted_dim3_coef,
-                        i4 * adjusted_dim4_coef,
-                        cval,
-                    )
+                    zoomed[i1, i2, i3, i4] = contiguous_input[indices1[i1], indices2[i2], indices3[i3], indices4[i4]]
 
     return np.asarray(zoomed)
