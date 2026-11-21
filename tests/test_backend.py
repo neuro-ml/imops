@@ -18,8 +18,11 @@ def test_resolve():
 
 def test_backend_change():
     assert resolve_backend(None) == Cython()
-    set_backend(Cython(fast=True))
-    assert resolve_backend(None) == Cython(fast=True)
+    with pytest.warns(DeprecationWarning):
+        set_backend(Cython(fast=True))
+    assert resolve_backend(None) == Cython()
+    set_backend('Scipy')
+    assert resolve_backend(None) == Scipy()
     set_backend('Cython')
     assert resolve_backend(None) == Cython()
 

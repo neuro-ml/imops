@@ -17,6 +17,12 @@ assert_eq = np.testing.assert_array_equal
 n_samples = 8
 
 
+def random_shape():
+    ndim = np.random.randint(1, 5)
+    # 32-64 per axis makes 4D arrays of up to 16M elements
+    return np.random.randint(32, 64, size=ndim) if ndim < 4 else np.random.randint(16, 32, size=ndim)
+
+
 @dataclass
 class Alien8(Backend):
     pass
@@ -69,7 +75,7 @@ def test_empty_add(backend, num_threads, dtype):
 def test_different_dtypes(backend):
     for dtype1, dtype2 in combinations(_STR_TYPES, 2):
         for _ in range(n_samples):
-            shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+            shape = random_shape()
 
             nums1 = (32 * np.random.randn(*shape)).astype(dtype1)
             nums2 = (32 * np.random.randn(*shape)).astype(dtype2)
@@ -80,7 +86,7 @@ def test_different_dtypes(backend):
 
 def test_bad_dtypes(backend, bad_dtype):
     for _ in range(n_samples):
-        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+        shape = random_shape()
 
         nums = (32 * np.random.randn(*shape)).astype(bad_dtype)
 
@@ -89,7 +95,7 @@ def test_bad_dtypes(backend, bad_dtype):
 
 
 def test_bad_output_shape(backend, num_threads, dtype):
-    shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+    shape = random_shape()
     output_shape = np.random.randint(32, 64, size=len(shape))
 
     while not (shape != output_shape).any():
@@ -107,7 +113,7 @@ def test_bad_output_dtype(backend, num_threads, dtype):
         if output_dtype == dtype:
             continue
 
-        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+        shape = random_shape()
 
         nums = (32 * np.random.randn(*shape)).astype(dtype)
         output = np.empty_like(nums, dtype=output_dtype)
@@ -117,7 +123,7 @@ def test_bad_output_dtype(backend, num_threads, dtype):
 
 
 def test_bad_scalar_summand_dtype(backend, num_threads, dtype, bad_dtype):
-    shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+    shape = random_shape()
     nums = (32 * np.random.randn(*shape)).astype(dtype)
 
     with pytest.raises(ValueError):
@@ -129,7 +135,7 @@ def test_copy_bad_output_dtype(backend, num_threads, dtype):
         if output_dtype == dtype:
             continue
 
-        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+        shape = random_shape()
 
         nums = (32 * np.random.randn(*shape)).astype(dtype)
         output = np.empty_like(nums, dtype=output_dtype)
@@ -139,7 +145,7 @@ def test_copy_bad_output_dtype(backend, num_threads, dtype):
 
 
 def test_copy_bad_output_shape(backend, num_threads, dtype):
-    shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+    shape = random_shape()
     output_shape = np.random.randint(32, 64, size=len(shape))
 
     while not (shape != output_shape).any():
@@ -154,7 +160,7 @@ def test_copy_bad_output_shape(backend, num_threads, dtype):
 
 def test_stress_pointwise_add(backend, num_threads, dtype):
     for _ in range(n_samples):
-        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+        shape = random_shape()
 
         nums1 = (32 * np.random.randn(*shape)).astype(dtype)
         nums2 = (
@@ -174,7 +180,7 @@ def test_stress_pointwise_add(backend, num_threads, dtype):
 
 def test_stress_pointwise_add_output(backend, num_threads, dtype):
     for _ in range(n_samples):
-        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+        shape = random_shape()
 
         nums1 = (32 * np.random.randn(*shape)).astype(dtype)
         old_nums1 = np.copy(nums1)
@@ -200,7 +206,7 @@ def test_stress_pointwise_add_output(backend, num_threads, dtype):
 
 def test_stress_pointwise_add_inplace(backend, num_threads, dtype):
     for _ in range(n_samples):
-        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+        shape = random_shape()
 
         nums1 = (32 * np.random.randn(*shape)).astype(dtype)
         nums2 = (
@@ -238,7 +244,7 @@ def test_stress_fill_(backend, num_threads, dtype):
         return float(x)
 
     for _ in range(n_samples):
-        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+        shape = random_shape()
 
         nums = (32 * np.random.randn(*shape)).astype(dtype)
         nums_copy = np.copy(nums)
@@ -272,7 +278,7 @@ def test_stress_full(backend, num_threads, dtype):
         return float(x)
 
     for _ in range(n_samples):
-        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+        shape = random_shape()
         fill_value = sample_value(np.zeros(1, dtype=dtype).dtype)
 
         dtype_or_none = dtype if np.random.binomial(1, 0.5) else None
@@ -288,7 +294,7 @@ def test_stress_full(backend, num_threads, dtype):
 
 def test_stress_copy(backend, num_threads, dtype):
     for _ in range(n_samples):
-        shape = np.random.randint(32, 64, size=np.random.randint(1, 5))
+        shape = random_shape()
 
         nums = (32 * np.random.randn(*shape)).astype(dtype)
         if np.random.binomial(1, 0.5):

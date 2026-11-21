@@ -63,3 +63,8 @@ imops = ['py.typed']
 [tool.setuptools.dynamic]
 version = { attr = 'imops.__version__.__version__' }
 dependencies = { file = ['requirements.txt'] }
+
+[tool.coverage.run]
+# Build code runs in `setup.py` before pytest starts, so coverage never sees it.
+# The wheel builds and the native build in CI check it instead.
+omit = ['*/imops/_build_utils.py']

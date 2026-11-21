@@ -1,3 +1,4 @@
+import os
 import platform
 import shutil
 from pathlib import Path
@@ -54,14 +55,31 @@ class PyprojectBuild(build_py):
         self.distribution.ext_modules = get_ext_modules()
 
 
+def cpu_levels(on_windows):
+    """Module name suffix -> compiler flags. The `''` level runs on every CPU of the build architecture."""
+    if os.environ.get('IMOPS_NATIVE') == '1':
+        return {'': [] if on_windows else ['-march=native']}
+
+    machine = platform.machine().lower()
+    if machine in ('x86_64', 'amd64'):
+        if on_windows:
+            return {'': [], '_v3': ['/arch:AVX2']}
+        return {'': ['-march=x86-64-v2'], '_v3': ['-march=x86-64-v3']}
+    if platform.system() == 'Darwin' and machine == 'arm64':
+        return {'': ['-mcpu=apple-m1']}
+    return {'': []}
+
+
 def get_ext_modules():
     name = 'imops'
     on_windows = platform.system() == 'Windows'
-    args = ['/openmp' if on_windows else '-fopenmp', '-march=native', '-O3']
+    args = ['/openmp' if on_windows else '-fopenmp', '-O3']
     cpp_args = [
         '/std:c++20' if on_windows else '-std=c++17',
         '/O3' if on_windows else '-O3',
     ]  # FIXME: account for higher gcc versions
+    levels = cpu_levels(on_windows)
+    baseline_args = args + levels['']
 
     modules = [
         'argmax',
@@ -77,18 +95,13 @@ def get_ext_modules():
     modules_to_link_against_numpy_core_math_lib = ['numeric']
 
     src_dir = Path(__file__).parent / 'src'
-    for module in modules:
-        # Cython extension and .pyx source file names must be the same to compile
-        # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
-        shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_fast_{module}.pyx')
-
     extensions = [
         Extension(
             f'{name}.cpp.cpp_modules',
             [f'{name}/cpp/main.cpp'],
             include_dirs=[LazyImport('pybind11')],
-            extra_compile_args=args + cpp_args,
-            extra_link_args=args + cpp_args,
+            extra_compile_args=baseline_args + cpp_args,
+            extra_link_args=baseline_args + cpp_args,
             language='c++',
         ),
         Extension(
@@ -96,8 +109,8 @@ def get_ext_modules():
             [f'{name}/src/_utils.pyx'],
             language='c++',
             include_dirs=[LazyImport('numpy')],
-            extra_compile_args=args + cpp_args,
-            extra_link_args=args + cpp_args,
+            extra_compile_args=baseline_args + cpp_args,
+            extra_link_args=baseline_args + cpp_args,
             define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
         ),
     ]
@@ -112,21 +125,21 @@ def get_ext_modules():
             if not on_windows:
                 libraries.append('m')
 
-        # TODO: mb throw `ffast-math` away?
-        # FIXME: import of `ffast-math` compiled modules changes global FPU state, so now `fast=True` will just
-        # fallback to standard `-O2` compiled versions until https://github.com/neuro-ml/imops/issues/37 is resolved
-        # for prefix, additional_args in zip(['', 'fast_'], [[], ['-ffast-math']])
-        for prefix, additional_args in zip(['', 'fast_'], [[], []]):
+        for suffix, level_args in levels.items():
+            if suffix:
+                # Cython extension and .pyx source file names must be the same to compile
+                # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
+                shutil.copyfile(src_dir / f'_{module}.pyx', src_dir / f'_{module}{suffix}.pyx')
             extensions.append(
                 Extension(
-                    f'{name}.src._{prefix}{module}',
-                    [f'{name}/src/_{prefix}{module}.pyx'],
+                    f'{name}.src._{module}{suffix}',
+                    [f'{name}/src/_{module}{suffix}.pyx'],
                     language='c',
                     include_dirs=include_dirs,
                     library_dirs=library_dirs,
                     libraries=libraries,
-                    extra_compile_args=args + additional_args,
-                    extra_link_args=args + additional_args,
+                    extra_compile_args=args + level_args,
+                    extra_link_args=args + level_args,
                     define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
                 )
             )

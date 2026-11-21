@@ -209,10 +209,12 @@ def test_stress(connectivity, ndim):
     connectivity = min(connectivity, ndim)
 
     for _ in range(2 * n_samples):
+        # label hands 4D to scikit-image, so 4D only checks the wrapper
+        shape = np.random.randint(16, 32, size=ndim) if ndim == 4 else np.random.randint(32, 64, size=ndim)
         inp = (
-            np.random.binomial(1, 0.5, size=np.random.randint(32, 64, size=ndim)) > 0
+            np.random.binomial(1, 0.5, size=shape) > 0
             if ndim == 4 or np.random.binomial(1, 0.2)
-            else np.random.randint(0, 5, size=np.random.randint(32, 64, size=ndim))
+            else np.random.randint(0, 5, size=shape)
         )
 
         sk_labeled, sk_num_components = sk_label(inp, connectivity=connectivity, return_num=True)
