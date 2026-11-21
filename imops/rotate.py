@@ -7,7 +7,6 @@ from scipy.special import cosdg, sindg
 
 from .backend import BackendLike, resolve_backend
 from .env import ROTATE_MAX_NUM_THREADS
-from .src._fast_rotate import _rotate_linear as cython_fast_rotate_linear, _rotate_nearest as cython_fast_rotate_nearest
 from .src._rotate import _rotate_linear as cython_rotate_linear, _rotate_nearest as cython_rotate_nearest
 from .utils import normalize_num_threads
 
@@ -162,11 +161,9 @@ def rotate(
     fill = _fill_value(cval, x.dtype)
 
     if order == 0:
-        kernel = cython_fast_rotate_nearest if backend.fast else cython_rotate_nearest
-        rotated = kernel(source, matrix, shift, *out_plane_shape, fill, num_threads)
+        rotated = cython_rotate_nearest(source, matrix, shift, *out_plane_shape, fill, num_threads)
     else:
-        kernel = cython_fast_rotate_linear if backend.fast else cython_rotate_linear
-        rotated = kernel(source, matrix, shift, *out_plane_shape, fill, x.dtype == bool, num_threads)
+        rotated = cython_rotate_linear(source, matrix, shift, *out_plane_shape, fill, x.dtype == bool, num_threads)
 
     out_shape = list(x.shape)
     out_shape[axes[0]], out_shape[axes[1]] = out_plane_shape

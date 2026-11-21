@@ -15,21 +15,28 @@ Efficient parallelizable algorithms for multidimensional arrays to speed up your
 pip install imops  # default install with Cython backend
 ```
 
+Wheels pick the kernels for the CPU at import: x86-64-v3 (AVX2) where the CPU has it, x86-64-v2 elsewhere.
+To build for your own CPU only, use `-march=native`:
+
+```shell
+IMOPS_NATIVE=1 pip install --no-binary imops imops
+```
+
 # How fast is it?
 
 Time comparisons (ms) for Intel(R) Xeon(R) Silver 4114 CPU @ 2.20GHz using 8 threads. All inputs are C-contiguous NumPy arrays. For morphology functions `bool` dtype is used and `float64` for all others.
-| function / backend   |  Scipy()  |  Cython(fast=False)  |  Cython(fast=True)  |
-|:----------------------:|:-----------:|:----------------------:|:---------------------:|
-| `zoom(..., order=0)` |   2072    |         1114         |         **867**         |
-| `zoom(..., order=1)` |   6527    |         596          |         **575**         |
-| `interp1d`           |    780    |         149          |         **146**         |
-| `radon`              |   59711   |         5982         |        **4837**         |
-| `inverse_radon`      |   52928   |         8254         |        **6535**         |
-| `binary_dilation`    |   2207    |         310          |         **298**         |
-| `binary_erosion`     |   2296    |         326          |         **304**         |
-| `binary_closing`     |   4158    |         544          |         **469**         |
-| `binary_opening`     |   4410    |         567          |         **522**         |
-| `center_of_mass`     |   2237    |          **64**          |         **64**          |
+| function / backend   |  Scipy()  |  Cython()  |
+|:----------------------:|:-----------:|:-----------:|
+| `zoom(..., order=0)` | 2072 | **1114** |
+| `zoom(..., order=1)` | 6527 | **596** |
+| `interp1d` | 780 | **149** |
+| `radon` | 59711 | **5982** |
+| `inverse_radon` | 52928 | **8254** |
+| `binary_dilation` | 2207 | **310** |
+| `binary_erosion` | 2296 | **326** |
+| `binary_closing` | 4158 | **544** |
+| `binary_opening` | 4410 | **567** |
+| `center_of_mass` | 2237 | **64** |
 
 We use [`airspeed velocity`](https://asv.readthedocs.io/en/stable/) to benchmark our code. For detailed results visit [benchmark page](https://neuro-ml.github.io/imops/benchmarks/).
 
@@ -134,8 +141,7 @@ For all heavy image routines except `label` you can specify which backend to use
 from imops import Cython, Scipy, zoom
 
 y = zoom(x, 2, backend='Cython')
-y = zoom(x, 2, backend=Cython(fast=False))  # same as previous
-y = zoom(x, 2, backend=Cython(fast=True))  # -ffast-math compiled cython backend
+y = zoom(x, 2, backend=Cython())  # same as previous
 y = zoom(x, 2, backend=Scipy())  # use scipy original implementation
 ```
 Also backend can be specified globally or locally:
@@ -164,3 +170,8 @@ Available backends:
 Some parts of our code for radon/inverse radon transform as well as the code for linear interpolation are inspired by
 the implementations from [`scikit-image`](https://github.com/scikit-image/scikit-image) and [`scipy`](https://github.com/scipy/scipy).
 Also we used [`fastremap`](https://github.com/seung-lab/fastremap), [`edt`](https://github.com/seung-lab/euclidean-distance-transform-3d) and [`cc3d`](https://github.com/seung-lab/connected-components-3d) out of the box.
+
+# Building from source
+
+Building needs GCC 11+ or clang 12+, which know `-march=x86-64-v2` and `-march=x86-64-v3`, or MSVC.
+`IMOPS_NATIVE=1` has no effect with MSVC, which has no `-march=native`.

@@ -9,7 +9,7 @@ except ModuleNotFoundError:
 
     interp1d_configs = [
         Scipy(),
-        *[Cython(fast) for fast in [False, True]],
+        Cython(),
     ]
 
 from imops.interp1d import interp1d

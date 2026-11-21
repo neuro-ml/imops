@@ -4,7 +4,7 @@ build/
 imops/src/*.cpp
 imops/src/*.c
 imops/src/*.so
-imops/src/_fast*.pyx
+imops/src/_*_v3.pyx
 *.egg-info/
 .asv/
 dist/
